@@ -251,3 +251,12 @@
 /* H5 · Lluvia fuerte */
 .house-window.vela { background: var(--dorado); box-shadow: 0 0 14px 3px color-mix(in oklab, var(--dorado) 55%, transparent); }
 .house-window.tenue { background: color-mix(in oklab, var(--dorado) 28%, transparent); border-style: dashed; }
+
+/* H7 · Modo Ahorro: fondo plano, sin vidrio esmerilado, sin movimiento, letra más grande. */
+.ahorro-fondo { background: var(--noche); }
+.modo-ahorro *, .modo-ahorro *::before, .modo-ahorro *::after { animation: none !important; transition: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.modo-ahorro .paper-panel { background: var(--noche); color: var(--papel); border: 1px solid color-mix(in oklab, var(--papel) 35%, transparent); box-shadow: none; font-size: 1.15em; }
+.modo-ahorro .voice-question { font-size: 30px; }
+.modo-ahorro .help-text, .modo-ahorro .ahorro-texto { font-size: 18px; }
+.ahorro-bloque { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.ahorro-texto { font: 400 22px/1.4 var(--font-serif); margin: 0; }

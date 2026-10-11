@@ -62,3 +62,13 @@ export function ayudaUrgente(ciudad: string): string {
     ? 'MOAI no es un servicio de emergencias. Si necesitas ayuda urgente, llama a la línea 123.'
     : 'MOAI no es un servicio de emergencias. Si necesitas ayuda urgente, llama a los servicios de emergencia de tu ciudad.';
 }
+
+// H7 · Modo Ahorro. Dos toques para decir «Estoy bien»: primero se declara, luego se elige
+// quién lo sabe. Nada se envía en el prototipo; «Solo para mí» no avisa a nadie.
+export type EstoyBien = 'ninguno' | 'declarado' | 'avisado' | 'privado';
+
+export function estoyBienSiguiente(actual: EstoyBien, accion: 'declarar' | 'avisar' | 'privado'): EstoyBien {
+  if (accion === 'declarar') return actual === 'ninguno' ? 'declarado' : actual;
+  if (actual !== 'declarado') return actual;
+  return accion === 'avisar' ? 'avisado' : 'privado';
+}
