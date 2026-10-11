@@ -1,0 +1,31 @@
+# Entorno local de desarrollo. Revisar versiones y etiquetas antes de usar.
+# Copia .env.example a .env y cambia las contraseñas.
+services:
+  neo4j:
+    image: neo4j:5-community
+    ports:
+      - "7474:7474"   # navegador de Neo4j
+      - "7687:7687"   # protocolo Bolt
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      # Opcional: solo hace falta para probar Louvain. Verificar el nombre del plugin.
+      NEO4J_PLUGINS: '["graph-data-science"]'
+    volumes:
+      - neo4j_data:/data
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: moai
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: moai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+volumes:
+  neo4j_data:
+  pg_data:
