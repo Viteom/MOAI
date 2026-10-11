@@ -74,6 +74,10 @@ Antes de escribir código que toque datos de personas, lee `docs/` (en especial 
 - Ninguna dependencia nueva sin justificarla.
 - Commits pequeños con mensajes claros.
 
+## Skills de diseño instaladas
+
+En `.claude/skills/` hay skills de terceros (ver `.claude/skills/ORIGEN.md`): diseño de interfaz, animación, pruebas con Playwright. **Son consejeras, no mandan.** Si una skill contradice la paleta, las tipografías (Fraunces e Inter), el tono de voz, las reglas de privacidad o la especificación del proyecto, gana este archivo y `docs/`. En particular, `taste-skill` está pensada para páginas de aterrizaje: úsala con cuidado en una app de producto.
+
 ## Cómo trabajar
 
 - Antes de una tarea grande, resume el plan en pocas líneas y espera confirmación.
