@@ -186,3 +186,42 @@
 .app-screen:has(.brand-intro) .paper-panel { gap: 12px; }
 .app-screen:has(.brand-intro) .panel-scroll { gap: 10px; }
 .scene-caption h1 { overflow-wrap: anywhere; }
+
+/* H2 · Tu árbol */
+.tree-scroll { position: absolute; left: 0; right: 0; top: 84px; bottom: 78px; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; }
+.tree-title { text-align: center; color: var(--papel); padding: 8px 12px 0; text-shadow: 0 1px 14px color-mix(in oklab, var(--noche) 35%, transparent); }
+.scene-dawn ~ .tree-scroll .tree-title, .scene-day ~ .tree-scroll .tree-title { color: var(--noche); text-shadow: none; }
+.tree-title h1 { font: 400 34px/1.2 var(--font-serif); margin: 0 0 8px; }
+.tree-title p { margin: 0; font-size: 16px; }
+.tree-svg { width: 100%; height: auto; flex-shrink: 0; overflow: visible; }
+.tree-canopy { fill: var(--canopy-green); opacity: .62; }
+.tree-canopy-halo { fill: var(--canopy-green); opacity: .2; filter: blur(10px); }
+.tree-veins { fill: none; stroke: var(--papel); stroke-width: 1.2; opacity: .45; }
+.tree-node { fill: var(--ring-color); stroke: var(--papel); stroke-width: 2; }
+.tree-fibers { fill: none; stroke: var(--cobre); stroke-width: 6; stroke-linecap: round; }
+.tree-ground-line { stroke: var(--papel); stroke-width: 3; opacity: .35; }
+.tree-ring { fill: none; stroke: var(--ring-color); stroke-width: 5; }
+.tree-lamp-hook { fill: none; stroke: var(--cobre); stroke-width: 3; }
+.tree-lamp-light { fill: var(--papel); stroke: var(--papel); stroke-width: 2; opacity: .55; }
+.tree-lamp-light.mood-Calma { fill: var(--agua); opacity: 1; }
+.tree-lamp-light.mood-Energía { fill: var(--rayo); opacity: 1; }
+.tree-lamp-light.mood-Compañía { fill: var(--atardecer); opacity: 1; }
+.tree-lamp-light.mood-Cuidado { fill: var(--rosa); opacity: 1; }
+.tree-lamp-group { animation: window-pulse 4s ease-in-out infinite; }
+.tree-note { background: var(--paper-surface); border: 1.5px solid var(--paper-border); backdrop-filter: blur(24px); border-radius: 24px; padding: 18px 20px; box-shadow: var(--panel-shadow); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+.tree-note p, .tree-note h2 { margin: 0; font-size: 16px; line-height: 1.5; }
+.tree-note h2 { font: 400 24px/1.2 var(--font-serif); }
+.tree-note-row { display: flex; align-items: baseline; gap: 10px; }
+.tree-note-row span, .tree-trades { font-size: 14px; color: var(--muted-foreground); }
+.tree-root { fill: none; stroke: var(--cobre); stroke-width: 5; stroke-linecap: round; }
+.tree-root.thin { stroke-width: 3; }
+.ancestor-halo { fill: var(--dorado); opacity: .35; filter: blur(4px); }
+.ancestor-light { fill: var(--dorado); }
+.tree-underground-title { margin: 6px 0 0; text-align: center; color: var(--papel); font: 400 28px/1.2 var(--font-serif); }
+.tree-soil { background: linear-gradient(180deg, oklch(.3 .04 60), var(--noche)); border-radius: 24px; }
+.mycelium-thread { fill: none; stroke: var(--micelio); stroke-width: 3; stroke-linecap: round; opacity: .9; }
+.mycelium-glow { fill: var(--micelio); opacity: .28; }
+.mycelium-house { fill: var(--papel); stroke: var(--ring-color); stroke-width: 3; }
+.mycelium-roof { fill: var(--ring-color); }
+.mycelium-core { fill: var(--micelio); }
+@media (max-width: 520px) { .tree-scroll { top: max(84px,calc(env(safe-area-inset-top) + 64px)); } }
