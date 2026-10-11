@@ -47,6 +47,9 @@
   --hill-front: oklch(.27 .046 161); --foliage: oklch(.3 .065 154);
   --canopy-green: oklch(.81 .064 149); --canopy-violet: oklch(.8 .069 298);
   --sky-low: oklch(.85 .06 107); --root-shadow: color-mix(in oklab, var(--lima) 26%, transparent);
+  /* Ciberpunk botánico (tarea 04): base de bosque nocturno con luz lima y cian. */
+  --bosque: oklch(.17 .022 165); --bosque-alto: oklch(.22 .03 162);
+  --cian: oklch(.84 .12 205); --niebla: oklch(.93 .015 150);
 }
 
 @theme inline {
@@ -260,3 +263,46 @@
 .modo-ahorro .help-text, .modo-ahorro .ahorro-texto { font-size: 18px; }
 .ahorro-bloque { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
 .ahorro-texto { font: 400 22px/1.4 var(--font-serif); margin: 0; }
+
+/* Portada web (tarea 04) */
+.portada { position: relative; min-height: 100svh; overflow: hidden; isolation: isolate; color: var(--niebla); background: var(--bosque); display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(380px, 1fr); grid-template-rows: auto 1fr; }
+.portada-fondo { position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 22% 70%, var(--bosque-alto), var(--bosque) 70%); }
+.portada-fondo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 25%, color-mix(in oklab, var(--bosque) 72%, transparent) 52%, var(--bosque) 66%), linear-gradient(0deg, color-mix(in oklab, var(--bosque) 80%, transparent), transparent 38%); }
+.portada-fondo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left center; animation: portada-respira 30s ease-in-out infinite alternate; }
+.portada-lineas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; fill: none; stroke-linecap: round; }
+.linea-lima, .linea-cian { stroke-width: 1.5; stroke-dasharray: 6 14; animation: luz-fluye 18s linear infinite; }
+.linea-lima { stroke: var(--lima); opacity: .55; filter: drop-shadow(0 0 6px var(--lima)); }
+.linea-cian { stroke: var(--cian); opacity: .4; filter: drop-shadow(0 0 6px var(--cian)); animation-direction: reverse; }
+.linea-lima.tenue { opacity: .25; }
+.nodo-luz { fill: var(--lima); filter: drop-shadow(0 0 8px var(--lima)); animation: window-pulse 4s ease-in-out infinite; }
+.portada-header { grid-column: 1 / -1; display: flex; align-items: center; gap: 18px; padding: 32px clamp(24px, 5vw, 72px); }
+.moai-logo { display: inline-flex; align-items: baseline; font: 600 30px/1 var(--font-sans); letter-spacing: .04em; color: var(--niebla); }
+.moai-logo-a { position: relative; }
+.moai-logo-leaf { position: absolute; left: 50%; bottom: .02em; width: .5em; height: .5em; transform: translateX(-50%) rotate(-12deg); color: var(--lima); filter: drop-shadow(0 0 6px color-mix(in oklab, var(--lima) 60%, transparent)); }
+.portada-sello { font-size: 14px; color: color-mix(in oklab, var(--niebla) 70%, transparent); padding-left: 18px; border-left: 1px solid color-mix(in oklab, var(--lima) 45%, transparent); }
+.portada-lema { grid-column: 1; align-self: end; margin: 0; padding: 0 clamp(24px, 5vw, 72px) clamp(32px, 7vh, 72px); font: 400 clamp(36px, 4.4vw, 64px)/1.08 var(--font-serif); text-wrap: balance; text-shadow: 0 2px 30px color-mix(in oklab, var(--bosque) 70%, transparent); animation: paper-arrive .8s ease-out both; }
+.portada-panel { grid-column: 2; grid-row: 2; align-self: center; display: flex; flex-direction: column; gap: 22px; padding: 0 clamp(24px, 5vw, 72px) 48px 0; max-width: 560px; animation: paper-arrive .8s .15s ease-out both; }
+.portada-panel h1 { margin: 0; font: 400 clamp(34px, 3.4vw, 50px)/1.1 var(--font-serif); text-wrap: balance; }
+.portada-texto { margin: 0; font-size: 18px; line-height: 1.6; color: color-mix(in oklab, var(--niebla) 82%, transparent); }
+.portada-acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+.portada-boton { min-height: 56px; padding: 0 26px; border-radius: 999px; font-size: 17px; font-weight: 500; background: transparent; color: var(--niebla); border: 1.5px solid color-mix(in oklab, var(--niebla) 40%, transparent); box-shadow: none; transition: background-color .2s, border-color .2s, box-shadow .2s; }
+.portada-boton:hover { background: color-mix(in oklab, var(--niebla) 8%, transparent); border-color: var(--cian); }
+.portada-boton.principal { background: var(--lima); color: var(--bosque); border-color: var(--lima); box-shadow: 0 0 24px color-mix(in oklab, var(--lima) 35%, transparent); }
+.portada-boton.principal:hover { background: color-mix(in oklab, var(--lima) 88%, var(--niebla)); box-shadow: 0 0 34px color-mix(in oklab, var(--lima) 50%, transparent); }
+.portada-boton svg { width: 18px; height: 18px; }
+.portada :focus-visible { outline: 3px solid var(--cian); outline-offset: 4px; }
+.portada-aviso { margin: 0; display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.5; color: color-mix(in oklab, var(--niebla) 68%, transparent); }
+.portada-aviso svg { flex-shrink: 0; margin-top: 3px; }
+.portada-ideas { list-style: none; margin: 10px 0 0; padding: 22px 0 0; border-top: 1px solid color-mix(in oklab, var(--niebla) 16%, transparent); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.portada-ideas li { display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.35; padding-left: 14px; border-left: 1px solid color-mix(in oklab, var(--lima) 50%, transparent); }
+.portada-ideas svg { width: 24px; height: 24px; color: var(--lima); }
+@keyframes portada-respira { from { transform: scale(1); } to { transform: scale(1.05); } }
+@keyframes luz-fluye { to { stroke-dashoffset: -400; } }
+@media (max-width: 900px) {
+  .portada { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto; }
+  .portada-fondo::after { background: linear-gradient(180deg, color-mix(in oklab, var(--bosque) 30%, transparent), color-mix(in oklab, var(--bosque) 75%, transparent) 45%, var(--bosque) 70%); }
+  .portada-lema { grid-row: 3; padding-bottom: 20px; font-size: clamp(30px, 8vw, 44px); }
+  .portada-panel { grid-column: 1; grid-row: 4; padding: 0 clamp(24px, 5vw, 72px) 40px; max-width: none; }
+  .portada-sello { display: none; }
+}
+@media (max-width: 480px) { .portada-ideas { grid-template-columns: minmax(0, 1fr); } .portada-acciones .portada-boton { width: 100%; justify-content: space-between; } }
