@@ -5,9 +5,14 @@
 - Corregido: «Volver» ya no aparece en la primera pantalla; la luna ya no tapa la «I» de MOAI; el nombre es «MOAI».
 - Pruebas: reglas del primer día, privacidad (sin almacenamiento persistente, sin red, sin dominios externos) y primera pantalla.
 
+## Hecho (pantallas de la especificación)
+- H2 árbol, H3 Radar simulado, H4 Moai de ejemplo, H5 lluvia fuerte, H6 panel de demostración (se llega desde Ajustes) y H7 Modo Ahorro, con pruebas.
+- Verificado en navegador a 390 px: cero solicitudes a terceros, sin números visibles (salvo la línea 123 de la ayuda urgente) y sin desplazamiento horizontal.
+- Pendiente de verificar: el número de ayuda urgente de cada país (`ayudaUrgente` en `src/lib/moai/demo.ts`).
+
 ## Pendiente, en este orden
 1. **Fondos reales** en `public/backgrounds/{ciudad}-{hora}.jpg` (ciudades: medellin, bogota, cdmx, nyc; horas: dawn, day, dusk, night). Ofrecer WebP o AVIF si pesan menos. Los aporta el equipo (Higgsfield); no generes imágenes. Si el archivo no existe, queda el SVG.
-2. **Pantallas de la especificación que falten** (`docs/08-prototipo-cero.md`): H2 perfil y árbol completo, H3 Radar simulado, H4 Moai de ejemplo, H5 lluvia fuerte simulada, H6 panel de demostración, H7 Modo Ahorro. Antes de empezar, compara lo que existe (P1–P13, Home, árbol, calle, ajustes) con la especificación.
+2. ~~Pantallas de la especificación~~ (hechas, ver arriba).
 3. **Accesibilidad**: reducir movimiento (ya hay regla CSS), tamaños de letra del teléfono, contraste, foco visible, lectores de pantalla.
 4. Rediseño de tarjetas como vidrio esmerilado según el Figma.
 
