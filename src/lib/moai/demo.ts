@@ -26,3 +26,14 @@ export function radarSiguiente(actual: Radar, evento: EventoRadar): Radar {
 export function nombreVisible(radar: Radar): string | null {
   return radar === 'revelado' ? personaCercana.nombre : null;
 }
+
+// H4 · Moai de ejemplo. La fuerza de un vínculo se dibuja como grosor del hilo y
+// nunca como número (CLAUDE.md, regla 5).
+export type Hilo = 'fino' | 'medio' | 'grueso';
+export function engrosar(hilo: Hilo): Hilo {
+  return hilo === 'fino' ? 'medio' : 'grueso';
+}
+export const integrantesMoai = ['Tú', 'Luis', 'Carolina'] as const;
+export const anfitrionMoai = 'Luis';
+export const cartaMoai = `Hace un tiempo que tu Moai no se reúne. ¿Y si esta semana alguien propone un café sin agenda? Esta vez le toca proponer a ${anfitrionMoai}.`;
+export const cartaMoaiTrasEncuentro = 'Qué bueno que se vieron. Los hilos de tu Moai se hicieron más fuertes.';

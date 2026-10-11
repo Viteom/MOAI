@@ -235,3 +235,15 @@
 .radar-pill { position: absolute; z-index: 9; left: 24px; right: 24px; bottom: 98px; width: auto; background: var(--paper-surface); backdrop-filter: blur(24px); border: 2.5px solid var(--ring-color); }
 .radar-panel { position: absolute; z-index: 9; left: 0; right: 0; bottom: 0; margin-bottom: 94px; }
 @keyframes radar-glow { 50% { opacity: .6; } }
+
+/* H4 · Tu Moai */
+.moai-clearing { position: absolute; left: 0; right: 0; top: 190px; width: 100%; height: auto; pointer-events: none; }
+.moai-ground { fill: var(--papel); opacity: .16; }
+.moai-trunk { stroke: var(--cobre); stroke-width: 6; stroke-linecap: round; }
+.moai-canopy { fill: var(--canopy-green); opacity: .85; }
+.moai-canopy-halo { fill: var(--canopy-green); opacity: .25; filter: blur(6px); }
+.moai-name { font: 500 15px var(--font-sans); fill: var(--papel); paint-order: stroke; stroke: color-mix(in oklab, var(--noche) 55%, transparent); stroke-width: 3px; }
+.moai-thread { fill: none; stroke: var(--micelio); stroke-linecap: round; opacity: .9; transition: stroke-width .4s ease; }
+.hilo-fino .moai-thread { stroke-width: 2; }
+.hilo-medio .moai-thread { stroke-width: 5; }
+.hilo-grueso .moai-thread { stroke-width: 9; }

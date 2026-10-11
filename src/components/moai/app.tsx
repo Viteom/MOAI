@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Scene } from './scene';
 import { TreeView } from './tree';
 import { RadarOverlay } from './radar';
-import { radarSiguiente, type Radar } from '@/lib/moai/demo';
+import { MoaiClaro } from './moai';
+import { radarSiguiente, engrosar, type Radar, type Hilo } from '@/lib/moai/demo';
 import { Seal, Primary, Panel, Voice, Choice, MoodShape, House, SeedIcon, CompanionIcon, LifeDrawing } from './primitives';
 import { initialState, cities, rings, oficios, deseos, companions, starters, toggleChoice, addPerson, afterCompanions, greeting, timeOfDay, letter, momentos, climas, horaDe, type MoaiState, type Mood, type Ring } from '@/lib/moai/state';
 
-export type Screen = number | 'home' | 'tree' | 'street' | 'settings' | 'demo';
+export type Screen = number | 'home' | 'tree' | 'street' | 'settings' | 'demo' | 'moai';
 const notice = 'Esto es un prototipo. Lo que escribas no se guarda.';
 const seeds = ['ceiba', 'guayacán', 'yarumo', 'palma de cera'];
 const moods: Mood[] = ['Calma', 'Energía', 'Compañía', 'Cuidado'];
@@ -33,6 +34,9 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
   const [moodAnswered, setMoodAnswered] = useState(false);
   const [fondoReal, setFondoReal] = useState(false);
   const [radar, setRadar] = useState<Radar>('apagado');
+  const [hilo, setHilo] = useState<Hilo>('fino');
+  const [abrazoEnviado, setAbrazoEnviado] = useState(false);
+  const [seVieron, setSeVieron] = useState(false);
   useEffect(() => { if (estadoInicial?.hora === undefined) setState(current => ({ ...current, hora: new Date().getHours() })); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (radar !== 'enviado') return;
@@ -58,13 +62,13 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
   };
   const reset = () => {
     setState(initialState(new Date().getHours())); setScreen(1); setHistory([]); setHandPage(false); setOfficeThanks(false);
-    setPersonName(''); setRing('raiz'); setSoloChoice(''); setEsporaStage('choose'); setEsporaReturn(13); setSentTo(''); setFinalPage(0); setDescending(false); setMoodAnswered(false); setRadar('apagado');
+    setPersonName(''); setRing('raiz'); setSoloChoice(''); setEsporaStage('choose'); setEsporaReturn(13); setSentTo(''); setFinalPage(0); setDescending(false); setMoodAnswered(false); setRadar('apagado'); setHilo('fino'); setAbrazoEnviado(false); setSeVieron(false);
   };
   const startEspora = () => { setEsporaStage('choose'); setEsporaReturn('home'); go(state.personas.length ? 12 : 11); };
   const cityName = cities.find(c => c.id === state.ciudad)?.label ?? 'Medellín';
   const hourTime = timeOfDay(state.hora);
   const isHome = typeof screen === 'string';
-  const showCourtyard = (typeof screen === 'number' && screen >= 5) || (isHome && screen !== 'tree');
+  const showCourtyard = (typeof screen === 'number' && screen >= 5) || (isHome && screen !== 'tree' && screen !== 'moai');
   const courtyardState = { ...state, semilla: screen === 5 ? state.semilla || 'ceiba' : state.semilla, espora: { ...state.espora, destinatario: sentTo } };
   const scroll = (children: React.ReactNode) => <div key={`${screen}-${esporaStage}-${officeThanks}-${handPage}-${finalPage}`} className="panel-scroll">{children}</div>;
   let content: React.ReactNode;
@@ -88,6 +92,7 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
   else if (screen === 'home') content = <><div className="scene-caption home-caption"><h1>Tu ciudad, {state.nombre}.</h1><p>{cityName} · {state.clima}</p></div><Panel className="home-panel">{scroll(<><div className="letter-heading"><Seal/><div><strong>Carta de Brisa</strong><p>{hourTime === 'night' ? 'Cuando la ciudad baja la voz' : state.clima === 'lluvia' ? 'La lluvia también cuida' : 'Una brisa para ti'}</p></div></div><p className="serif-message">{letter(state)}</p></>)}<Primary onClick={startEspora}>Escribirle a alguien</Primary></Panel></>;
   else if (screen === 'tree') content = <TreeView state={state}/>;
   else if (screen === 'street') content = <><div className="scene-caption home-caption"><h1>Tu calle.</h1><p>Hay una luz para tu gente.</p></div><Panel className="home-panel">{scroll(<>{state.personas.length ? state.personas.map((person,i) => <House key={i} person={person} lit={sentTo === person.nombre}/>) : <><h1 className="voice-question">Las ciudades también empiezan con una sola lámpara.</h1><p className="body-message">Tu lugar está aquí.</p></>}</>)}<Primary onClick={startEspora}>Escribirle a alguien</Primary></Panel></>;
+  else if (screen === 'moai') content = <MoaiClaro hilo={hilo} abrazoEnviado={abrazoEnviado} seVieron={seVieron} onAbrazo={() => setAbrazoEnviado(true)} onSeVieron={() => { setSeVieron(true); setHilo(h => engrosar(h)); }}/>;
   else if (screen === 'demo') content = <><div className="scene-caption home-caption"><h1>Demostración.</h1><p>Cambia el cielo de tu ciudad.</p></div><Panel className="home-panel">{scroll(<>
     <Voice line="Para quien presenta." question="¿Qué cielo quieres ver?"/>
     {!fondoReal && <p className="provisional-chip" role="status">Fondo provisional: todavía no hay imagen de {cityName} a esta hora. Se ve el dibujo de reemplazo.</p>}
@@ -99,6 +104,7 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
     <div className="choice-grid">{climas.map(c => <Choice key={c.id} selected={state.clima === c.id} onClick={() => patch({ clima: c.id })}>{c.label}</Choice>)}</div>
     <h2 className="demo-group">Simulaciones</h2>
     <Button variant="moaiSecondary" size="moai" onClick={() => { setRadar(current => radarSiguiente(current, 'simular')); go('home'); }}>Simular que alguien de tu tronco está cerca</Button>
+    <Button variant="moaiSecondary" size="moai" onClick={() => go('moai')}>Ver un Moai de ejemplo</Button>
   </>)}<Primary onClick={() => go('home')}>Ver mi ciudad</Primary></Panel></>;
   else content = <><div className="scene-caption home-caption"><h1>Ajustes.</h1><p>A tu ritmo.</p></div><Panel className="home-panel">{scroll(<><Voice line="Este lugar es tuyo." question="Puedes volver a empezar."/><Notice/><p className="help-text">Nada se envía. Nada se guarda. Al salir, tu ciudad vuelve a empezar.</p><Button variant="moaiSecondary" size="moai" onClick={() => go('demo')}>Para quien presenta: demostración</Button></>)}<Primary onClick={reset}>Empezar de nuevo</Primary></Panel></>;
 
