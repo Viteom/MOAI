@@ -12,8 +12,11 @@ export function Choice({ children, selected, onClick, disabled, slot = false }: 
   return <Button variant="moaiOption" size="moai" aria-pressed={selected} onClick={onClick} disabled={disabled} className={`${selected ? 'is-selected' : ''} ${slot ? 'oficio-option' : ''}`}><span>{children}</span><span className="choice-indicator">{selected ? <Check size={17} /> : <Circle size={17} />}</span></Button>;
 }
 export function MoodShape({ mood }: { mood: Mood }) { const Icon = mood === 'Calma' ? Circle : mood === 'Energía' ? Sparkles : mood === 'Compañía' ? Users : Droplet; return <Icon className={`mood-shape mood-${mood}`} size={29} aria-hidden="true" />; }
-export function House({ person, lit, selected, onClick }: { person: Person; lit: boolean; selected?: boolean; onClick?: () => void }) {
-  const content = <><span className={`house-avatar ring-${person.anillo}`}>{person.nombre.slice(0,1).toLocaleUpperCase('es')}</span><span className="house-name"><strong>{person.nombre}</strong><span>{rings.find(r => r.id === person.anillo)?.short}</span></span><span className={`house-window ${lit ? 'lit' : ''}`} aria-label={lit ? 'Ventana encendida' : 'Ventana apagada'}>{lit && <Heart size={12} />}</span>{selected && <Check size={18} />}</>;
+// `luz` es opcional y se usa en eventos de zona: «vela» para quien confirmó y «tenue» para quien no.
+// Nunca rojo ni alarma, y el color no es la única señal: la luz también se dice con palabras.
+export function House({ person, lit, luz, selected, onClick }: { person: Person; lit: boolean; luz?: 'vela' | 'tenue'; selected?: boolean; onClick?: () => void }) {
+  const etiqueta = luz === 'vela' ? 'Ventana con luz de vela' : luz === 'tenue' ? 'Ventana con luz tenue' : lit ? 'Ventana encendida' : 'Ventana apagada';
+  const content = <><span className={`house-avatar ring-${person.anillo}`}>{person.nombre.slice(0,1).toLocaleUpperCase('es')}</span><span className="house-name"><strong>{person.nombre}</strong><span>{rings.find(r => r.id === person.anillo)?.short}{luz ? ` · ${luz === 'vela' ? 'luz de vela' : 'luz tenue'}` : ''}</span></span><span className={`house-window ${lit ? 'lit' : ''} ${luz ?? ''}`} aria-label={etiqueta}>{(lit || luz === 'vela') && <Heart size={12} />}</span>{selected && <Check size={18} />}</>;
   return onClick ? <Button variant="moaiHouse" size="moai" onClick={onClick} aria-pressed={selected} className={selected ? 'is-selected' : ''}>{content}</Button> : <div className="house-row">{content}</div>;
 }
 export function SeedIcon({ seed }: { seed: string }) { return seed === 'palma de cera' ? <Sprout size={27}/> : seed === 'guayacán' ? <Sparkles size={27}/> : <Leaf size={27}/>; }

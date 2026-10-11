@@ -247,3 +247,7 @@
 .hilo-fino .moai-thread { stroke-width: 2; }
 .hilo-medio .moai-thread { stroke-width: 5; }
 .hilo-grueso .moai-thread { stroke-width: 9; }
+
+/* H5 · Lluvia fuerte */
+.house-window.vela { background: var(--dorado); box-shadow: 0 0 14px 3px color-mix(in oklab, var(--dorado) 55%, transparent); }
+.house-window.tenue { background: color-mix(in oklab, var(--dorado) 28%, transparent); border-style: dashed; }

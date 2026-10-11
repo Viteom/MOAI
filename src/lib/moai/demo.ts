@@ -37,3 +37,28 @@ export const integrantesMoai = ['Tú', 'Luis', 'Carolina'] as const;
 export const anfitrionMoai = 'Luis';
 export const cartaMoai = `Hace un tiempo que tu Moai no se reúne. ¿Y si esta semana alguien propone un café sin agenda? Esta vez le toca proponer a ${anfitrionMoai}.`;
 export const cartaMoaiTrasEncuentro = 'Qué bueno que se vieron. Los hilos de tu Moai se hicieron más fuertes.';
+
+// H5 · Lluvia fuerte (simulada). Brisa cambia de tono y pregunta; la persona confirma
+// en un toque. Una ventana con luz de vela significa «confirmó»; una tenue, «sin noticias».
+// Nunca rojo ni alarma: no tener señal no es estar en peligro (docs/05-emergencias.md).
+export type Confirmacion = 'bien' | 'escriban' | 'noDecir';
+export const opcionesConfirmacion: { id: Confirmacion; label: string }[] = [
+  { id: 'bien', label: 'Estoy bien' },
+  { id: 'escriban', label: 'Necesito que alguien me escriba' },
+  { id: 'noDecir', label: 'Prefiero no decir' },
+];
+export function confirmo(c: Confirmacion | null): boolean { return c === 'bien' || c === 'escriban'; }
+export function luzDeVentana(confirmada: boolean): 'vela' | 'tenue' { return confirmada ? 'vela' : 'tenue'; }
+export function preguntaLluvia(ciudad: string) { return `Hoy llovió muy fuerte en ${ciudad}. ¿Cómo estás?`; }
+export function respuestaLluvia(c: Confirmacion): string {
+  if (c === 'bien') return 'Gracias por avisar. Tu ventana quedó con luz de vela.';
+  if (c === 'escriban') return 'Aquí estoy contigo. En la versión real, tu Moai vería este aviso solo si tú lo permites.';
+  return 'Está bien, no tienes que decirlo. Tu ventana queda con una luz tenue y aquí sigo.';
+}
+// Solo se nombra una línea cuando está verificada. Pendiente: confirmar los números de cada país.
+export function ayudaUrgente(ciudad: string): string {
+  const colombia = ciudad === 'Medellín' || ciudad === 'Bogotá';
+  return colombia
+    ? 'MOAI no es un servicio de emergencias. Si necesitas ayuda urgente, llama a la línea 123.'
+    : 'MOAI no es un servicio de emergencias. Si necesitas ayuda urgente, llama a los servicios de emergencia de tu ciudad.';
+}
