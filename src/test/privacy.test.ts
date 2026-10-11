@@ -22,6 +22,10 @@ describe('Privacidad del prototipo', () => {
     const forbidden = /(\bfetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon|EventSource)/;
     expect(files.filter(f => forbidden.test(readFileSync(f, 'utf8')))).toEqual([]);
   });
+  it('no pide ubicación, contactos, cámara ni sensores del teléfono', () => {
+    const forbidden = /(geolocation|getCurrentPosition|watchPosition|navigator\.contacts|getUserMedia|DeviceMotion|DeviceOrientation|bluetooth)/i;
+    expect(files.filter(f => forbidden.test(readFileSync(f, 'utf8')))).toEqual([]);
+  });
   it('no referencia dominios externos', () => {
     const external = /(https?:)?\/\/(?!www\.w3\.org)[a-z0-9-]+\.[a-z]{2,}/i;
     expect(files.filter(f => external.test(readFileSync(f, 'utf8')))).toEqual([]);

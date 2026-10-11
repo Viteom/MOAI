@@ -3,6 +3,8 @@ import { ArrowLeft, Heart, Leaf, PawPrint, Home, TreeDeciduous, House as HouseIc
 import { Button } from '@/components/ui/button';
 import { Scene } from './scene';
 import { TreeView } from './tree';
+import { RadarOverlay } from './radar';
+import { radarSiguiente, type Radar } from '@/lib/moai/demo';
 import { Seal, Primary, Panel, Voice, Choice, MoodShape, House, SeedIcon, CompanionIcon, LifeDrawing } from './primitives';
 import { initialState, cities, rings, oficios, deseos, companions, starters, toggleChoice, addPerson, afterCompanions, greeting, timeOfDay, letter, momentos, climas, horaDe, type MoaiState, type Mood, type Ring } from '@/lib/moai/state';
 
@@ -30,7 +32,13 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
   const [descending, setDescending] = useState(false);
   const [moodAnswered, setMoodAnswered] = useState(false);
   const [fondoReal, setFondoReal] = useState(false);
+  const [radar, setRadar] = useState<Radar>('apagado');
   useEffect(() => { if (estadoInicial?.hora === undefined) setState(current => ({ ...current, hora: new Date().getHours() })); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (radar !== 'enviado') return;
+    const timeout = window.setTimeout(() => setRadar(current => radarSiguiente(current, 'aceptar')), 1600);
+    return () => window.clearTimeout(timeout);
+  }, [radar]);
   useEffect(() => {
     if (screen !== 13) return;
     setDescending(true);
@@ -50,7 +58,7 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
   };
   const reset = () => {
     setState(initialState(new Date().getHours())); setScreen(1); setHistory([]); setHandPage(false); setOfficeThanks(false);
-    setPersonName(''); setRing('raiz'); setSoloChoice(''); setEsporaStage('choose'); setEsporaReturn(13); setSentTo(''); setFinalPage(0); setDescending(false); setMoodAnswered(false);
+    setPersonName(''); setRing('raiz'); setSoloChoice(''); setEsporaStage('choose'); setEsporaReturn(13); setSentTo(''); setFinalPage(0); setDescending(false); setMoodAnswered(false); setRadar('apagado');
   };
   const startEspora = () => { setEsporaStage('choose'); setEsporaReturn('home'); go(state.personas.length ? 12 : 11); };
   const cityName = cities.find(c => c.id === state.ciudad)?.label ?? 'Medellín';
@@ -89,6 +97,8 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
     <div className="choice-grid">{momentos.map(m => <Choice key={m.id} selected={hourTime === m.id} onClick={() => patch({ hora: horaDe(m.id) })}>{m.label}</Choice>)}</div>
     <h2 className="demo-group">Clima</h2>
     <div className="choice-grid">{climas.map(c => <Choice key={c.id} selected={state.clima === c.id} onClick={() => patch({ clima: c.id })}>{c.label}</Choice>)}</div>
+    <h2 className="demo-group">Simulaciones</h2>
+    <Button variant="moaiSecondary" size="moai" onClick={() => { setRadar(current => radarSiguiente(current, 'simular')); go('home'); }}>Simular que alguien de tu tronco está cerca</Button>
   </>)}<Primary onClick={() => go('home')}>Ver mi ciudad</Primary></Panel></>;
   else content = <><div className="scene-caption home-caption"><h1>Ajustes.</h1><p>A tu ritmo.</p></div><Panel className="home-panel">{scroll(<><Voice line="Este lugar es tuyo." question="Puedes volver a empezar."/><Notice/><p className="help-text">Nada se envía. Nada se guarda. Al salir, tu ciudad vuelve a empezar.</p><Button variant="moaiSecondary" size="moai" onClick={() => go('demo')}>Para quien presenta: demostración</Button></>)}<Primary onClick={reset}>Empezar de nuevo</Primary></Panel></>;
 
@@ -96,6 +106,7 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
     <Scene city={state.ciudad} time={hourTime} weather={state.clima} courtyard={showCourtyard ? courtyardState : undefined} descend={screen === 13 && descending} onBackground={setFondoReal}/>
     <header className="screen-header"><Seal/>{history.length > 0 && <Button variant="moaiIcon" size="moaiIcon" onClick={back} aria-label="Volver"><ArrowLeft size={18}/><span>Volver</span></Button>}</header>
     {content}
+    {isHome && <RadarOverlay radar={radar} onTocar={() => setRadar(r => radarSiguiente(r, 'tocar'))} onSaludar={() => setRadar(r => radarSiguiente(r, 'saludar'))} onAhoraNo={() => setRadar(r => radarSiguiente(r, 'ahoraNo'))} onCerrar={() => setRadar(r => radarSiguiente(r, 'cerrar'))}/>}
     {isHome && <nav className="bottom-nav" aria-label="Tu ciudad">{([
       ['home','Inicio',Home], ['tree','Árbol',TreeDeciduous], ['street','Calle',HouseIcon], ['settings','Ajustes',Settings],
     ] as const).map(([target,label,Icon]) => <Button key={target} variant="moaiNav" aria-current={screen === target ? 'page' : undefined} onClick={() => {if(screen !== target) go(target);}}><Icon/><span>{label}</span></Button>)}</nav>}

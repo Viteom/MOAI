@@ -229,3 +229,9 @@
 /* H6 · Panel de demostración */
 .demo-group { font: 400 20px/1.2 var(--font-serif); margin: 6px 0 0; }
 .provisional-chip { margin: 0; padding: 10px 14px; border-radius: 14px; border: 1.5px dashed var(--cobre); background: color-mix(in oklab, var(--cobre) 10%, transparent); font-size: 14px; line-height: 1.45; }
+
+/* H3 · Radar simulado */
+.radar-edge { position: absolute; inset: 0; z-index: 8; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 0 5px var(--ring-color), inset 0 0 42px 10px color-mix(in oklab, var(--ring-color) 70%, transparent); animation: radar-glow 4s ease-in-out infinite; }
+.radar-pill { position: absolute; z-index: 9; left: 24px; right: 24px; bottom: 98px; width: auto; background: var(--paper-surface); backdrop-filter: blur(24px); border: 2.5px solid var(--ring-color); }
+.radar-panel { position: absolute; z-index: 9; left: 0; right: 0; bottom: 0; margin-bottom: 94px; }
+@keyframes radar-glow { 50% { opacity: .6; } }
