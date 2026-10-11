@@ -51,3 +51,14 @@ export function letter(state: MoaiState) {
   if (timeOfDay(state.hora) === 'night') return 'Ya se encendieron las ventanas de tu calle. Antes de dormir, ¿a quién le mandas un abrazo corto?';
   return `Amaneció ${state.clima === 'nublado' ? 'nublado' : 'despejado'} en ${city}. Es buen día para escribirle a alguien que no ves hace rato.`;
 }
+
+export const momentos: { id: Time; label: string }[] = [
+  { id: 'dawn', label: 'Amanecer' }, { id: 'day', label: 'Día' }, { id: 'dusk', label: 'Atardecer' }, { id: 'night', label: 'Noche' },
+];
+export const climas: { id: Weather; label: string }[] = [
+  { id: 'despejado', label: 'Despejado' }, { id: 'nublado', label: 'Nublado' }, { id: 'lluvia', label: 'Lluvia' },
+];
+// Una hora representativa de cada momento del día, para el panel de demostración.
+export function horaDe(time: Time): number {
+  return { dawn: 6, day: 12, dusk: 17, night: 21 }[time];
+}

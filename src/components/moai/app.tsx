@@ -4,18 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Scene } from './scene';
 import { TreeView } from './tree';
 import { Seal, Primary, Panel, Voice, Choice, MoodShape, House, SeedIcon, CompanionIcon, LifeDrawing } from './primitives';
-import { initialState, cities, rings, oficios, deseos, companions, starters, toggleChoice, addPerson, afterCompanions, greeting, timeOfDay, letter, type MoaiState, type Mood, type Ring } from '@/lib/moai/state';
+import { initialState, cities, rings, oficios, deseos, companions, starters, toggleChoice, addPerson, afterCompanions, greeting, timeOfDay, letter, momentos, climas, horaDe, type MoaiState, type Mood, type Ring } from '@/lib/moai/state';
 
-type Screen = number | 'home' | 'tree' | 'street' | 'settings';
+export type Screen = number | 'home' | 'tree' | 'street' | 'settings' | 'demo';
 const notice = 'Esto es un prototipo. Lo que escribas no se guarda.';
 const seeds = ['ceiba', 'guayacán', 'yarumo', 'palma de cera'];
 const moods: Mood[] = ['Calma', 'Energía', 'Compañía', 'Cuidado'];
 const soloOptions = ['Quiero conocer a alguien de mi barrio', 'Quiero ir a un Tiempo Festivo', 'Prefiero mirar primero'];
 function Notice() { return <p className="prototype-notice"><Info size={14}/><span>{notice}</span></p>; }
 
-export function MoaiApp() {
-  const [state, setState] = useState<MoaiState>(() => initialState());
-  const [screen, setScreen] = useState<Screen>(1);
+// `inicio` y `estadoInicial` existen para las pruebas y para abrir una pantalla concreta al presentar.
+export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estadoInicial?: Partial<MoaiState> } = {}) {
+  const [state, setState] = useState<MoaiState>(() => ({ ...initialState(), ...estadoInicial }));
+  const [screen, setScreen] = useState<Screen>(inicio);
   const [history, setHistory] = useState<Screen[]>([]);
   const [handPage, setHandPage] = useState(false);
   const [officeThanks, setOfficeThanks] = useState(false);
@@ -28,7 +29,8 @@ export function MoaiApp() {
   const [finalPage, setFinalPage] = useState(0);
   const [descending, setDescending] = useState(false);
   const [moodAnswered, setMoodAnswered] = useState(false);
-  useEffect(() => { setState(current => ({ ...current, hora: new Date().getHours() })); }, []);
+  const [fondoReal, setFondoReal] = useState(false);
+  useEffect(() => { if (estadoInicial?.hora === undefined) setState(current => ({ ...current, hora: new Date().getHours() })); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (screen !== 13) return;
     setDescending(true);
@@ -78,10 +80,20 @@ export function MoaiApp() {
   else if (screen === 'home') content = <><div className="scene-caption home-caption"><h1>Tu ciudad, {state.nombre}.</h1><p>{cityName} · {state.clima}</p></div><Panel className="home-panel">{scroll(<><div className="letter-heading"><Seal/><div><strong>Carta de Brisa</strong><p>{hourTime === 'night' ? 'Cuando la ciudad baja la voz' : state.clima === 'lluvia' ? 'La lluvia también cuida' : 'Una brisa para ti'}</p></div></div><p className="serif-message">{letter(state)}</p></>)}<Primary onClick={startEspora}>Escribirle a alguien</Primary></Panel></>;
   else if (screen === 'tree') content = <TreeView state={state}/>;
   else if (screen === 'street') content = <><div className="scene-caption home-caption"><h1>Tu calle.</h1><p>Hay una luz para tu gente.</p></div><Panel className="home-panel">{scroll(<>{state.personas.length ? state.personas.map((person,i) => <House key={i} person={person} lit={sentTo === person.nombre}/>) : <><h1 className="voice-question">Las ciudades también empiezan con una sola lámpara.</h1><p className="body-message">Tu lugar está aquí.</p></>}</>)}<Primary onClick={startEspora}>Escribirle a alguien</Primary></Panel></>;
-  else content = <><div className="scene-caption home-caption"><h1>Ajustes.</h1><p>A tu ritmo.</p></div><Panel className="home-panel">{scroll(<><Voice line="Este lugar es tuyo." question="Puedes volver a empezar."/><Notice/><p className="help-text">Nada se envía. Nada se guarda. Al salir, tu ciudad vuelve a empezar.</p></>)}<Primary onClick={reset}>Empezar de nuevo</Primary></Panel></>;
+  else if (screen === 'demo') content = <><div className="scene-caption home-caption"><h1>Demostración.</h1><p>Cambia el cielo de tu ciudad.</p></div><Panel className="home-panel">{scroll(<>
+    <Voice line="Para quien presenta." question="¿Qué cielo quieres ver?"/>
+    {!fondoReal && <p className="provisional-chip" role="status">Fondo provisional: todavía no hay imagen de {cityName} a esta hora. Se ve el dibujo de reemplazo.</p>}
+    <h2 className="demo-group">Ciudad</h2>
+    <div className="choice-list">{cities.map(city => <Choice key={city.id} selected={state.ciudad === city.id} onClick={() => patch({ ciudad: city.id })}>{city.label}</Choice>)}</div>
+    <h2 className="demo-group">Hora</h2>
+    <div className="choice-grid">{momentos.map(m => <Choice key={m.id} selected={hourTime === m.id} onClick={() => patch({ hora: horaDe(m.id) })}>{m.label}</Choice>)}</div>
+    <h2 className="demo-group">Clima</h2>
+    <div className="choice-grid">{climas.map(c => <Choice key={c.id} selected={state.clima === c.id} onClick={() => patch({ clima: c.id })}>{c.label}</Choice>)}</div>
+  </>)}<Primary onClick={() => go('home')}>Ver mi ciudad</Primary></Panel></>;
+  else content = <><div className="scene-caption home-caption"><h1>Ajustes.</h1><p>A tu ritmo.</p></div><Panel className="home-panel">{scroll(<><Voice line="Este lugar es tuyo." question="Puedes volver a empezar."/><Notice/><p className="help-text">Nada se envía. Nada se guarda. Al salir, tu ciudad vuelve a empezar.</p><Button variant="moaiSecondary" size="moai" onClick={() => go('demo')}>Para quien presenta: demostración</Button></>)}<Primary onClick={reset}>Empezar de nuevo</Primary></Panel></>;
 
   return <main className="moai-stage"><div className="phone-frame"><div className="app-screen">
-    <Scene city={state.ciudad} time={hourTime} weather={state.clima} courtyard={showCourtyard ? courtyardState : undefined} descend={screen === 13 && descending}/>
+    <Scene city={state.ciudad} time={hourTime} weather={state.clima} courtyard={showCourtyard ? courtyardState : undefined} descend={screen === 13 && descending} onBackground={setFondoReal}/>
     <header className="screen-header"><Seal/>{history.length > 0 && <Button variant="moaiIcon" size="moaiIcon" onClick={back} aria-label="Volver"><ArrowLeft size={18}/><span>Volver</span></Button>}</header>
     {content}
     {isHome && <nav className="bottom-nav" aria-label="Tu ciudad">{([

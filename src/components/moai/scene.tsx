@@ -15,11 +15,11 @@ function Umbrella({ x, y, scale = 1, variant = '' }: { x: number; y: number; sca
     <path d="M-59 4 Q0 -14 58 4 M0 -29 L-28 10 M0 -29 L26 11 M0 -29 L0 15" className="canopy-veins" />
   </g>;
 }
-export function Scene({ city, time, weather, courtyard, descend = false }: { city: City; time: Time; weather: Weather; courtyard?: MoaiState | undefined; descend?: boolean }) {
+export function Scene({ city, time, weather, courtyard, descend = false, onBackground }: { city: City; time: Time; weather: Weather; courtyard?: MoaiState | undefined; descend?: boolean; onBackground?: (real: boolean) => void }) {
   const [imageReady, setImageReady] = useState(false);
   const id = useId().replace(/:/g, '');
   const image = `/backgrounds/${city}-${time}.jpg`;
-  useEffect(() => { setImageReady(false); }, [image]);
+  useEffect(() => { setImageReady(false); onBackground?.(false); }, [image]); // eslint-disable-line react-hooks/exhaustive-deps
   const skyId = `sky-${id}`;
   return <div className={`scene scene-${time} city-${city} weather-${weather} ${descend ? 'scene-descend' : ''}`} aria-hidden="true">
     <svg className="procedural-scene" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice">
@@ -67,7 +67,7 @@ export function Scene({ city, time, weather, courtyard, descend = false }: { cit
       <g className="mist"><path d="M-40 456Q100 425 236 463T460 443" /><path d="M-40 566Q160 545 295 572T460 558" /></g>
       {weather === 'lluvia' && <g className="rain">{Array.from({length: 40}, (_,i) => <path key={i} d={`m${i*47%410} ${i*71%830} -7 22`} />)}</g>}
     </svg>
-    <img key={image} className={`scene-photo ${imageReady ? 'ready' : ''}`} src={image} alt="" onLoad={() => setImageReady(true)} onError={() => setImageReady(false)} />
+    <img key={image} className={`scene-photo ${imageReady ? 'ready' : ''}`} src={image} alt="" onLoad={() => { setImageReady(true); onBackground?.(true); }} onError={() => { setImageReady(false); onBackground?.(false); }} />
     <div className="scene-grain" />
   </div>;
 }

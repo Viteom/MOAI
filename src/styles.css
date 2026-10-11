@@ -225,3 +225,7 @@
 .mycelium-roof { fill: var(--ring-color); }
 .mycelium-core { fill: var(--micelio); }
 @media (max-width: 520px) { .tree-scroll { top: max(84px,calc(env(safe-area-inset-top) + 64px)); } }
+
+/* H6 · Panel de demostración */
+.demo-group { font: 400 20px/1.2 var(--font-serif); margin: 6px 0 0; }
+.provisional-chip { margin: 0; padding: 10px 14px; border-radius: 14px; border: 1.5px dashed var(--cobre); background: color-mix(in oklab, var(--cobre) 10%, transparent); font-size: 14px; line-height: 1.45; }
