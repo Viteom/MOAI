@@ -335,11 +335,16 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .brisa-esfera { position: absolute; left: 50%; top: 27%; width: 220px; height: 220px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 42% 40%, oklch(.98 .06 110) 0 6%, oklch(.88 .12 150 / .85) 18%, oklch(.7 .1 185 / .45) 42%, transparent 70%); box-shadow: 0 0 80px 30px oklch(.75 .12 160 / .25), 0 0 160px 60px oklch(.6 .1 190 / .15); }
 .brisa-marca { position: absolute; top: 36px; left: 0; right: 0; margin: 0; text-align: center; font-size: 18px; font-weight: 500; letter-spacing: .5em; padding-left: .5em; }
 .brisa-panel { width: min(520px, 100%); margin-top: 14vh; padding: 32px 36px 26px; border-radius: 28px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; background: color-mix(in oklab, var(--niebla) 10%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 38%, transparent); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); box-shadow: 0 20px 60px color-mix(in oklab, var(--bosque) 55%, transparent); }
-.brisa-panel h1 { margin: 0; font: 700 clamp(34px, 3.4vw, 46px)/1.1 var(--font-sans); text-shadow: 0 2px 18px color-mix(in oklab, var(--bosque) 60%, transparent); }
+.brisa-panel h1 { margin: 0; font: 700 clamp(30px, 2.8vw, 42px)/1.1 var(--font-sans); text-shadow: 0 2px 18px color-mix(in oklab, var(--bosque) 60%, transparent); }
 .brisa-sub { margin: 0; font-size: 20px; }
 .brisa-boton { margin-top: 18px; min-height: 52px; min-width: 200px; padding: 0 32px; border-radius: 999px; font-size: 19px; font-weight: 500; color: var(--niebla); background: color-mix(in oklab, oklch(.5 .07 175) 55%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 45%, transparent); box-shadow: inset 0 1px 0 color-mix(in oklab, var(--niebla) 25%, transparent); }
 .brisa-boton:hover { background: color-mix(in oklab, oklch(.5 .07 175) 75%, transparent); }
 .brisa :focus-visible { outline: 3px solid var(--lima); outline-offset: 4px; }
 .brisa-ia { margin: 8px 0 0; font-size: 14px; color: color-mix(in oklab, var(--niebla) 75%, transparent); }
 .canal-opcion:disabled { cursor: not-allowed; opacity: .55; }
-.canal-pronto { font-size: 13px; }
+.canal-pronto { font-size: 13px; }/* Con el video: el panel de la interfaz tapa el del video. El video (1280×720, object-fit: cover) se escala
+   por max(100vw/1280, 100vh/720) y su panel mide ~400×170 en el centro; el nuestro es un poco más grande. */
+.brisa.con-video { padding: 0; }
+.brisa.con-video .brisa-marca { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* Arriba alineado con el borde superior del panel del video (83 px sobre el centro, escalado); crece hacia abajo. */
+.brisa.con-video .brisa-panel { position: absolute; left: 50%; top: calc(50% - max(6.5vw, 11.6vh)); transform: translateX(-50%); margin: 0; width: min(calc(100vw - 32px), max(34vw, 60vh)); min-height: max(14.5vw, 26vh); justify-content: center; backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2); background: color-mix(in oklab, oklch(.32 .04 175) 35%, transparent); }

@@ -30,7 +30,7 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 - WhatsApp está apagado («muy pronto») hasta contratar Twilio: `WHATSAPP_DISPONIBLE` en `src/lib/registro.ts`, y el servidor lo rechaza si no hay proveedor.
 - Cuentas sin verificar: recordatorio por correo cada 3,5 días (dos por semana) y borrado a los 20 días (`server/mantenimiento.ts`, corre cada 6 horas).
 - La fecha de nacimiento completa se guarda: sirve para los «momentos de verdad» de la persona (por ejemplo, su cumpleaños).
-- Después del código, Brisa da la bienvenida (`bienvenida.tsx`) y se presenta como IA. Fondo: `public/backgrounds/brisa.mp4` y `brisa.jpg`, sin panel ni textos (en edición).
+- Después del código, Brisa da la bienvenida (`bienvenida.tsx`) y se presenta como IA. Fondo: `public/backgrounds/brisa.mp4` (Higgsfield, 8 s). Hasta ~4 s trae texto que se deforma, así que solo se usa el tramo de 4,1 s al final, en bucle, y el panel de la interfaz tapa el panel del video.
 - Lo que la persona responde en el primer día (semilla, oficios, gente…) todavía vive solo en memoria.
 - **Dirección para el primer día (Mateo):** nada de cuestionario. Brisa conversa como quien conoce a alguien: cómo va tu día, qué hiciste, y al otro día qué harías en tal caso. Los datos se llenan a medida que pasa la conversación, a lo largo de varios días.
 - **Revisión humana:** los textos de términos y de tratamiento de datos están con el abogado (Ley 1581).
