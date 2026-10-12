@@ -24,7 +24,7 @@ Es una web móvil de una sola pantalla secuencial (primer día en Medellín), si
 Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es real.
 - Portada (`src/components/moai/portada.tsx`) con «Crear cuenta» e «Iniciar sesión». Pantallas de cuenta en `cuenta.tsx`.
 - Sin contraseñas: se entra siempre con un código de 6 dígitos por correo (Resend) o WhatsApp (Twilio Verify). Vence en 10 minutos, 5 intentos por código y 5 envíos por hora.
-- Registro: nombre, correo o WhatsApp (con código de país), ciudad (municipios de Colombia, DIVIPOLA del DANE en `src/lib/colombia/municipios.json`, sin coordenadas), fecha de nacimiento (18 años o más) y dos consentimientos separados que se guardan con su versión.
+- Registro liviano (diseño de Mateo): nombre, correo y dos consentimientos separados que se guardan con su versión. Después del código: fecha de nacimiento (18 años o más; si no, se borra la cuenta) y «Tu comunidad» (municipio de Colombia, DIVIPOLA del DANE en `src/lib/colombia/municipios.json`, barrio opcional, sin coordenadas). Flujos completos en `docs/09-flujos-acceso-y-comunidad.md`.
 - Servidor en `server/` (Node + Fastify + PostgreSQL). Sin `DATABASE_URL` usa PGlite en `.data/`. Sin claves, el código se escribe en la consola con el destino enmascarado. Comandos: `npm run dev:api` junto a `npm run dev`.
 - Reglas comunes en `src/lib/registro.ts`. El frontend solo habla con `/api` del mismo origen desde `src/lib/api.ts`; la sesión es una cookie httpOnly.
 - WhatsApp está apagado («muy pronto») hasta contratar Twilio: `WHATSAPP_DISPONIBLE` en `src/lib/registro.ts`, y el servidor lo rechaza si no hay proveedor.

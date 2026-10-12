@@ -16,11 +16,16 @@ create table if not exists cuentas (
   nombre text not null,
   canal text not null check (canal in ('correo', 'whatsapp')),
   destino text not null unique,
-  ciudad char(5) not null,
-  fecha_nacimiento date not null,
+  ciudad char(5),
+  fecha_nacimiento date,
   verificada_en timestamptz,
   creada_en timestamptz not null default now()
 );
+alter table cuentas alter column ciudad drop not null;
+alter table cuentas alter column fecha_nacimiento drop not null;
+alter table cuentas add column if not exists barrio text;
+alter table cuentas add column if not exists comunidad_estado text not null default 'pending';
+update cuentas set comunidad_estado = 'completed' where ciudad is not null and comunidad_estado = 'pending';
 alter table cuentas add column if not exists recordatorios int not null default 0;
 alter table cuentas add column if not exists ultimo_recordatorio timestamptz;
 create table if not exists consentimientos (

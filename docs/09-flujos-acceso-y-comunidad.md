@@ -6,7 +6,7 @@
 
 | Tema | Versión 1.0 | Ahora | Por qué |
 |---|---|---|---|
-| Datos del registro | Solo nombre y correo; «no pedir fecha de nacimiento» | Nombre, correo, ciudad (municipio de Colombia) y fecha de nacimiento | Decisión de Mateo: la fecha sirve para los «momentos de verdad» (por ejemplo, el cumpleaños). Edad mínima 18 años. |
+| Datos del registro | Solo nombre y correo; «no pedir fecha de nacimiento» | Registro: nombre, correo y dos casillas (diseño de Mateo). Después del código: fecha de nacimiento (18 años o más; si no, se borra la cuenta) y luego «Tu comunidad» con la ciudad | La fecha sirve para los «momentos de verdad». Empezar es más liviano. |
 | Consentimiento | Una casilla: términos y privacidad juntos | Dos casillas separadas: términos, y autorización de tratamiento de datos (Ley 1581) | La autorización de datos debe ser previa, expresa e informada; los textos están con el abogado. |
 | WhatsApp | No se menciona | Visible como «muy pronto», sin poder elegirse | Twilio es de pago; se activa después. |
 | Proveedor de códigos | «Bajo gestión del proveedor» | Servidor propio (`server/`): códigos de 6 dígitos con hash, 10 min, 5 intentos, 5 envíos por hora; correo con Resend | Ya construido y probado. |
@@ -75,7 +75,7 @@ MOAI, «Ciudades del cuidado», «Conecta. Comparte. Cuida.», **Crear cuenta** 
 Se mueve antes del registro. **Hola, soy Brisa.** · **Qué bueno tenerte aquí.** · línea de IA · **Continuar** → `/registro` · secundario pequeño **Ya tengo cuenta** → `/acceso` · 🆕 **Escuchar a Brisa** / **Silenciar**. El botón funciona desde el primer instante.
 
 ### P03 · Crear cuenta 🔧 `/registro`
-Título: **Empecemos por conocernos**. Campos: **¿Cómo te llamas?** (ayuda: «Tu nombre o como prefieras que te llamemos»; hasta 60 caracteres), **Tu correo electrónico**, **Tu ciudad** (buscador de municipios), **Fecha de nacimiento** (día, mes y año), dos casillas sin marcar con enlaces a los textos reales. WhatsApp aparece como «muy pronto». Principal: **Crear mi cuenta** (mientras envía: «Enviando código…»). Pie: **¿Ya tienes cuenta? Iniciar sesión**. Volver a Brisa y regresar conserva lo escrito. Si el correo ya tiene cuenta verificada, el servidor envía un código de acceso sin sobrescribir sus datos y sin revelar que existe.
+Diseño de Mateo: panel de vidrio centrado sobre el bosque en movimiento, Brisa pequeña arriba, «Volver» arriba a la izquierda. Título: **Empecemos por conocernos** · «Crea tu cuenta para conectar con tu comunidad.» Campos: **¿Cómo te llamas?** (ayuda: «Como prefieras que te llamemos»; hasta 60 caracteres) y **Tu correo electrónico**. Dos casillas sin marcar: «Acepto los Términos de uso y he leído la Política de privacidad» (con enlaces a `/terminos` y `/privacidad`) y «Autorizo el tratamiento de mis datos personales según la Ley 1581 de 2012». WhatsApp aparece como «muy pronto». Principal: **Crear mi cuenta** (mientras envía: «Enviando código…»). Pie: **¿Ya tienes cuenta? Iniciar sesión**. Volver a Brisa y regresar conserva lo escrito. Si el correo ya tiene cuenta verificada, el servidor envía un código de acceso sin sobrescribir sus datos y sin revelar que existe.
 
 ### P04 · Iniciar sesión 🔧 `/acceso`
 **Qué bueno verte de nuevo** · «Escribe tu correo para recibir un código de acceso.» · **Tu correo electrónico** · **Enviar código** · pie **¿Es tu primera vez? Crear cuenta** → `/bienvenida`. Un correo sin cuenta no recibe código y la respuesta es la misma (no se revela quién está registrado).
@@ -83,7 +83,10 @@ Título: **Empecemos por conocernos**. Campos: **¿Cómo te llamas?** (ayuda: «
 ### P05 · Verificar correo 🔧 `/verificar`
 **Revisa tu correo** · «Escribe el código que enviamos a [correo enmascarado].» · campo único **Código de acceso** (pegar y autocompletar) · **Verificar y continuar** · **Enviar otro código** · **Cambiar correo** · «Si no lo ves, revisa la carpeta de correo no deseado.» Errores distintos para código incorrecto, vencido y demasiados intentos, con los mensajes que ya da el servidor. Recargar vuelve al correo con una explicación (el desafío no se guarda en el navegador).
 
-### P06 · Tu comunidad 🆕 `/configuracion/comunidad`
+### P05b · Fecha de nacimiento ✅ `/configuracion/nacimiento`
+**Qué gusto, [nombre].** · «¿Cuándo naciste? Así puedo acordarme de tu día.» Día, mes y año (se muestran todos los años: la regla de edad se explica, no se esconde). No se puede omitir. Menor de 18: el servidor borra la cuenta y sus datos, y la pantalla lo explica sin culpas.
+
+### P06 · Tu comunidad ✅ `/configuracion/comunidad`
 **¿Dónde quieres conectar con tu comunidad?** · «Elige una zona para descubrir personas y encuentros cerca de ti.» La ciudad del registro viene elegida; se confirma o se cambia, y se puede añadir un barrio en texto libre (no hay catálogo de barrios). **Confirmar** · **Lo haré después** (guarda `skipped`). Nota visible: «No necesitamos la dirección de tu casa. Tu zona no se muestra en tu perfil.» **Decidido:** sin «Usar mi ubicación» en esta versión. La zona es privada por defecto y solo ordena sugerencias.
 
 ### P07 · Intención 🆕 `/configuracion/intencion`

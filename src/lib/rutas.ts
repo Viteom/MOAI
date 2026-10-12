@@ -1,31 +1,42 @@
 // Rutas con la History API, sin dependencias. La decisión de a dónde va cada persona
 // vive en una sola función (resolverRuta), como pide docs/09-flujos-acceso-y-comunidad.md.
 import { useCallback, useEffect, useState } from 'react';
+import type { Perfil } from './api';
 
-export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar'] as const;
+export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar', '/terminos', '/privacidad'] as const;
+export const rutasPasos = ['/configuracion/nacimiento', '/configuracion/comunidad'] as const;
 export const rutasPrivadas = ['/ciudad'] as const;
-export type Ruta = typeof rutasPublicas[number] | typeof rutasPrivadas[number];
-export const DESTINO_INICIAL: Ruta = '/ciudad';
+export const DESTINO_INICIAL = '/ciudad';
+// Se pueden ver con o sin sesión (los textos legales se abren desde el registro).
+const rutasAbiertas = ['/terminos', '/privacidad'];
 
-const esPublica = (ruta: string) => (rutasPublicas as readonly string[]).includes(ruta);
-const esPrivada = (ruta: string) => (rutasPrivadas as readonly string[]).includes(ruta);
+const incluye = (lista: readonly string[], ruta: string) => lista.includes(ruta);
 
 // Solo rutas internas conocidas: nunca se redirige a una URL que venga de afuera.
-export function destinoSeguro(valor: string | null): Ruta | null {
-  return valor && esPrivada(valor) ? valor as Ruta : null;
+export function destinoSeguro(valor: string | null): string | null {
+  return valor && incluye(rutasPrivadas, valor) ? valor : null;
 }
 
-export type Sesion = { estado: 'cargando' } | { estado: 'error' } | { estado: 'anonima' } | { estado: 'activa'; nombre: string };
+export type Sesion = { estado: 'cargando' } | { estado: 'error' } | { estado: 'anonima' } | { estado: 'activa'; perfil: Perfil };
+
+// El primer paso que falta después del código, o null si no falta ninguno.
+export function pasoPendiente(perfil: Perfil): string | null {
+  if (perfil.nacimientoPendiente) return '/configuracion/nacimiento';
+  if (perfil.comunidad === 'pending') return '/configuracion/comunidad';
+  return null;
+}
 
 // Devuelve la ruta a la que hay que ir, o null si la actual está bien.
 export function resolverRuta(ruta: string, sesion: Sesion, destino: string | null): string | null {
   if (sesion.estado === 'cargando' || sesion.estado === 'error') return null; // P00 decide qué mostrar
+  if (incluye(rutasAbiertas, ruta)) return null;
   if (sesion.estado === 'anonima') {
-    if (esPublica(ruta)) return null;
-    return esPrivada(ruta) ? `/acceso?destino=${encodeURIComponent(ruta)}` : '/';
+    if (incluye(rutasPublicas, ruta)) return null;
+    return incluye(rutasPrivadas, ruta) ? `/acceso?destino=${encodeURIComponent(ruta)}` : '/';
   }
-  // Con sesión, las pantallas de entrada ya no aplican.
-  if (esPrivada(ruta)) return null;
+  const paso = pasoPendiente(sesion.perfil);
+  if (paso) return ruta === paso ? null : destino ? `${paso}?destino=${encodeURIComponent(destino)}` : paso;
+  if (incluye(rutasPrivadas, ruta)) return null;
   return destinoSeguro(destino) ?? DESTINO_INICIAL;
 }
 

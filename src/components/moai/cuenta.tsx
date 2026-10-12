@@ -1,24 +1,13 @@
-// Crear cuenta, iniciar sesión y escribir el código de verificación.
+// Crear cuenta, iniciar sesión, código y los pasos siguientes (fecha de nacimiento y comunidad).
+// Diseño de Mateo (12 de octubre de 2026): panel de vidrio centrado sobre el bosque, con Brisa arriba.
 // REVISIÓN HUMANA: datos personales y consentimiento. Los textos legales son borradores pendientes de abogado.
 import { useId, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { buscarMunicipios, municipioPorCodigo, paises, EDAD_MINIMA, WHATSAPP_DISPONIBLE, type Canal, type EntradaRegistro, type Errores } from '@/lib/registro';
-import type { Contacto, Envio, Respuesta } from '@/lib/api';
-import { Marco } from './marco';
+import type { Contacto, Envio, Perfil, Respuesta } from '@/lib/api';
+import { HojaBosque } from './bosque';
 
 const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-
-function Hoja({ titulo, bajada, onVolver, children }: { titulo: string; bajada?: string; onVolver: () => void; children: ReactNode }) {
-  return <Marco className="cuenta">
-    <section className="cuenta-hoja" aria-labelledby="cuenta-titulo">
-      <Button className="cuenta-volver" onClick={onVolver}><ArrowLeft/>Volver</Button>
-      <h1 id="cuenta-titulo" tabIndex={-1}>{titulo}</h1>
-      {bajada && <p className="cuenta-bajada">{bajada}</p>}
-      {children}
-    </section>
-  </Marco>;
-}
 
 function Campo({ etiqueta, error, children, ayuda }: { etiqueta: string; error?: string; ayuda?: string; children: (id: string, describedBy?: string) => ReactNode }) {
   const id = useId();
@@ -35,16 +24,14 @@ function Contactos({ canal, onCanal, destino, onDestino, pais, onPais, error }: 
 }) {
   const lista = useMemo(() => paises(), []);
   return <>
-    <div className="canal" role="radiogroup" aria-label="¿Cómo te enviamos el código?">
-      {(['correo', 'whatsapp'] as const).map(valor => {
-        const apagado = valor === 'whatsapp' && !WHATSAPP_DISPONIBLE;
-        return <button key={valor} type="button" role="radio" aria-checked={canal === valor} disabled={apagado} className="canal-opcion" onClick={() => onCanal(valor)}>
-          {valor === 'correo' ? 'Correo' : 'WhatsApp'}{apagado && <span className="canal-pronto"> · muy pronto</span>}
-        </button>;
-      })}
-    </div>
+    {/* Mientras WhatsApp no esté disponible, solo correo, como en el diseño. */}
+    {WHATSAPP_DISPONIBLE && <div className="canal" role="radiogroup" aria-label="¿Cómo te enviamos el código?">
+      {(['correo', 'whatsapp'] as const).map(valor => <button key={valor} type="button" role="radio" aria-checked={canal === valor} className="canal-opcion" onClick={() => onCanal(valor)}>
+        {valor === 'correo' ? 'Correo' : 'WhatsApp'}
+      </button>)}
+    </div>}
     {canal === 'correo'
-      ? <Campo etiqueta="Tu correo electrónico" error={error}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" type="email" autoComplete="email" value={destino} onChange={e => onDestino(e.target.value)}/>}</Campo>
+      ? <Campo etiqueta="Tu correo electrónico" error={error}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" type="email" autoComplete="email" placeholder="nombre@correo.com" value={destino} onChange={e => onDestino(e.target.value)}/>}</Campo>
       : <div className="telefono">
           <Campo etiqueta="País">{id => <select id={id} className="cuenta-campo" value={pais} onChange={e => onPais(e.target.value)}>
             {lista.map(p => <option key={p.codigo} value={p.codigo}>{p.nombre} ({p.prefijo})</option>)}
@@ -61,7 +48,7 @@ function Ciudad({ valor, onValor, error }: { valor: string; onValor: (codigo: st
   const opciones = abierta && !elegida ? buscarMunicipios(texto) : [];
   const lista = useId();
   return <Campo etiqueta="Tu ciudad" error={error} ayuda="Por ahora, municipios de Colombia.">{(id, d) => <div className="ciudad">
-    <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" role="combobox" aria-expanded={opciones.length > 0} aria-controls={lista} aria-autocomplete="list" autoComplete="off"
+    <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" role="combobox" aria-expanded={opciones.length > 0} aria-controls={lista} aria-autocomplete="list" autoComplete="off" placeholder="Escribe tu ciudad"
       value={texto} onChange={e => { setTexto(e.target.value); setAbierta(true); if (valor) onValor(''); }} onBlur={() => window.setTimeout(() => setAbierta(false), 150)}/>
     {opciones.length > 0 && <ul id={lista} role="listbox" className="ciudad-opciones">
       {opciones.map(m => <li key={m.codigo} role="option" aria-selected={false} onMouseDown={e => e.preventDefault()} onClick={() => { onValor(m.codigo); setTexto(`${m.nombre}, ${m.departamento}`); setAbierta(false); }}>
@@ -79,8 +66,8 @@ function Nacimiento({ valor, onValor, error, hoy }: { valor: string; onValor: (f
     setPartes(nuevas);
     onValor(nuevas.dia && nuevas.mes && nuevas.anio ? `${nuevas.anio}-${nuevas.mes}-${nuevas.dia}` : '');
   };
-  const ultimo = hoy.getUTCFullYear() - EDAD_MINIMA;
-  const anios = Array.from({ length: 100 }, (_, i) => String(ultimo - i));
+  // Todos los años, también los de menores: la regla de edad se explica, no se esconde.
+  const anios = Array.from({ length: 110 }, (_, i) => String(hoy.getUTCFullYear() - i));
   const nota = `${useId()}-nota`;
   return <fieldset className="campo nacimiento" aria-describedby={error ? nota : undefined}>
     <legend>Fecha de nacimiento</legend>
@@ -108,22 +95,26 @@ function Casilla({ marcada, onCambio, error, children }: { marcada: boolean; onC
   </div>;
 }
 
-export const registroVacio = (): EntradaRegistro => ({ nombre: '', canal: 'correo', destino: '', pais: 'CO', ciudad: '', fechaNacimiento: '', aceptaTerminos: false, aceptaDatos: false });
-
 function Pie({ texto, accion, onClick }: { texto: string; accion: string; onClick: () => void }) {
   return <p className="cuenta-pie">{texto} <button type="button" onClick={onClick}>{accion}</button></p>;
 }
 
-// P03 · Crear cuenta. Los datos viven en Plataforma: volver a Brisa y regresar no los borra.
-export function Registro({ entrada, onCambio, enviar, onEnviado, onVolver, onIniciarSesion, hoy = new Date() }: {
+// Enlace a un texto legal dentro de una etiqueta: navega sin marcar la casilla.
+function EnlaceLegal({ children, onAbrir }: { children: ReactNode; onAbrir: () => void }) {
+  return <a href="#" onClick={e => { e.preventDefault(); e.stopPropagation(); onAbrir(); }}>{children}</a>;
+}
+
+export const registroVacio = (): EntradaRegistro => ({ nombre: '', canal: 'correo', destino: '', pais: 'CO', aceptaTerminos: false, aceptaDatos: false });
+
+// P03 · Crear cuenta. Los datos viven en Plataforma: volver a Brisa, o abrir los textos legales, no los borra.
+export function Registro({ entrada, onCambio, enviar, onEnviado, onVolver, onIniciarSesion, onLegal }: {
   entrada: EntradaRegistro; onCambio: (cambio: Partial<EntradaRegistro>) => void;
   enviar: (entrada: EntradaRegistro) => Promise<Respuesta<Envio>>; onEnviado: (contacto: Contacto, envio: Envio) => void;
-  onVolver: () => void; onIniciarSesion: () => void; hoy?: Date;
+  onVolver: () => void; onIniciarSesion: () => void; onLegal: (texto: 'terminos' | 'privacidad') => void;
 }) {
   const [errores, setErrores] = useState<Errores>({});
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const cambiar = onCambio;
   async function alEnviar(e: FormEvent) {
     e.preventDefault();
     if (enviando) return;
@@ -133,24 +124,23 @@ export function Registro({ entrada, onCambio, enviar, onEnviado, onVolver, onIni
     if (respuesta.ok) onEnviado({ canal: entrada.canal, destino: entrada.destino, pais: entrada.pais }, respuesta.datos);
     else { setErrores(respuesta.errores ?? {}); setError(respuesta.errores ? '' : respuesta.error); }
   }
-  return <Hoja titulo="Empecemos por conocernos" bajada="Te enviaremos un código a tu correo para confirmar que eres tú. No usamos contraseñas." onVolver={onVolver}>
+  return <HojaBosque titulo="Empecemos por conocernos" bajada="Crea tu cuenta para conectar con tu comunidad." onVolver={onVolver}>
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
-      <Campo etiqueta="¿Cómo te llamas?" error={errores.nombre} ayuda="Tu nombre o como prefieras que te llamemos.">{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!errores.nombre} className="cuenta-campo" autoComplete="given-name" maxLength={60} value={entrada.nombre} onChange={e => cambiar({ nombre: e.target.value })}/>}</Campo>
-      <Contactos canal={entrada.canal} onCanal={canal => cambiar({ canal, destino: '' })} destino={entrada.destino} onDestino={destino => cambiar({ destino })} pais={entrada.pais ?? 'CO'} onPais={pais => cambiar({ pais })} error={errores.destino}/>
-      <Ciudad valor={entrada.ciudad} onValor={ciudad => cambiar({ ciudad })} error={errores.ciudad}/>
-      <Nacimiento valor={entrada.fechaNacimiento} onValor={fechaNacimiento => cambiar({ fechaNacimiento })} error={errores.fechaNacimiento} hoy={hoy}/>
+      <Campo etiqueta="¿Cómo te llamas?" error={errores.nombre} ayuda="Como prefieras que te llamemos.">{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!errores.nombre} className="cuenta-campo" autoComplete="given-name" maxLength={60} placeholder="Escribe tu nombre" value={entrada.nombre} onChange={e => onCambio({ nombre: e.target.value })}/>}</Campo>
+      <Contactos canal={entrada.canal} onCanal={canal => onCambio({ canal, destino: '' })} destino={entrada.destino} onDestino={destino => onCambio({ destino })} pais={entrada.pais ?? 'CO'} onPais={pais => onCambio({ pais })} error={errores.destino}/>
       <div className="consentimientos">
-        <Casilla marcada={entrada.aceptaTerminos} onCambio={aceptaTerminos => cambiar({ aceptaTerminos })} error={errores.aceptaTerminos}>Acepto los términos de uso de MOAI.</Casilla>
-        <Casilla marcada={entrada.aceptaDatos} onCambio={aceptaDatos => cambiar({ aceptaDatos })} error={errores.aceptaDatos}>
-          Autorizo el tratamiento de mi nombre, contacto, ciudad y fecha de nacimiento para crear y cuidar mi cuenta, según la Ley 1581 de 2012. Puedo conocer, corregir o borrar mis datos cuando quiera.
+        <Casilla marcada={entrada.aceptaTerminos} onCambio={aceptaTerminos => onCambio({ aceptaTerminos })} error={errores.aceptaTerminos}>
+          Acepto los <EnlaceLegal onAbrir={() => onLegal('terminos')}>Términos de uso</EnlaceLegal> y he leído la <EnlaceLegal onAbrir={() => onLegal('privacidad')}>Política de privacidad</EnlaceLegal>.
         </Casilla>
-        <p className="campo-ayuda">Textos provisionales: están en revisión legal.</p>
+        <Casilla marcada={entrada.aceptaDatos} onCambio={aceptaDatos => onCambio({ aceptaDatos })} error={errores.aceptaDatos}>
+          Autorizo el tratamiento de mis datos personales según la Ley 1581 de 2012.
+        </Casilla>
       </div>
       {error && <p className="campo-error" role="alert">{error}</p>}
       <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando código…' : 'Crear mi cuenta'}</Button>
       <Pie texto="¿Ya tienes cuenta?" accion="Iniciar sesión" onClick={onIniciarSesion}/>
     </form>
-  </Hoja>;
+  </HojaBosque>;
 }
 
 // P04 · Iniciar sesión. `aviso` explica por qué se llegó aquí (sesión vencida, recarga del código…).
@@ -169,14 +159,14 @@ export function Acceso({ enviar, onEnviado, onVolver, onCrearCuenta, aviso }: {
     setEnviando(false);
     if (respuesta.ok) onEnviado(contacto, respuesta.datos); else setError(respuesta.error);
   }
-  return <Hoja titulo="Qué bueno verte de nuevo" bajada={`Escribe tu correo${WHATSAPP_DISPONIBLE ? ' o tu WhatsApp' : ''} para recibir un código de acceso.`} onVolver={onVolver}>
+  return <HojaBosque titulo="Qué bueno verte de nuevo" bajada={`Escribe tu correo${WHATSAPP_DISPONIBLE ? ' o tu WhatsApp' : ''} para recibir un código de acceso.`} onVolver={onVolver}>
     {aviso && <p className="cuenta-aviso" role="status">{aviso}</p>}
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
       <Contactos canal={contacto.canal} onCanal={canal => setContacto(c => ({ ...c, canal, destino: '' }))} destino={contacto.destino} onDestino={destino => setContacto(c => ({ ...c, destino }))} pais={contacto.pais ?? 'CO'} onPais={pais => setContacto(c => ({ ...c, pais }))} error={error || undefined}/>
       <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando código…' : 'Enviar código'}</Button>
       <Pie texto="¿Es tu primera vez?" accion="Crear cuenta" onClick={onCrearCuenta}/>
     </form>
-  </Hoja>;
+  </HojaBosque>;
 }
 
 // P05 · Verificar. Los plazos y límites los decide el servidor; aquí solo se muestran sus mensajes.
@@ -200,8 +190,7 @@ export function Codigo({ envio, comprobar, reenviar, onCambiarCorreo }: {
     const respuesta = await reenviar();
     if (respuesta.ok) { setAviso('Te enviamos un código nuevo.'); setCodigo(''); } else setError(respuesta.error);
   }
-  const titulo = envio.canal === 'correo' ? 'Revisa tu correo' : 'Revisa tu WhatsApp';
-  return <Hoja titulo={titulo} bajada={`Escribe el código que enviamos a ${envio.destinoVisible}. Vence en 10 minutos.`} onVolver={onCambiarCorreo}>
+  return <HojaBosque titulo={envio.canal === 'correo' ? 'Revisa tu correo' : 'Revisa tu WhatsApp'} bajada={`Escribe el código que enviamos a ${envio.destinoVisible}. Vence en 10 minutos.`} onVolver={onCambiarCorreo}>
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
       <Campo etiqueta="Código de acceso" error={error || undefined} ayuda={envio.canal === 'correo' ? 'Si no lo ves, revisa la carpeta de correo no deseado.' : undefined}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
         value={codigo} onChange={e => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}/>}</Campo>
@@ -212,5 +201,79 @@ export function Codigo({ envio, comprobar, reenviar, onCambiarCorreo }: {
         <Button type="button" className="cuenta-enlace" onClick={onCambiarCorreo}>Cambiar correo</Button>
       </div>
     </form>
-  </Hoja>;
+  </HojaBosque>;
+}
+
+// Después del código · Fecha de nacimiento. No se puede omitir: define la edad mínima.
+export function PasoNacimiento({ nombre, guardar, onGuardado, onMenor, hoy = new Date() }: {
+  nombre: string; guardar: (fecha: string) => Promise<Respuesta<Perfil>>; onGuardado: (perfil: Perfil) => void; onMenor: () => void; hoy?: Date;
+}) {
+  const [fecha, setFecha] = useState('');
+  const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  async function alEnviar(e: FormEvent) {
+    e.preventDefault();
+    if (enviando) return;
+    if (!fecha) { setError('Elige el día, el mes y el año.'); return; }
+    setEnviando(true); setError('');
+    const respuesta = await guardar(fecha);
+    setEnviando(false);
+    if (respuesta.ok) onGuardado(respuesta.datos);
+    else if (respuesta.status === 403) onMenor();
+    else setError(respuesta.error);
+  }
+  return <HojaBosque titulo={`Qué gusto, ${nombre.split(' ')[0]}.`} bajada="¿Cuándo naciste? Así puedo acordarme de tu día.">
+    <form className="cuenta-form" onSubmit={alEnviar} noValidate>
+      <Nacimiento valor={fecha} onValor={setFecha} error={error || undefined} hoy={hoy}/>
+      <p className="campo-ayuda">Por ahora MOAI es para personas de {EDAD_MINIMA} años o más. Tu fecha no se muestra a nadie.</p>
+      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Guardando…' : 'Continuar'}</Button>
+    </form>
+  </HojaBosque>;
+}
+
+// Si es menor de edad: el servidor ya borró la cuenta. Se explica sin culpas.
+export function Menor({ onPortada }: { onPortada: () => void }) {
+  return <HojaBosque titulo="Gracias por querer estar aquí">
+    <p className="bosque-bajada">Por ahora MOAI es para personas de {EDAD_MINIMA} años o más. Borramos los datos que nos diste.</p>
+    <Button className="portada-boton principal bosque-ancho" onClick={onPortada}>Volver al inicio</Button>
+  </HojaBosque>;
+}
+
+// P06 · Tu comunidad: solo manual (decisión de Mateo). Barrio opcional; se puede dejar para después.
+export function PasoComunidad({ guardar, onGuardado }: {
+  guardar: (comunidad: { ciudad: string; barrio?: string } | { omitir: true }) => Promise<Respuesta<Perfil>>; onGuardado: (perfil: Perfil) => void;
+}) {
+  const [ciudad, setCiudad] = useState('');
+  const [barrio, setBarrio] = useState('');
+  const [errores, setErrores] = useState<Errores>({});
+  const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  async function enviar(datos: { ciudad: string; barrio?: string } | { omitir: true }) {
+    if (enviando) return;
+    setEnviando(true); setError(''); setErrores({});
+    const respuesta = await guardar(datos);
+    setEnviando(false);
+    if (respuesta.ok) onGuardado(respuesta.datos);
+    else { setErrores(respuesta.errores ?? {}); setError(respuesta.errores ? '' : respuesta.error); }
+  }
+  return <HojaBosque titulo="¿Dónde quieres conectar con tu comunidad?" bajada="Elige una zona para descubrir personas y encuentros cerca de ti.">
+    <form className="cuenta-form" onSubmit={e => { e.preventDefault(); void enviar({ ciudad, barrio }); }} noValidate>
+      <Ciudad valor={ciudad} onValor={setCiudad} error={errores.ciudad}/>
+      <Campo etiqueta="Tu barrio (opcional)" error={errores.barrio}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!errores.barrio} className="cuenta-campo" maxLength={80} placeholder="Por ejemplo, Laureles" value={barrio} onChange={e => setBarrio(e.target.value)}/>}</Campo>
+      <p className="campo-ayuda">No necesitamos la dirección de tu casa. Tu zona no se muestra en tu perfil.</p>
+      {error && <p className="campo-error" role="alert">{error}</p>}
+      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Guardando…' : 'Confirmar'}</Button>
+      <div className="cuenta-secundarias">
+        <Button type="button" className="cuenta-enlace" onClick={() => void enviar({ omitir: true })}>Lo haré después</Button>
+      </div>
+    </form>
+  </HojaBosque>;
+}
+
+// Términos y privacidad: páginas reales, con el texto pendiente de revisión legal.
+export function TextoLegal({ texto, onVolver }: { texto: 'terminos' | 'privacidad'; onVolver: () => void }) {
+  return <HojaBosque titulo={texto === 'terminos' ? 'Términos de uso' : 'Política de privacidad'} onVolver={onVolver}>
+    <p className="bosque-bajada">Este texto está en revisión legal y lo publicaremos aquí muy pronto.</p>
+    <p className="campo-ayuda bosque-centro">Mientras tanto: tus datos solo se usan para crear y cuidar tu cuenta. Puedes pedir verlos, corregirlos o borrarlos cuando quieras.</p>
+  </HojaBosque>;
 }

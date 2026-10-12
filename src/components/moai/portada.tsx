@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { api as apiReal, type Api, type Contacto, type Envio, type Respuesta } from '@/lib/api';
+import { api as apiReal, type Api, type Contacto, type Envio, type Perfil, type Respuesta } from '@/lib/api';
 import { resolverRuta, useRuta, type Sesion } from '@/lib/rutas';
 import type { EntradaRegistro } from '@/lib/registro';
 import { MoaiApp } from './app';
-import { Acceso, Codigo, Registro, registroVacio } from './cuenta';
+import { Acceso, Codigo, Menor, PasoComunidad, PasoNacimiento, Registro, TextoLegal, registroVacio } from './cuenta';
 import { Bienvenida } from './bienvenida';
 import { Marco } from './marco';
 
@@ -41,18 +41,20 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
   const [sesion, setSesion] = useState<Sesion>({ estado: 'cargando' });
   const [entrada, setEntrada] = useState<EntradaRegistro>(registroVacio);
   const [desafio, setDesafio] = useState<Desafio | null>(null);
-  const [recienCreada, setRecienCreada] = useState(false);
   const [aviso, setAviso] = useState('');
+  const [menor, setMenor] = useState(false);
 
   const consultar = useCallback(() => {
     setSesion({ estado: 'cargando' });
     void api.sesion().then(r => setSesion(
-      r.ok ? { estado: 'activa', nombre: r.datos.nombre } : r.status === 401 ? { estado: 'anonima' } : { estado: 'error' }));
+      r.ok ? { estado: 'activa', perfil: r.datos } : r.status === 401 ? { estado: 'anonima' } : { estado: 'error' }));
   }, [api]);
   useEffect(consultar, [consultar]);
+  const activa = (perfil: Perfil) => setSesion({ estado: 'activa', perfil }); // el resolvedor lleva al siguiente paso
 
   // Una sola decisión de navegación (docs/09, apartado 5).
   useEffect(() => {
+    if (menor) return;
     const siguiente = resolverRuta(ruta, sesion, destino);
     if (siguiente) navegar(siguiente, { reemplazar: true });
     else if (ruta === '/verificar' && sesion.estado === 'anonima' && !desafio) {
@@ -60,19 +62,22 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
       setAviso('Por seguridad, vuelve a pedir tu código.');
       navegar(conDestino('/acceso', destino), { reemplazar: true });
     }
-  }, [ruta, sesion, destino, desafio, navegar]);
+  }, [ruta, sesion, destino, desafio, navegar, menor]);
 
   // Al cambiar de pantalla, el foco va al título (accesibilidad).
-  useEffect(() => { document.querySelector<HTMLElement>('main h1')?.focus(); }, [ruta, sesion.estado]);
+  useEffect(() => { document.querySelector<HTMLElement>('main h1')?.focus(); }, [ruta, sesion.estado, menor]);
 
   if (sesion.estado === 'cargando') return <Abriendo/>;
   if (sesion.estado === 'error') return <Abriendo onReintentar={consultar}/>;
+  if (menor) return <Menor onPortada={() => { setMenor(false); navegar('/', { reemplazar: true }); }}/>;
 
   const ir = (a: string) => { setAviso(''); navegar(a); };
+  const atras = () => (window.history.length > 1 ? window.history.back() : ir('/'));
 
+  if (ruta === '/terminos' || ruta === '/privacidad') return <TextoLegal texto={ruta === '/terminos' ? 'terminos' : 'privacidad'} onVolver={atras}/>;
   if (ruta === '/bienvenida') return <Bienvenida onContinuar={() => ir('/registro')} onYaTengoCuenta={() => ir('/acceso')}/>;
   if (ruta === '/registro') return <Registro entrada={entrada} onCambio={cambio => setEntrada(actual => ({ ...actual, ...cambio }))}
-    enviar={api.registrar} onVolver={() => ir('/bienvenida')} onIniciarSesion={() => ir('/acceso')}
+    enviar={api.registrar} onVolver={() => ir('/bienvenida')} onIniciarSesion={() => ir('/acceso')} onLegal={texto => ir(`/${texto}`)}
     onEnviado={(contacto, envio) => { setDesafio({ contacto, envio, nuevo: true, reenviar: () => api.registrar(entrada) }); ir('/verificar'); }}/>;
   if (ruta === '/acceso') return <Acceso enviar={api.pedirAcceso} onVolver={() => ir('/')} onCrearCuenta={() => ir('/bienvenida')}
     aviso={aviso || (destino ? 'Tu sesión terminó. Vuelve a entrar para continuar.' : undefined)}
@@ -81,16 +86,18 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     onCambiarCorreo={() => ir(desafio.nuevo ? '/registro' : conDestino('/acceso', destino))}
     comprobar={async codigo => {
       const respuesta = await api.verificar({ ...desafio.contacto, codigo });
-      if (respuesta.ok) {
-        setDesafio(null); setEntrada(registroVacio()); setRecienCreada(desafio.nuevo);
-        setSesion({ estado: 'activa', nombre: respuesta.datos.nombre }); // el resolvedor lleva al destino
-      }
+      if (respuesta.ok) { setDesafio(null); setEntrada(registroVacio()); activa(respuesta.datos); }
       return respuesta;
     }}/>;
-  if (ruta === '/ciudad' && sesion.estado === 'activa') return <MoaiApp
-    // Provisional hasta P06–P08: una cuenta nueva empieza su primer día; quien vuelve entra a su ciudad.
-    inicio={recienCreada ? 2 : 'home'} estadoInicial={{ nombre: sesion.nombre }}
-    cuenta={{ onSalir: async () => { await api.salir(); setRecienCreada(false); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); } }}/>;
+  if (sesion.estado === 'activa') {
+    const { perfil } = sesion;
+    if (ruta === '/configuracion/nacimiento') return <PasoNacimiento nombre={perfil.nombre} guardar={api.guardarNacimiento} onGuardado={activa}
+      onMenor={() => { setMenor(true); setSesion({ estado: 'anonima' }); }}/>;
+    if (ruta === '/configuracion/comunidad') return <PasoComunidad guardar={api.guardarComunidad} onGuardado={activa}/>;
+    // Provisional hasta «Intención» y «Mi comunidad» (docs/09, P07–P08): la ciudad del prototipo.
+    if (ruta === '/ciudad') return <MoaiApp inicio="home" estadoInicial={{ nombre: perfil.nombre }}
+      cuenta={{ onSalir: async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); } }}/>;
+  }
   if (ruta === '/') return <Portada onCrear={() => ir('/bienvenida')} onEntrar={() => ir('/acceso')}/>;
   return <Abriendo/>; // mientras el resolvedor redirige
 }

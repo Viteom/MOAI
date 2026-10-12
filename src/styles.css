@@ -359,3 +359,40 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .cuenta-pie button { border: 0; padding: 0; background: transparent; color: var(--lima); font-size: inherit; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 .cuenta-aviso { margin: 0; padding: 12px 14px; border-radius: 14px; font-size: 16px; background: color-mix(in oklab, var(--bosque-alto) 85%, transparent); border: 1px solid color-mix(in oklab, var(--cian) 45%, transparent); }
 .cuenta-secundarias { display: flex; flex-wrap: wrap; gap: 4px 24px; }
+
+/* Pantallas de cuenta sobre el bosque (diseño de Mateo, 12 de octubre de 2026) */
+.bosque { position: relative; min-height: 100svh; isolation: isolate; color: var(--niebla); background: radial-gradient(ellipse at 50% 30%, oklch(.3 .05 175), var(--bosque) 65%); display: flex; justify-content: center; align-items: flex-start; padding: 112px 20px 48px; }
+.bosque .brisa-fondo { position: fixed; }
+.bosque.con-video .brisa-marca { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.bosque-volver { position: absolute; top: 28px; left: clamp(16px, 3vw, 48px); display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; background: transparent; color: var(--niebla); font-size: 20px; cursor: pointer; }
+.bosque-volver svg { width: 26px; height: 26px; }
+.bosque-volver:hover { background: color-mix(in oklab, var(--niebla) 10%, transparent); }
+.bosque-panel { position: relative; width: min(560px, 100%); padding: 72px clamp(20px, 3.4vw, 46px) 32px; border-radius: 32px; display: flex; flex-direction: column; gap: 14px; background: color-mix(in oklab, oklch(.3 .045 170) 55%, transparent); border: 1.5px solid color-mix(in oklab, oklch(.88 .1 150) 55%, transparent); backdrop-filter: blur(24px) saturate(1.2); -webkit-backdrop-filter: blur(24px) saturate(1.2); box-shadow: 0 24px 70px color-mix(in oklab, var(--bosque) 60%, transparent), inset 0 1px 0 color-mix(in oklab, var(--niebla) 18%, transparent); }
+.bosque-panel h1 { margin: 0; text-align: center; font: 700 clamp(34px, 3.2vw, 46px)/1.08 var(--font-sans); }
+.bosque-bajada { margin: 0 0 6px; text-align: center; font-size: 19px; line-height: 1.45; color: color-mix(in oklab, var(--niebla) 85%, transparent); }
+.bosque .cuenta-form { gap: 16px; }
+.bosque .campo label, .bosque .campo legend { font-size: 18px; }
+.bosque .cuenta-campo { min-height: 56px; border-radius: 14px; font-size: 18px; background: color-mix(in oklab, oklch(.22 .035 170) 70%, transparent); border: 1.5px solid color-mix(in oklab, var(--niebla) 70%, transparent); }
+.bosque .cuenta-campo::placeholder { color: color-mix(in oklab, var(--niebla) 55%, transparent); }
+.bosque .campo-ayuda { padding-left: 12px; font-size: 15px; }
+.bosque .casilla { grid-template-columns: 32px 1fr; font-size: 17px; }
+.bosque .casilla input { width: 28px; height: 28px; }
+.bosque .casilla a { color: inherit; text-underline-offset: 3px; }
+.bosque .cuenta-form > .portada-boton { align-self: stretch; width: 100%; min-height: 60px; font-size: 21px; font-weight: 600; }
+.bosque .cuenta-pie { text-align: center; font-size: 18px; }
+.bosque .cuenta-pie button { color: var(--niebla); }
+.bosque .cuenta-secundarias { justify-content: center; }
+/* La esfera pequeña: recorte del video alrededor de Brisa (centro ≈ 640×185 px en el cuadro de 1280×720). */
+.orbe { --tam: 112px; --k: .56; position: absolute; top: calc(var(--tam) / -2 + 8px); left: 50%; width: var(--tam); height: var(--tam); transform: translateX(-50%); border-radius: 50%; overflow: hidden; -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 70%); mask-image: radial-gradient(circle, #000 52%, transparent 70%); }
+.orbe video { position: absolute; width: calc(1280px * var(--k)); height: calc(720px * var(--k)); max-width: none; left: calc(var(--tam) / 2 - 640px * var(--k)); top: calc(var(--tam) / 2 - 185px * var(--k)); }
+.orbe-css { position: absolute; inset: 18%; border-radius: 50%; background: radial-gradient(circle at 42% 40%, oklch(.98 .06 110) 0 8%, oklch(.88 .12 150 / .85) 24%, oklch(.7 .1 185 / .45) 50%, transparent 72%); }
+@media (max-width: 520px) { .bosque { padding-top: 104px; } .bosque-volver { top: 20px; font-size: 18px; } .bosque-panel { padding-top: 64px; } }
+.bosque-centro { text-align: center; } .bosque-ancho { width: 100%; min-height: 60px; font-size: 21px; font-weight: 600; }
+.bosque .casilla a { text-decoration: underline; text-underline-offset: 3px; }
+.bosque .casilla input { appearance: none; -webkit-appearance: none; margin: 0; border-radius: 6px; border: 2px solid color-mix(in oklab, var(--niebla) 80%, transparent); background: color-mix(in oklab, oklch(.22 .035 170) 60%, transparent); display: grid; place-content: center; cursor: pointer; }
+.bosque .casilla input::after { content: ''; width: 12px; height: 7px; border: solid var(--bosque); border-width: 0 0 3px 3px; transform: translateY(-2px) rotate(-45deg); opacity: 0; }
+.bosque .casilla input:checked { background: var(--lima); border-color: var(--lima); }
+.bosque .casilla input:checked::after { opacity: 1; }
+.bosque .casilla input:focus-visible { outline: 3px solid var(--lima); outline-offset: 3px; }
+.bosque .casilla input[aria-invalid="true"] { border-color: oklch(.82 .11 40); }
+.bosque .portada-boton { flex: none; }

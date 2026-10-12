@@ -59,14 +59,16 @@ export function edadEn(fechaNacimiento: string, hoy: Date): number | null {
   return edad;
 }
 
+// Registro liviano (diseño de Mateo, 12 de octubre de 2026): nombre, contacto y los dos consentimientos.
+// La fecha de nacimiento y la ciudad se piden después del código, en pasos propios.
 export type EntradaRegistro = {
   nombre: string; canal: Canal; destino: string; pais?: string;
-  ciudad: string; fechaNacimiento: string; aceptaTerminos: boolean; aceptaDatos: boolean;
+  aceptaTerminos: boolean; aceptaDatos: boolean;
 };
 export type Registro = Omit<EntradaRegistro, 'pais'>;
-export type Errores = Partial<Record<keyof EntradaRegistro, string>>;
+export type Errores = Partial<Record<keyof EntradaRegistro | 'fechaNacimiento' | 'ciudad' | 'barrio', string>>;
 
-export function validarRegistro(entrada: Partial<EntradaRegistro>, hoy: Date): { ok: true; registro: Registro } | { ok: false; errores: Errores } {
+export function validarRegistro(entrada: Partial<EntradaRegistro>): { ok: true; registro: Registro } | { ok: false; errores: Errores } {
   const errores: Errores = {};
   const nombre = (entrada.nombre ?? '').trim().replace(/\s+/g, ' ');
   if (!nombre) errores.nombre = 'Escribe tu nombre o cómo te gusta que te llamen.';
@@ -74,16 +76,27 @@ export function validarRegistro(entrada: Partial<EntradaRegistro>, hoy: Date): {
   const canal: Canal = entrada.canal === 'whatsapp' ? 'whatsapp' : 'correo';
   const destino = normalizarDestino(canal, entrada.destino ?? '', entrada.pais);
   if (!destino) errores.destino = canal === 'correo' ? 'Revisa tu correo: parece incompleto.' : 'Revisa el número y el país.';
-  const ciudad = entrada.ciudad ?? '';
-  if (!porCodigo.has(ciudad)) errores.ciudad = 'Elige tu ciudad de la lista.';
-  const fechaNacimiento = entrada.fechaNacimiento ?? '';
-  const edad = edadEn(fechaNacimiento, hoy);
-  if (edad === null || edad < 0 || edad > 120) errores.fechaNacimiento = 'Revisa tu fecha de nacimiento.';
-  else if (edad < EDAD_MINIMA) errores.fechaNacimiento = `Por ahora MOAI es para personas de ${EDAD_MINIMA} años o más.`;
-  if (entrada.aceptaTerminos !== true) errores.aceptaTerminos = 'Necesitamos que aceptes los términos.';
+  if (entrada.aceptaTerminos !== true) errores.aceptaTerminos = 'Necesitamos que aceptes los términos y la política de privacidad.';
   if (entrada.aceptaDatos !== true) errores.aceptaDatos = 'Necesitamos tu autorización para tratar tus datos.';
   if (Object.keys(errores).length) return { ok: false, errores };
-  return { ok: true, registro: { nombre, canal, destino: destino!, ciudad, fechaNacimiento, aceptaTerminos: true, aceptaDatos: true } };
+  return { ok: true, registro: { nombre, canal, destino: destino!, aceptaTerminos: true, aceptaDatos: true } };
+}
+
+// Paso posterior al código: fecha de nacimiento (edad mínima y «momentos de verdad»).
+export function validarNacimiento(fechaNacimiento: string, hoy: Date): { ok: true } | { ok: false; error: string; menor?: true } {
+  const edad = edadEn(fechaNacimiento, hoy);
+  if (edad === null || edad < 0 || edad > 120) return { ok: false, error: 'Revisa tu fecha de nacimiento.' };
+  if (edad < EDAD_MINIMA) return { ok: false, error: `Por ahora MOAI es para personas de ${EDAD_MINIMA} años o más.`, menor: true };
+  return { ok: true };
+}
+
+// Paso «Tu comunidad»: ciudad de la lista y barrio opcional en texto libre (no hay catálogo de barrios).
+export function validarComunidad(ciudad: string, barrio = ''): { ok: true; barrio: string | null } | { ok: false; errores: Errores } {
+  const errores: Errores = {};
+  if (!porCodigo.has(ciudad)) errores.ciudad = 'Elige tu ciudad de la lista.';
+  const limpio = barrio.trim().replace(/\s+/g, ' ');
+  if (limpio.length > 80) errores.barrio = 'Usa un nombre de barrio más corto.';
+  return Object.keys(errores).length ? { ok: false, errores } : { ok: true, barrio: limpio || null };
 }
 
 export function enmascarar(canal: Canal, destino: string): string {

@@ -6,7 +6,7 @@ import type { Externo, Propio } from './envios';
 import { VERSION_TEXTOS } from '../src/lib/registro';
 
 const hoy = new Date('2026-10-11T12:00:00Z');
-const base = { nombre: 'Rosa', canal: 'correo', destino: 'Rosa@Ejemplo.co', ciudad: '05001', fechaNacimiento: '1950-03-02', aceptaTerminos: true, aceptaDatos: true };
+const base = { nombre: 'Rosa', canal: 'correo', destino: 'Rosa@Ejemplo.co', aceptaTerminos: true, aceptaDatos: true };
 
 let db: Db;
 let enviados: { destino: string; codigo: string }[];
@@ -29,8 +29,15 @@ const galleta = (respuesta: { cookies: { name: string; value: string }[] }) => {
   return c ? `${COOKIE_SESION}=${c.value}` : '';
 };
 
+const pendiente = { nombre: 'Rosa', ciudad: null, barrio: null, nacimientoPendiente: true, comunidad: 'pending' };
+
+async function sesionNueva() {
+  await post('/api/registro', base);
+  return galleta(await post('/api/verificar', { canal: 'correo', destino: 'rosa@ejemplo.co', codigo: enviados[0].codigo }));
+}
+
 describe('Registro', () => {
-  it('crea la cuenta, envía un código y al verificarlo abre sesión', async () => {
+  it('crea la cuenta solo con nombre y correo, envía un código y al verificarlo abre sesión', async () => {
     const registro = await post('/api/registro', base);
     expect(registro.statusCode).toBe(200);
     expect(registro.json()).toEqual({ canal: 'correo', destinoVisible: 'r•••@ejemplo.co' });
@@ -40,9 +47,9 @@ describe('Registro', () => {
 
     const verificar = await post('/api/verificar', { canal: 'correo', destino: 'rosa@ejemplo.co', codigo: enviados[0].codigo });
     expect(verificar.statusCode).toBe(200);
-    expect(verificar.json()).toEqual({ nombre: 'Rosa', ciudad: '05001' });
+    expect(verificar.json()).toEqual(pendiente);
     const sesion = await app.inject({ method: 'GET', url: '/api/sesion', headers: { cookie: galleta(verificar) } });
-    expect(sesion.json()).toEqual({ nombre: 'Rosa', ciudad: '05001' });
+    expect(sesion.json()).toEqual(pendiente);
   });
 
   it('guarda los dos consentimientos con la versión del texto', async () => {
@@ -51,17 +58,10 @@ describe('Registro', () => {
     expect(filas).toEqual([{ tipo: 'datos', version: VERSION_TEXTOS }, { tipo: 'terminos', version: VERSION_TEXTOS }]);
   });
 
-  it('rechaza a menores de 18 sin crear cuenta ni enviar código', async () => {
-    const respuesta = await post('/api/registro', { ...base, fechaNacimiento: '2009-01-01' });
-    expect(respuesta.statusCode).toBe(400);
-    expect(respuesta.json().errores.fechaNacimiento).toMatch(/18 años/);
-    expect(await db.query('select id from cuentas')).toEqual([]);
+  it('exige nombre, correo válido y los dos consentimientos', async () => {
+    const respuesta = await post('/api/registro', { ...base, nombre: ' ', destino: 'rosa@', aceptaDatos: false, aceptaTerminos: false });
+    expect(Object.keys(respuesta.json().errores).sort()).toEqual(['aceptaDatos', 'aceptaTerminos', 'destino', 'nombre']);
     expect(enviados).toEqual([]);
-  });
-
-  it('exige aceptar términos y tratamiento de datos, y una ciudad de la lista', async () => {
-    const respuesta = await post('/api/registro', { ...base, aceptaDatos: false, aceptaTerminos: false, ciudad: '99999' });
-    expect(Object.keys(respuesta.json().errores).sort()).toEqual(['aceptaDatos', 'aceptaTerminos', 'ciudad']);
   });
 
   it('normaliza un WhatsApp colombiano con su código de país', async () => {
@@ -162,5 +162,47 @@ describe('WhatsApp con un verificador externo (Twilio Verify)', () => {
     expect((await post('/api/verificar', { canal: 'whatsapp', pais: 'CO', destino: '3001234567', codigo: '123456' })).statusCode).toBe(400);
     expect((await post('/api/verificar', { canal: 'whatsapp', pais: 'CO', destino: '3001234567', codigo: '424242' })).statusCode).toBe(200);
     expect(llamadas).toEqual(['iniciar +573001234567', 'comprobar +573001234567', 'comprobar +573001234567']);
+  });
+});
+
+describe('Pasos después del código', () => {
+  const conCookie = (url: string, payload: object, cookie: string) => app.inject({ method: 'POST', url, payload, headers: { cookie } });
+
+  it('guarda la fecha de nacimiento y deja pendiente la comunidad', async () => {
+    const cookie = await sesionNueva();
+    const respuesta = await conCookie('/api/perfil/nacimiento', { fechaNacimiento: '1950-03-02' }, cookie);
+    expect(respuesta.statusCode).toBe(200);
+    expect(respuesta.json()).toEqual({ ...pendiente, nacimientoPendiente: false });
+  });
+
+  it('con menos de 18 años borra la cuenta y sus datos, y cierra la sesión', async () => {
+    const cookie = await sesionNueva();
+    const respuesta = await conCookie('/api/perfil/nacimiento', { fechaNacimiento: '2010-01-01' }, cookie);
+    expect(respuesta.statusCode).toBe(403);
+    expect(respuesta.json()).toEqual({ error: expect.stringMatching(/18 años/), menor: true });
+    expect(await db.query('select id from cuentas')).toEqual([]);
+    expect(await db.query('select id from consentimientos')).toEqual([]);
+    expect(await db.query('select token_hash from sesiones')).toEqual([]);
+    expect(await db.query('select id from verificaciones')).toEqual([]);
+  });
+
+  it('rechaza fechas imposibles', async () => {
+    const cookie = await sesionNueva();
+    expect((await conCookie('/api/perfil/nacimiento', { fechaNacimiento: '1950-02-30' }, cookie)).statusCode).toBe(400);
+  });
+
+  it('guarda ciudad y barrio, o el salto, sin coordenadas', async () => {
+    const cookie = await sesionNueva();
+    const malo = await conCookie('/api/perfil/comunidad', { ciudad: '99999' }, cookie);
+    expect(malo.json().errores.ciudad).toBe('Elige tu ciudad de la lista.');
+    const bueno = await conCookie('/api/perfil/comunidad', { ciudad: '05001', barrio: '  Laureles ' }, cookie);
+    expect(bueno.json()).toMatchObject({ ciudad: '05001', barrio: 'Laureles', comunidad: 'completed' });
+    const salto = await conCookie('/api/perfil/comunidad', { omitir: true }, cookie);
+    expect(salto.json().comunidad).toBe('skipped');
+  });
+
+  it('sin sesión no deja guardar nada', async () => {
+    expect((await post('/api/perfil/nacimiento', { fechaNacimiento: '1950-03-02' })).statusCode).toBe(401);
+    expect((await post('/api/perfil/comunidad', { omitir: true })).statusCode).toBe(401);
   });
 });
