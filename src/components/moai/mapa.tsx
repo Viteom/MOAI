@@ -109,7 +109,7 @@ export function MapaComunidad({ mapa, planes, elegido, onElegir, burbujasDe }: {
 
 // La tarjeta del plan elegido: hoja que sube en móvil, tarjeta abajo a la izquierda en desktop.
 export function TarjetaMapa({ plan, onCerrar, onIr, onNoIr, onAbrir }: { plan: Plan; onCerrar: () => void; onIr: () => void; onNoIr: () => void; onAbrir: () => void }) {
-  return <section className="mapa-tarjeta" aria-labelledby="mapa-tarjeta-titulo">
+  return <section className="mapa-tarjeta" aria-labelledby="mapa-tarjeta-titulo" data-reserva>
     <button type="button" className="mapa-cerrar" aria-label="Cerrar" onClick={onCerrar}><X aria-hidden="true"/></button>
     <h2 id="mapa-tarjeta-titulo">{plan.titulo}</h2>
     <p><CalendarDays aria-hidden="true"/>{cuandoCorto(plan)}</p>

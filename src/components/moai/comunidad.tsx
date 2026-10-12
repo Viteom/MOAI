@@ -7,6 +7,7 @@ import { alcances, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type A
 import type { Api, Carta, Lugar, Mapa, Mensaje, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
 import { ChevronDown, Menu as Menu2, Pencil } from 'lucide-react';
 import { MapaComunidad, TarjetaMapa } from './mapa';
+import { Maqueta, soportaWebGL } from './maqueta';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { OrbeBrisa } from './bosque';
 
@@ -115,6 +116,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
   const [cartas, setCartas] = useState<Carta[]>([]);
   const [mapa, setMapa] = useState<Mapa | null>(null);
   const [modo, setModo] = useState<'mapa' | 'lista'>('mapa');
+  const [conWebGL] = useState(soportaWebGL);
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [ayuda, setAyuda] = useState(false);
@@ -140,7 +142,8 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
   const mensajeBrisa = cartas[0]?.texto ?? (planes?.length ? 'Hay planes cerca esta semana. ¿Te muestro?' : 'Todavía no hay planes cerca. ¿Y si cuentas qué vas a hacer esta semana?');
 
   return <div className={`comunidad${verMapa ? ' en-mapa' : ''}`}>
-    <header className="comunidad-cabecera">
+    {/* Capa 4 · controles: cada pieza marcada con data-reserva para que las burbujas nunca queden debajo. */}
+    <header className="comunidad-cabecera" data-reserva>
       <span className="diario-marca">MOAI</span>
       <h1 tabIndex={-1}>Mi comunidad</h1>
       <SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambio}/>
@@ -153,16 +156,20 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
 
     {perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>
     : verMapa ? <div className="comunidad-mapa">
-      <MapaComunidad mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
-      <button type="button" className="mapa-brisa" onClick={() => cartas.length ? setModo('lista') : planes?.[0] && setElegido(mapa.planes[0]?.id ?? null)}>
-        <span className="mapa-brisa-globo">{mensajeBrisa}</span><OrbeBrisa/>
+      {/* La maqueta 3D cuando el navegador puede; si no (o con Modo Ahorro más adelante), el tablero plano. */}
+      {conWebGL ? <Maqueta mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
+        : <MapaComunidad mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>}
+      <button type="button" className="mapa-brisa" data-reserva onClick={() => cartas.length ? setModo('lista') : planes?.[0] && setElegido(mapa.planes[0]?.id ?? null)}>
+        <OrbeBrisa/><span className="mapa-brisa-globo">{mensajeBrisa}</span>
       </button>
-      {fueraDelMapa.length > 0 && <button type="button" className="mapa-mas" onClick={() => setModo('lista')}>Hay más planes en tu ciudad · Ver lista</button>}
-      <ul className="mapa-leyenda" aria-label="Qué significa cada luz">
-        <li><span className="luz-semana"/>Esta semana</li><li><span className="luz-semanal"/>Cada semana</li><li><span className="luz-mia"/>Ya me sumé</li>
-      </ul>
+      {!planElegido && <div className="mapa-controles" data-reserva>
+        <ul className="mapa-leyenda" aria-label="Qué significa cada luz">
+          <li><span className="luz-semana"/>Esta semana</li><li><span className="luz-semanal"/>Cada semana</li><li><span className="luz-mia"/>Ya me sumé</li>
+          {fueraDelMapa.length > 0 && <li><button type="button" className="mapa-mas" onClick={() => setModo('lista')}>Más en tu ciudad · Ver lista</button></li>}
+        </ul>
+        <Button className="diario-boton principal mapa-contar" onClick={() => ir('/planes/nuevo')}><Pencil aria-hidden="true"/>Contar qué voy a hacer</Button>
+      </div>}
       {planElegido && <TarjetaMapa plan={planElegido} onCerrar={() => setElegido(null)} onAbrir={() => ir(`/planes/${planElegido.id}`)} {...acciones(planElegido.id)}/>}
-      <Button className="diario-boton principal mapa-contar" onClick={() => ir('/planes/nuevo')}><Pencil aria-hidden="true"/>Contar qué voy a hacer</Button>
     </div> : <main className="diario-contenido">
       <p className="diario-bajada comunidad-saludo">Hola, {nombre}. Puedes sumarte a algo que disfrutas o contar qué vas a hacer, por si alguien quiere acompañarte.</p>
       {!perfil.lugar && <div className="diario-aviso"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="diario-boton principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}

@@ -22,7 +22,7 @@ export type Carta =
   | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan };
 export type Preferencias = { sugerencias: boolean; gustos: Tipo[]; resumenSemanal: boolean };
 // El mapa de la comunidad: hexágonos a dos anillos de tu zona y las luces de los planes, en metros relativos a tu zona.
-export type Mapa = { disponible: false } | { disponible: true; celdas: { x: number; y: number; anillo: number; puntos: [number, number][] }[]; planes: { id: string; x: number; y: number }[] };
+export type Mapa = { disponible: false } | { disponible: true; celdas: { id?: string; x: number; y: number; anillo: number; puntos: [number, number][] }[]; planes: { id: string; x: number; y: number }[] };
 // `status` 0 = sin conexión: no es lo mismo que «sin sesión» (401).
 export type Respuesta<T> = { ok: true; datos: T } | { ok: false; error: string; errores?: Errores; status?: number };
 export type Contacto = { canal: Canal; destino: string; pais?: string };
@@ -73,3 +73,14 @@ export const api = {
   salir: () => llamar<{ ok: true }>('salir', {}),
 };
 export type Api = typeof api;
+
+// La maqueta de un hexágono: un archivo estático del mismo origen (public/maqueta), sin datos de personas.
+export async function archivoDeMaqueta<T>(celda: string): Promise<T | null> {
+  if (!/^[0-9a-f]{15}$/.test(celda)) return null;
+  try {
+    const respuesta = await fetch(`/maqueta/${celda}.json`, { credentials: 'same-origin' });
+    return respuesta.ok ? await respuesta.json() as T : null;
+  } catch {
+    return null;
+  }
+}

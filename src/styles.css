@@ -544,3 +544,102 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 }
 
 .mapa-abriendo { min-height: 60svh; display: grid; place-items: center; color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 18px; }
+
+/* Maqueta 3D: ocupa toda la pantalla detrás de la cabecera; las burbujas y la tarjeta van encima. */
+.maqueta { position: absolute; inset: 0; --borde-burbuja: 120px; background: #0b1915; }
+.maqueta canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; opacity: 0; transition: opacity .6s ease; }
+.maqueta.lista canvas, .maqueta canvas:not(:only-child) { opacity: 1; }
+.comunidad-mapa:has(.maqueta) { padding: 0; }
+.comunidad-mapa:has(.maqueta) .mapa-brisa, .comunidad-mapa:has(.maqueta) .mapa-mas { z-index: 5; }
+.maqueta .mapa-tu-zona, .maqueta .mapa-luz, .maqueta .mapa-burbuja, .maqueta .mapa-burbuja-cola { z-index: 2; }
+.maqueta-creditos { position: absolute; z-index: 2; right: 12px; bottom: 6px; margin: 0; font-size: 11px; color: color-mix(in oklab, var(--niebla) 55%, transparent); }
+@media (max-width: 760px) { .maqueta-creditos { bottom: 166px; } }
+
+/* Segundo diseño de Mateo: ilustración a tinta y acuarela. Textura de papel y viñeta cálida sobre la maqueta. */
+.maqueta::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; opacity: .55;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(20, 16, 8, .55) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .5 0 0 0 0 .42 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E"); }
+.maqueta-pin { --pin: #cefa63; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, #fff 0 4px, var(--pin) 5px 8px, transparent 9px); box-shadow: 0 0 0 4px color-mix(in oklab, var(--pin) 30%, transparent), 0 0 0 10px color-mix(in oklab, var(--pin) 18%, transparent), 0 0 24px 6px color-mix(in oklab, var(--pin) 45%, transparent); }
+.maqueta-pin::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--pin) 55%, transparent); animation: pin-onda 3s ease-out infinite; }
+.pin-semanal { --pin: #8be4d5; }
+.pin-mia { --pin: #fff1c2; }
+.maqueta-pin[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--pin), 0 0 0 12px color-mix(in oklab, var(--pin) 30%, transparent), 0 0 30px 8px var(--pin); }
+@keyframes pin-onda { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+.maqueta-tallo { position: absolute; z-index: 2; width: 2px; transform: translateX(-50%); background: linear-gradient(to top, transparent, #e7f3d9 40%); pointer-events: none; }
+.maqueta-burbuja { transform: translate(-50%, calc(-100% - 64px)); max-width: 260px; background: oklch(.2 .03 160 / .9); border-color: oklch(.85 .08 150 / .45); }
+.maqueta-burbuja.abajo { transform: translate(-50%, 64px); }
+.maqueta-burbuja::after { display: none; }
+.maqueta-burbuja strong { display: inline; }
+.maqueta .mapa-tu-zona { background: transparent; border: 0; color: #eef3e2; font-weight: 500; font-size: 19px; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+@media (min-width: 761px) {
+  .mapa-tarjeta { display: grid; grid-template-columns: 1fr auto; column-gap: 28px; align-items: center; width: min(640px, calc(100% - 32px)); }
+  .mapa-tarjeta > :not(.mapa-tarjeta-boton):not(.plan-acciones):not(.mapa-cerrar) { grid-column: 1; }
+  .mapa-tarjeta-boton, .mapa-tarjeta > .plan-acciones { grid-column: 2; grid-row: 1 / span 5; width: auto; min-width: 160px; margin: 0; }
+}
+
+/* ==== Corrección visual de Mi comunidad (capas independientes y encabezado compacto) ==== */
+/* Capas: 1 escena (canvas) · papel · 2 luces · 3 burbujas · 4 controles */
+.maqueta .capa-escena { z-index: 0; touch-action: none; cursor: grab; }
+.maqueta .capa-escena:active { cursor: grabbing; }
+.maqueta::after { z-index: 1; }
+.maqueta .capa { position: absolute; inset: 0; pointer-events: none; }
+.maqueta .capa > *, .maqueta .capa > span > * { pointer-events: auto; }
+.maqueta .mapa-tu-zona.capa { inset: auto; z-index: 2; pointer-events: none; }
+.capa-luces { z-index: 3; }
+.capa-burbujas { z-index: 4; }
+.maqueta-burbuja { transform: none; max-width: none; padding: 9px 14px; font-size: 15px; line-height: 1.35; border-radius: 14px; }
+.maqueta-burbuja.abajo { transform: none; }
+.maqueta-tallo { z-index: 4; }
+.maqueta-zoom { position: absolute; z-index: 6; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; border: 1px solid oklch(.85 .08 150 / .35); background: oklch(.18 .03 160 / .85); }
+.maqueta-zoom button { width: 44px; height: 44px; border: 0; background: transparent; color: var(--niebla); font-size: 22px; cursor: pointer; }
+.maqueta-zoom button + button { border-top: 1px solid oklch(.85 .08 150 / .25); }
+.maqueta-creditos { z-index: 6; bottom: 4px; right: 12px; }
+
+/* Encabezado compacto: una sola franja en escritorio. */
+.comunidad.en-mapa .comunidad-cabecera { flex-wrap: nowrap; gap: 14px; min-height: 0; padding: 8px 10px 8px 20px; top: 14px; left: 14px; right: 14px; border-radius: 18px; }
+.comunidad-cabecera .diario-marca { font-size: 15px; padding-right: 14px; }
+.comunidad.en-mapa .comunidad-cabecera h1 { font-size: 18px; white-space: nowrap; }
+.comunidad.en-mapa .selector-lugar { min-height: 40px; padding: 0 14px; font-size: 15px; white-space: nowrap; }
+.comunidad.en-mapa .modo button { min-height: 34px; min-width: 84px; font-size: 15px; }
+.comunidad.en-mapa .menu-boton { width: 40px; height: 40px; }
+
+/* Brisa: orbe con su globo a la izquierda, debajo del encabezado. */
+.comunidad-mapa .mapa-brisa { z-index: 6; top: 88px; right: 20px; flex-direction: row-reverse; }
+.comunidad-mapa .mapa-brisa .orbe { --tam: 72px; --k: .36; }
+.comunidad-mapa .mapa-brisa-globo { font-size: 15px; padding: 10px 14px; }
+
+/* Barra inferior: leyenda a la izquierda, «Contar qué voy a hacer» a la derecha. */
+.mapa-controles { position: absolute; z-index: 6; left: 20px; right: 20px; bottom: 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; pointer-events: none; }
+.mapa-controles > * { pointer-events: auto; }
+.mapa-controles .mapa-leyenda, .mapa-controles .mapa-contar { position: static; transform: none; }
+.mapa-controles .mapa-leyenda { flex-wrap: wrap; white-space: normal; }
+.mapa-controles .mapa-mas { position: static; min-height: 32px; padding: 0 12px; font-size: 14px; }
+.mapa-controles .mapa-contar { min-height: 54px; }
+.comunidad-mapa:has(.maqueta) .mapa-tarjeta { z-index: 7; bottom: 22px; }
+
+/* Tableta: la marca y el título se compactan; todo sigue en una franja. */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .comunidad.en-mapa .comunidad-cabecera h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .comunidad-mapa .mapa-brisa-globo { display: none; }
+}
+
+/* Teléfono: distribución propia. Fila 1: marca y menú. Fila 2: ubicación y Mapa/Lista. Detalle en hoja inferior. */
+@media (max-width: 760px) {
+  .comunidad.en-mapa .comunidad-cabecera { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "marca menu" "lugar modo"; gap: 8px 10px; padding: 10px 12px; top: 10px; left: 10px; right: 10px; }
+  .comunidad.en-mapa .comunidad-cabecera .diario-marca { grid-area: marca; flex-basis: auto; border: 0; padding: 0; align-self: center; }
+  .comunidad.en-mapa .comunidad-cabecera h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .comunidad.en-mapa .comunidad-cabecera .selector-lugar-caja { grid-area: lugar; min-width: 0; }
+  .comunidad.en-mapa .selector-lugar { width: 100%; min-height: 40px; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+  .comunidad.en-mapa .modo { grid-area: modo; margin: 0; flex: none; }
+  .comunidad.en-mapa .modo button { min-width: 64px; flex: none; }
+  .comunidad.en-mapa .comunidad-cabecera > .selector-lugar-caja:last-child { grid-area: menu; justify-self: end; }
+  .comunidad-mapa .mapa-brisa { top: 122px; right: 12px; }
+  .comunidad-mapa .mapa-brisa .orbe { --tam: 56px; --k: .28; }
+  .comunidad-mapa .mapa-brisa-globo { display: none; }
+  .maqueta-zoom { right: 12px; top: auto; bottom: 150px; transform: none; }
+  .mapa-controles { position: fixed; left: 12px; right: 12px; bottom: 14px; flex-direction: column; align-items: stretch; gap: 10px; }
+  .mapa-controles .mapa-leyenda { justify-content: center; gap: 4px 12px; padding: 8px 12px; border-radius: 16px; font-size: 13px; }
+  .mapa-controles .mapa-contar { width: 100%; justify-content: center; }
+  .comunidad-mapa:has(.maqueta) .mapa-tarjeta { bottom: 0; }
+  .maqueta-creditos { bottom: 150px; left: 14px; right: auto; }
+}

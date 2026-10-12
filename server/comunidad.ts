@@ -255,7 +255,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     const tablero = new Set(gridDisk(lugar.celda, 2));
     const celdas = [...tablero].map(c => {
       const [x, y] = proyectar(...cellToLatLng(c));
-      return { x, y, anillo: gridDistance(lugar.celda!, c), puntos: cellToBoundary(c).map(([la, lo]) => proyectar(la, lo)) };
+      return { id: c, x, y, anillo: gridDistance(lugar.celda!, c), puntos: cellToBoundary(c).map(([la, lo]) => proyectar(la, lo)) };
     });
     const ids = visibles.planes.map(p => p.id);
     const celdasDePlanes = ids.length ? await db.query<{ id: string; celda: string | null }>('select id, celda from planes where id = any($1)', [ids]) : [];
