@@ -32,6 +32,7 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 - La fecha de nacimiento completa se guarda: sirve para los «momentos de verdad» de la persona (por ejemplo, su cumpleaños).
 - Después del código, Brisa da la bienvenida (`bienvenida.tsx`) y se presenta como IA. Fondo: `public/backgrounds/brisa.mp4` (Higgsfield, 8 s). Hasta ~4 s trae texto que se deforma, así que solo se usa el tramo de 4,1 s al final, en bucle, y el panel de la interfaz tapa el panel del video.
 - Lo que la persona responde en el primer día (semilla, oficios, gente…) todavía vive solo en memoria.
+- **Planes, lugares guardados y Brisa confidente (12 de octubre):** nada de «pedir ayuda»; planes en lugares públicos con alcance por celdas (~2 km por defecto); lugares guardados como en Uber; piloto de barrios en Medellín. Ver `docs/09`, apartado 9.
 - **Dirección para el primer día (Mateo):** nada de cuestionario. Brisa conversa como quien conoce a alguien: cómo va tu día, qué hiciste, y al otro día qué harías en tal caso. Los datos se llenan a medida que pasa la conversación, a lo largo de varios días.
 - **Revisión humana:** los textos de términos y de tratamiento de datos están con el abogado (Ley 1581).
 
@@ -39,7 +40,7 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 
 Antes de escribir código que toque datos de personas, lee `docs/` (en especial privacidad y consentimiento). Si una tarea contradice una de estas reglas, detente y pregunta.
 
-1. Nunca se guarda ubicación exacta ni historial de ubicaciones. Ninguna base de datos contiene coordenadas. El Radar usa celdas aproximadas y etiquetas efímeras con caducidad.
+1. Nunca se guarda ubicación exacta ni historial de ubicaciones. Ninguna base de datos contiene coordenadas ni direcciones. Los lugares guardados de cada persona (hasta 5, privados) son celdas H3 de ~1 km sin historial; la distancia se muestra por franjas, nunca exacta. El Radar usa celdas aproximadas y etiquetas efímeras con caducidad. (Ajustada por Mateo el 12 de octubre de 2026; pendiente de revisión legal.)
 2. Lo íntimo se queda en el dispositivo por defecto: el estado del día, el Modo Invierno, la red declarada (personas que aún no usan MOAI) y las luces de ancestros.
 3. Nunca se sube la libreta de contactos.
 4. Nada de criptografía propia: se usa una librería auditada (por ejemplo, libsodium).

@@ -1,6 +1,6 @@
 # MOAI · Flujos de acceso, bienvenida y comunidad
 
-**Versión 1.1 · 12 de octubre de 2026.** Ajuste de la versión 1.0 (diseñada con ChatGPT el 11 de octubre) a lo que ya existe en el repositorio y a las decisiones de Mateo de esta semana. Los cambios frente a la 1.0 están en el apartado 0. Las reglas de `CLAUDE.md` mandan sobre este documento.
+**Versión 1.2 · 12 de octubre de 2026.** La 1.2 añade planes de la comunidad, lugares guardados, cómo nace un Moai y los principios de Brisa como confidente (apartado 9). Antes, la 1.1: Ajuste de la versión 1.0 (diseñada con ChatGPT el 11 de octubre) a lo que ya existe en el repositorio y a las decisiones de Mateo de esta semana. Los cambios frente a la 1.0 están en el apartado 0. Las reglas de `CLAUDE.md` mandan sobre este documento.
 
 ## 0. Qué cambió frente a la versión 1.0
 
@@ -16,6 +16,7 @@
 | Brisa | «Guía» | Además, siempre se presenta como IA (regla 12) | Regla del proyecto. |
 | Ubicación (P06) | Botón «Usar mi ubicación» con permiso del navegador y geocodificación | **Decidido:** solo manual. La ciudad ya viene del registro; aquí se confirma y se añade un barrio opcional | Reglas 1 y 6, y `privacy.test.ts` prohíbe la geolocalización; no hay geocodificador. |
 | Primer día | — | El cuestionario del prototipo (semilla, oficios, gente…) se reemplaza por conversación con Brisa a lo largo de varios días (ver apartado 4, P11) | Dirección de Mateo: «que no parezca un formulario». |
+| Pedir ayuda | «Encontrar apoyo» como intención y como acción | **Eliminado.** Pedir da vergüenza y etiqueta a la persona. Se reemplaza por **planes** (invitaciones abiertas) y por el cuidado que nace del grupo (apartado 9) | Decisión de Mateo. |
 | Pantalla principal | «Mi comunidad» (encuentros, saberes, apoyos, mensajes) | **Decidido: conviven.** Mi comunidad es la principal; la ciudad, el árbol, la calle y el Moai siguen como secciones | Decisión de Mateo. |
 | Tipografía | Sans redondeada, una sola familia | La define el diseño de Figma; se autoaloja con fontsource. Hoy hay Inter y Fraunces | Las maquetas de Mateo usan sans redondeada. |
 | Rutas | `/bienvenida`, `/registro`… | Hoy es una sola página con estados; hay que pasar a rutas reales sin añadir dependencias (History API) | Recargar, volver atrás y enlaces privados lo exigen. |
@@ -90,19 +91,54 @@ Diseño de Mateo: panel de vidrio centrado sobre el bosque en movimiento, Brisa 
 **¿Dónde quieres conectar con tu comunidad?** · «Elige una zona para descubrir personas y encuentros cerca de ti.» La ciudad del registro viene elegida; se confirma o se cambia, y se puede añadir un barrio en texto libre (no hay catálogo de barrios). **Confirmar** · **Lo haré después** (guarda `skipped`). Nota visible: «No necesitamos la dirección de tu casa. Tu zona no se muestra en tu perfil.» **Decidido:** sin «Usar mi ubicación» en esta versión. La zona es privada por defecto y solo ordena sugerencias.
 
 ### P07 · Intención 🆕 `/configuracion/intencion`
-Brisa pequeña arriba. **¿Qué te gustaría hacer hoy?** · «Te ayudaré a encontrar por dónde empezar.» · «Último paso · Puedes cambiarlo después». Tres tarjetas de selección única: **Conocer personas** (`connect`), **Compartir lo que sé** (`share`), **Encontrar apoyo** (`support`). Seleccionar no navega. **Continuar** (deshabilitado sin selección) · **Explorar primero** (guarda `skipped`).
+Brisa pequeña arriba. **¿Qué te gustaría hacer hoy?** · «Te ayudaré a encontrar por dónde empezar.» · «Último paso · Puedes cambiarlo después». Tres tarjetas de selección única: **Conocer personas** (`connect`), **Compartir lo que sé** (`share`), **Hacer algo juntos** (`together`: caminar, cocinar, aprender algo). Seleccionar no navega. **Continuar** (deshabilitado sin selección) · **Explorar primero** (guarda `skipped`).
 
 ### P08 · Mi comunidad 🆕 `/comunidad`
-Estado nuevo: **Hola, [nombre]. Este es tu espacio.** · «Puedes empezar por algo que disfrutas o por algo que necesitas.» · tarjeta pequeña de Brisa con **Ver cómo empezar** · tres acciones: **Explorar encuentros**, **Compartir un saber**, **Buscar apoyo** (la intención destaca una). Si se omitió la zona: recordatorio descartable. Estado recurrente: **Hola, [nombre]**, tu próximo encuentro y tus conversaciones solo si existen de verdad. Nunca inventar participantes, conversaciones, distancias ni recomendaciones; nada de contadores (regla 5). Navegación: Mi comunidad, Encuentros, Mensajes, Mi perfil. La ciudad del prototipo (árbol, calle, carta de Brisa, Radar, Moai) convive como sección propia, «Mi ciudad», enlazada desde Mi comunidad.
+Estado nuevo: **Hola, [nombre]. Este es tu espacio.** · «Puedes empezar por algo que disfrutas o proponiendo un plan.» · tarjeta pequeña de Brisa con **Ver cómo empezar** · **Planes cerca de ti** (apartado 9) · tres acciones: **Explorar planes**, **Compartir un saber**, **Proponer un plan** (la intención destaca una). Al principio nadie tiene Moai: Mi comunidad vive de los planes cercanos. Si se omitió la zona: recordatorio descartable. Estado recurrente: **Hola, [nombre]**, tu próximo encuentro y tus conversaciones solo si existen de verdad. Nunca inventar participantes, conversaciones, distancias ni recomendaciones; nada de contadores (regla 5). Navegación: Mi comunidad, Encuentros, Mensajes, Mi perfil. La ciudad del prototipo (árbol, calle, carta de Brisa, Radar, Moai) convive como sección propia, «Mi ciudad», enlazada desde Mi comunidad.
 
 ### P09 · Destinos de las acciones 🆕
-`/encuentros`, `/saberes/nuevo`, `/apoyos`, `/mensajes`, `/perfil`: pantallas mínimas y honestas (estado vacío o borrador real). Perfil: nombre, zona privada, intención editable y cerrar sesión. Ningún botón que parezca funcionar sin hacerlo.
+`/planes`, `/planes/nuevo`, `/saberes/nuevo`, `/mensajes`, `/perfil`: pantallas mínimas y honestas (estado vacío o borrador real). Perfil: nombre, lugares guardados, intención editable y cerrar sesión. Ningún botón que parezca funcionar sin hacerlo.
 
 ### P10 · Sesión vencida y cierre 🔧
 «Tu sesión terminó. Vuelve a entrar para continuar.» → **Iniciar sesión**, y después vuelve al destino interno pedido (nunca a URLs externas). Cerrar sesión ya existe (Ajustes); pasa a Mi perfil.
 
 ### P11 · Conocerse con Brisa 🆕 (siguiente etapa, después de este documento)
 Reemplaza el cuestionario del prototipo. Brisa pregunta poco y en días distintos, como quien conoce a alguien: cómo va tu día, qué hiciste; al otro día, qué harías en un caso hipotético. Las respuestas llenan el perfil (oficios, gustos, su gente) sin parecer un formulario. Siempre se puede no responder. Requiere su propio diseño y guion.
+
+## 9. Planes, lugares y Moais (v1.2)
+
+### 9.1 Pedir ayuda sin pedirla
+- **Brisa le habla al grupo, no a la persona** (nivel Moai de `docs/06`). Nadie tiene que declararse necesitado y nunca se nombra a quien menos participa.
+- **Primero se ofrece, después se recibe.** Cada persona cuenta qué trae en las manos; recibir es aceptar algo que otro ofreció.
+- **Pedir se convierte en invitar:** «¿Alguien se anima a caminar el sábado?». Cualquiera puede proponer un plan.
+- **Señales de un toque, sin explicar nada:** «Necesito que alguien me escriba», visible solo para quienes la persona eligió.
+- Todos dan y todos reciben, sin puntajes ni contadores (regla 5).
+
+### 9.2 Planes de la comunidad
+- Un plan tiene: qué, cuándo, **lugar público** (parque, biblioteca, café; nunca la casa de nadie), alcance y cupo opcional.
+- **Alcance** sobre celdas H3 de resolución 8 (~1 km de lado a lado): **Muy cerca** (la celda y sus vecinas, ~2 km; por defecto), **Mi zona** (dos anillos, ~4 km) o **Mi ciudad** (el municipio).
+- La distancia se muestra por franjas («a menos de 2 km»), **nunca en metros exactos**, para que no se pueda triangular dónde vive alguien.
+- Distinto del **Radar** (`docs/03`): el Radar es solo entre personas que ya tienen un vínculo y lo activaron ambas; los planes son para conocer gente nueva.
+
+### 9.3 Lugares guardados (como en Uber)
+- «Casa», «Donde mis papás», «Trabajo»…: hasta 5 lugares, cada uno con **nombre + celda H3 de ~1 km**. Sin dirección, sin coordenadas, sin historial (cambiar un lugar lo reemplaza). Se pueden borrar.
+- **Privados siempre:** nadie ve tus lugares. El lugar de los papás revela información familiar: revisión legal.
+- **Lugar activo:** la persona elige dónde está («¿Dónde estás esta semana?»); no hay rastreo automático. Los planes que ve dependen del lugar activo.
+- **Cómo se elige:** piloto en **Medellín por barrio**, con el catálogo oficial de barrios y comunas (cada barrio se convierte en su celda). En las demás ciudades, por ahora, solo el municipio y los planes se ven a nivel ciudad.
+- Reemplaza «Tu comunidad» (P06): la ciudad y el barrio pasan a ser el primer lugar guardado, «Casa».
+
+### 9.4 Cómo nace un Moai
+1. La persona ve planes cerca y va a alguno.
+2. Después marca **«Ya nos vimos»** (`docs/06`).
+3. Cuando coincide varias veces con las mismas personas, Brisa les pregunta a todas: **«¿Quieren formar un Moai?»**. Lo deciden ellas (3 a 5 personas); el algoritmo solo propone.
+
+### 9.5 Brisa como confidente: «te conoce, pero no te diagnostica»
+- **Conversación, no test:** como mucho una pregunta al día, opcional y liviana («¿Qué hiciste hoy?», «Si tuvieras una tarde libre, ¿qué harías?»). Reemplaza el cuestionario del primer día (P11).
+- **«Lo que Brisa sabe de ti»:** una página con lo que la persona contó, con sus palabras, que puede corregir o borrar. Nada de etiquetas ocultas.
+- **Para qué sirve:** proponer planes y personas afines, siempre con el motivo («a ti y a Carmen les gusta cocinar»; regla 9).
+- **Lo que le cuentas a Brisa no sale de Brisa**, salvo que digas «sí, cuéntaselo a mi Moai» (escalera de cuidado de `docs/06`).
+- **Nunca infiere ánimo ni salud** (regla 6 y regla del espejo). Las escalas validadas de soledad (UCLA de 3 preguntas, De Jong Gierveld) solo se usan de forma abierta, con consentimiento y en el piloto, para medir si MOAI ayuda, no para etiquetar a nadie.
+- Brisa es un puente hacia otras personas, no un sustituto: su éxito es la reconexión, no el tiempo de conversación (regla 13). Requiere decidir el proveedor de IA (pendiente).
 
 ## 5. Navegación y estado
 
@@ -130,7 +166,7 @@ con sesión:
 ```sql
 alter table cuentas add column barrio text;                       -- opcional, texto libre
 alter table cuentas add column comunidad_estado text not null default 'pending';  -- pending | completed | skipped
-alter table cuentas add column intencion text;                    -- connect | share | support
+alter table cuentas add column intencion text;                    -- connect | share | together
 alter table cuentas add column intencion_estado text not null default 'pending';
 alter table cuentas add column visibilidad_zona text not null default 'private';
 ```
