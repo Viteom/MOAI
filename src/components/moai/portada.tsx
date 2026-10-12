@@ -6,6 +6,7 @@ import type { EntradaRegistro } from '@/lib/registro';
 import { MoaiApp } from './app';
 import { Acceso, Codigo, Menor, PasoComunidad, PasoNacimiento, Registro, TextoLegal, registroVacio } from './cuenta';
 import { Bienvenida } from './bienvenida';
+import { MiComunidad, MisLugares, NuevoPlan } from './comunidad';
 import { Marco } from './marco';
 
 // P01 · Portada pública (horizontal): una ciudad de fondo y texto mínimo.
@@ -94,9 +95,12 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     if (ruta === '/configuracion/nacimiento') return <PasoNacimiento nombre={perfil.nombre} guardar={api.guardarNacimiento} onGuardado={activa}
       onMenor={() => { setMenor(true); setSesion({ estado: 'anonima' }); }}/>;
     if (ruta === '/configuracion/comunidad') return <PasoComunidad guardar={api.guardarComunidad} onGuardado={activa}/>;
-    // Provisional hasta «Intención» y «Mi comunidad» (docs/09, P07–P08): la ciudad del prototipo.
-    if (ruta === '/ciudad') return <MoaiApp inicio="home" estadoInicial={{ nombre: perfil.nombre }}
-      cuenta={{ onSalir: async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); } }}/>;
+    const salir = async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); };
+    if (ruta === '/comunidad') return <MiComunidad perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
+    if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
+    if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
+    // «Mi ciudad»: la ciudad del prototipo (árbol, calle, carta de Brisa), que convive con Mi comunidad.
+    if (ruta === '/ciudad') return <MoaiApp inicio="home" estadoInicial={{ nombre: perfil.nombre }} cuenta={{ onSalir: salir }}/>;
   }
   if (ruta === '/') return <Portada onCrear={() => ir('/bienvenida')} onEntrar={() => ir('/acceso')}/>;
   return <Abriendo/>; // mientras el resolvedor redirige

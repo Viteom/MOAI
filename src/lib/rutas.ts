@@ -5,8 +5,8 @@ import type { Perfil } from './api';
 
 export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar', '/terminos', '/privacidad'] as const;
 export const rutasPasos = ['/configuracion/nacimiento', '/configuracion/comunidad'] as const;
-export const rutasPrivadas = ['/ciudad'] as const;
-export const DESTINO_INICIAL = '/ciudad';
+export const rutasPrivadas = ['/comunidad', '/lugares', '/planes/nuevo', '/ciudad'] as const;
+export const DESTINO_INICIAL = '/comunidad';
 // Se pueden ver con o sin sesión (los textos legales se abren desde el registro).
 const rutasAbiertas = ['/terminos', '/privacidad'];
 

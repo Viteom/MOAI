@@ -1,21 +1,29 @@
 // Único punto del frontend que habla con la red, y solo con /api del mismo origen
 // (src/test/privacy.test.ts lo comprueba). Nada se guarda en el navegador: la sesión es una cookie httpOnly.
 import type { Canal, EntradaRegistro, Errores } from './registro';
+import type { Alcance, EntradaLugar, EntradaPlan } from './lugares';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
 export type Paso = "pending" | "completed" | "skipped";
-export type Perfil = { nombre: string; ciudad: string | null; barrio: string | null; nacimientoPendiente: boolean; comunidad: Paso };
+// Un lugar guardado. `zona` es el nombre legible («Laureles, Medellín»); la celda nunca sale del servidor.
+export type Lugar = { id: string; nombre: string; ciudad: string; barrio: string | null; zona: string; activo: boolean };
+export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: Paso; lugar: Lugar | null };
+// Un plan visto por alguien: la distancia va por franjas («A menos de 2 km»), nunca exacta.
+export type Plan = {
+  id: string; titulo: string; descripcion: string; cuando: string; lugarPublico: string; zona: string; franja: string; alcance: Alcance;
+  autor: string; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
+};
 // `status` 0 = sin conexión: no es lo mismo que «sin sesión» (401).
 export type Respuesta<T> = { ok: true; datos: T } | { ok: false; error: string; errores?: Errores; status?: number };
 export type Contacto = { canal: Canal; destino: string; pais?: string };
 
 const sinConexion = 'No pudimos conectarnos. Revisa tu internet e intenta de nuevo.';
 
-async function llamar<T>(ruta: string, cuerpo?: object): Promise<Respuesta<T>> {
+async function llamar<T>(ruta: string, cuerpo?: object, metodo?: 'DELETE'): Promise<Respuesta<T>> {
   try {
     const respuesta = await fetch(`/api/${ruta}`, {
-      method: cuerpo ? 'POST' : 'GET',
+      method: metodo ?? (cuerpo ? 'POST' : 'GET'),
       credentials: 'same-origin',
       headers: cuerpo ? { 'Content-Type': 'application/json' } : undefined,
       body: cuerpo ? JSON.stringify(cuerpo) : undefined,
@@ -34,7 +42,16 @@ export const api = {
   verificar: (contacto: Contacto & { codigo: string }) => llamar<Perfil>('verificar', contacto),
   sesion: () => llamar<Perfil>('sesion'),
   guardarNacimiento: (fechaNacimiento: string) => llamar<Perfil>('perfil/nacimiento', { fechaNacimiento }),
-  guardarComunidad: (comunidad: { ciudad: string; barrio?: string } | { omitir: true }) => llamar<Perfil>('perfil/comunidad', comunidad),
+  guardarComunidad: (comunidad: { ciudad: string; barrio?: string | null } | { omitir: true }) => llamar<Perfil>('perfil/comunidad', comunidad),
+  lugares: () => llamar<Lugar[]>('lugares'),
+  crearLugar: (lugar: EntradaLugar) => llamar<Lugar[]>('lugares', lugar),
+  activarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}/activar`, {}),
+  borrarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}`, undefined, 'DELETE'),
+  planes: () => llamar<Plan[]>('planes'),
+  crearPlan: (plan: EntradaPlan) => llamar<Plan[]>('planes', plan),
+  irAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/ir`, {}),
+  noIrAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/no-ir`, {}),
+  cancelarPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/cancelar`, {}),
   salir: () => llamar<{ ok: true }>('salir', {}),
 };
 export type Api = typeof api;

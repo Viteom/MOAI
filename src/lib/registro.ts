@@ -90,15 +90,6 @@ export function validarNacimiento(fechaNacimiento: string, hoy: Date): { ok: tru
   return { ok: true };
 }
 
-// Paso «Tu comunidad»: ciudad de la lista y barrio opcional en texto libre (no hay catálogo de barrios).
-export function validarComunidad(ciudad: string, barrio = ''): { ok: true; barrio: string | null } | { ok: false; errores: Errores } {
-  const errores: Errores = {};
-  if (!porCodigo.has(ciudad)) errores.ciudad = 'Elige tu ciudad de la lista.';
-  const limpio = barrio.trim().replace(/\s+/g, ' ');
-  if (limpio.length > 80) errores.barrio = 'Usa un nombre de barrio más corto.';
-  return Object.keys(errores).length ? { ok: false, errores } : { ok: true, barrio: limpio || null };
-}
-
 export function enmascarar(canal: Canal, destino: string): string {
   if (canal === 'correo') {
     const [usuario, dominio] = destino.split('@');

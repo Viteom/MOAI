@@ -33,6 +33,8 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 - Después del código, Brisa da la bienvenida (`bienvenida.tsx`) y se presenta como IA. Fondo: `public/backgrounds/brisa.mp4` (Higgsfield, 8 s). Hasta ~4 s trae texto que se deforma, así que solo se usa el tramo de 4,1 s al final, en bucle, y el panel de la interfaz tapa el panel del video.
 - Lo que la persona responde en el primer día (semilla, oficios, gente…) todavía vive solo en memoria.
 - **Planes, lugares guardados y Brisa confidente (12 de octubre):** nada de «pedir ayuda»; planes en lugares públicos con alcance por celdas (~2 km por defecto); lugares guardados como en Uber; piloto de barrios en Medellín. Ver `docs/09`, apartado 9.
+- **Construido:** `server/comunidad.ts` (lugares y planes, alcance con `h3-js`), pantallas en `src/components/moai/comunidad.tsx` (Mi comunidad, Mis lugares, Proponer un plan). Reglas compartidas en `src/lib/lugares.ts`.
+- **Pendiente:** el catálogo de barrios de Medellín (`src/lib/colombia/barrios-medellin.json`, hoy vacío). El servidor de mapas de la Alcaldía rechaza descargas automáticas: Mateo lo descarga desde GeoMedellín y se procesa con `node scripts/barrios-medellin.mjs archivo.geojson`. Mientras tanto, Medellín funciona como las demás ciudades (planes a nivel ciudad). Confirmar la licencia de uso de la capa.
 - **Dirección para el primer día (Mateo):** nada de cuestionario. Brisa conversa como quien conoce a alguien: cómo va tu día, qué hiciste, y al otro día qué harías en tal caso. Los datos se llenan a medida que pasa la conversación, a lo largo de varios días.
 - **Revisión humana:** los textos de términos y de tratamiento de datos están con el abogado (Ley 1581).
 

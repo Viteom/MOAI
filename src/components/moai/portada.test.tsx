@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Plataforma } from './portada';
-import { enmascarar, normalizarDestino, validarComunidad, validarNacimiento, validarRegistro } from '@/lib/registro';
+import { enmascarar, normalizarDestino, validarNacimiento, validarRegistro } from '@/lib/registro';
+import { validarLugar } from '@/lib/lugares';
 import type { Api, Perfil } from '@/lib/api';
 
-const listo: Perfil = { nombre: 'Rosa', ciudad: '05001', barrio: null, nacimientoPendiente: false, comunidad: 'completed' };
-const recien: Perfil = { nombre: 'Rosa', ciudad: null, barrio: null, nacimientoPendiente: true, comunidad: 'pending' };
+const casa = { id: 'l1', nombre: 'Casa', ciudad: '05001', barrio: null, zona: 'Medellín', activo: true };
+const listo: Perfil = { nombre: 'Rosa', nacimientoPendiente: false, comunidad: 'completed', lugar: casa };
+const recien: Perfil = { nombre: 'Rosa', nacimientoPendiente: true, comunidad: 'pending', lugar: null };
 
 // API de mentira con las mismas reglas de validación que el servidor; el código correcto es 123456.
 // `nuevo` decide si el código abre una cuenta recién creada (con pasos pendientes) o una que ya existía.
@@ -31,11 +33,20 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     }),
     guardarComunidad: vi.fn(async c => {
       if ('omitir' in c) return { ok: true as const, datos: (perfil = { ...perfil, comunidad: 'skipped' as const }) };
-      const r = validarComunidad(c.ciudad, c.barrio);
-      return r.ok ? { ok: true as const, datos: (perfil = { ...perfil, ciudad: c.ciudad, barrio: r.barrio, comunidad: 'completed' as const }) }
+      const r = validarLugar({ nombre: 'Casa', ciudad: c.ciudad, barrio: c.barrio });
+      return r.ok ? { ok: true as const, datos: (perfil = { ...perfil, comunidad: 'completed' as const, lugar: { ...casa, ciudad: c.ciudad, zona: 'Medellín' } }) }
         : { ok: false as const, error: '', errores: r.errores, status: 400 };
     }),
     salir: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
+    lugares: vi.fn(async () => ({ ok: true as const, datos: perfil.lugar ? [perfil.lugar] : [] })),
+    crearLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    activarLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    borrarLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    planes: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    crearPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    irAPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    noIrAPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cancelarPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
   };
 }
 
@@ -80,10 +91,10 @@ describe('Resolución de sesión (P00)', () => {
     expect(api.sesion).toHaveBeenCalledTimes(2);
   });
 
-  it('con sesión y pasos resueltos entra directo a su ciudad', async () => {
+  it('con sesión y pasos resueltos entra directo a Mi comunidad', async () => {
     render(<Plataforma api={apiFalsa('activa')} />);
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
-    expect(window.location.pathname).toBe('/ciudad');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/comunidad');
   });
 
   it('una ruta privada sin sesión pide entrar y después vuelve a ella', async () => {
@@ -107,7 +118,7 @@ describe('Resolución de sesión (P00)', () => {
 });
 
 describe('Crear cuenta', () => {
-  it('Brisa → registro → código → fecha de nacimiento → comunidad → ciudad', async () => {
+  it('Brisa → registro → código → fecha de nacimiento → casa → Mi comunidad', async () => {
     const api = apiFalsa();
     render(<Plataforma api={api} />);
     await portadaLista();
@@ -128,13 +139,12 @@ describe('Crear cuenta', () => {
     expect(window.location.pathname).toBe('/configuracion/nacimiento');
     escribir('Día', '02'); escribir('Mes', '03'); escribir('Año', '1950');
     clic('Continuar');
-    expect(await titulo('¿Dónde quieres conectar con tu comunidad?')).toBeInTheDocument();
+    expect(await titulo('¿Dónde vives?')).toBeInTheDocument();
     escribir('Tu ciudad', 'medel');
     fireEvent.click(screen.getByRole('option', { name: /Medellín/ }));
-    escribir('Tu barrio (opcional)', 'Laureles');
-    clic('Confirmar');
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
-    expect(api.guardarComunidad).toHaveBeenCalledWith({ ciudad: '05001', barrio: 'Laureles' });
+    clic('Guardar como «Casa»');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(api.guardarComunidad).toHaveBeenCalledWith({ ciudad: '05001', barrio: null });
   });
 
   it('la comunidad se puede dejar para después', async () => {
@@ -143,9 +153,10 @@ describe('Crear cuenta', () => {
     await titulo('Qué gusto, Rosa.');
     escribir('Día', '02'); escribir('Mes', '03'); escribir('Año', '1950');
     clic('Continuar');
-    await titulo('¿Dónde quieres conectar con tu comunidad?');
+    await titulo('¿Dónde vives?');
     clic('Lo haré después');
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(screen.getByText('Elige dónde vives para ver planes cerca de ti.')).toBeInTheDocument();
     expect(api.guardarComunidad).toHaveBeenCalledWith({ omitir: true });
   });
 
@@ -208,7 +219,7 @@ describe('Crear cuenta', () => {
 });
 
 describe('Iniciar sesión', () => {
-  it('correo → código → su ciudad, sin Brisa ni pasos ya resueltos', async () => {
+  it('correo → código → Mi comunidad, sin Brisa ni pasos ya resueltos', async () => {
     render(<Plataforma api={apiFalsa('anonima', false)} />);
     await portadaLista();
     clic('Iniciar sesión');
@@ -221,7 +232,7 @@ describe('Iniciar sesión', () => {
     expect(await screen.findByText(/no coincide/)).toBeInTheDocument();
     escribir('Código de acceso', '123456');
     clic('Verificar y continuar');
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
   });
 
   it('«Cambiar correo» vuelve al formulario de acceso', async () => {

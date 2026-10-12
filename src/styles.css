@@ -396,3 +396,51 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .bosque .casilla input:focus-visible { outline: 3px solid var(--lima); outline-offset: 3px; }
 .bosque .casilla input[aria-invalid="true"] { border-color: oklch(.82 .11 40); }
 .bosque .portada-boton { flex: none; }
+
+/* Uso cotidiano: Mi comunidad, Mis lugares, Proponer un plan (superficie sobria, docs/09) */
+.diario { min-height: 100svh; color: var(--niebla); background: linear-gradient(180deg, oklch(.2 .03 170), var(--bosque) 40%); }
+.diario-cabecera { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding: 14px clamp(20px, 4vw, 48px); background: color-mix(in oklab, var(--bosque) 88%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in oklab, var(--niebla) 12%, transparent); }
+.diario-marca { font-weight: 600; letter-spacing: .4em; }
+.diario-cabecera nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.diario-cabecera nav button { min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--niebla); font-size: 16px; cursor: pointer; }
+.diario-cabecera nav button:hover { background: color-mix(in oklab, var(--niebla) 10%, transparent); }
+.diario-cabecera nav button[aria-current="page"] { background: color-mix(in oklab, var(--lima) 22%, transparent); }
+.diario-contenido { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; display: flex; flex-direction: column; gap: 20px; }
+.diario-contenido h1 { margin: 0; font: 700 clamp(30px, 3vw, 40px)/1.1 var(--font-sans); }
+.diario-contenido h1:focus { outline: none; }
+.diario-contenido h2 { margin: 8px 0 12px; font: 600 24px/1.2 var(--font-sans); }
+.diario-bajada { margin: -8px 0 0; font-size: 18px; color: color-mix(in oklab, var(--niebla) 80%, transparent); }
+.diario-lugar { margin: 0; font-size: 18px; }
+.diario-lugar button, .sugerencias button { margin-left: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--niebla) 40%, transparent); background: transparent; color: var(--niebla); font-size: 15px; cursor: pointer; }
+.sugerencias { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -6px; }
+.sugerencias button { margin: 0; }
+.diario-aviso { padding: 18px; border-radius: 18px; background: color-mix(in oklab, var(--bosque-alto) 90%, transparent); border: 1px solid color-mix(in oklab, var(--cian) 40%, transparent); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.diario-aviso p { margin: 0; font-size: 18px; }
+.brisa-tarjeta { display: flex; align-items: flex-start; gap: 16px; padding: 18px; border-radius: 20px; background: color-mix(in oklab, var(--bosque-alto) 85%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 14%, transparent); }
+.brisa-tarjeta .orbe { position: relative; top: auto; left: auto; transform: none; flex-shrink: 0; --tam: 72px; --k: .36; }
+.brisa-tarjeta p { margin: 0 0 6px; font-size: 17px; line-height: 1.5; }
+.brisa-tarjeta .brisa-enlace { padding: 0; }
+.diario-acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+.diario-boton { min-height: 48px; padding: 0 22px; border-radius: 999px; font-size: 17px; font-weight: 500; background: transparent; color: var(--niebla); border: 1.5px solid color-mix(in oklab, var(--niebla) 45%, transparent); box-shadow: none; }
+.diario-boton:hover { background: color-mix(in oklab, var(--niebla) 10%, transparent); }
+.diario-boton.principal { background: var(--lima); color: var(--bosque); border-color: var(--lima); font-weight: 600; }
+.planes { display: grid; gap: 14px; }
+.plan { padding: 18px 20px; border-radius: 18px; background: color-mix(in oklab, var(--bosque-alto) 92%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 14%, transparent); display: flex; flex-direction: column; gap: 6px; }
+.plan h3 { margin: 0; font: 600 21px/1.25 var(--font-sans); }
+.plan p { margin: 0; font-size: 17px; line-height: 1.5; }
+.plan-cuando { color: var(--lima); font-weight: 500; }
+.plan-donde, .plan-autor { color: color-mix(in oklab, var(--niebla) 72%, transparent); }
+.plan-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 6px; }
+.plan-voy { font-weight: 600; color: var(--lima); }
+.lugares { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.lugares li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 16px 18px; border-radius: 18px; background: color-mix(in oklab, var(--bosque-alto) 92%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 14%, transparent); }
+.lugares li.activo { border-color: var(--lima); }
+.lugares li > div { flex: 1 1 200px; display: flex; flex-direction: column; }
+.lugares li strong { font-size: 19px; }
+.lugares li span { color: color-mix(in oklab, var(--niebla) 72%, transparent); }
+.diario-form { padding: 20px; border-radius: 20px; background: color-mix(in oklab, var(--bosque-alto) 70%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 12%, transparent); }
+.diario-form .cuenta-campo { background: color-mix(in oklab, oklch(.16 .02 170) 80%, transparent); border: 1.5px solid color-mix(in oklab, var(--niebla) 45%, transparent); }
+.diario-textarea { min-height: 96px; padding: 12px 16px; resize: vertical; }
+.diario-corto { max-width: 160px; }
+.alcance { display: flex; align-items: center; gap: 12px; min-height: 48px; font-size: 17px; cursor: pointer; }
+.alcance input { width: 22px; height: 22px; accent-color: var(--lima); }

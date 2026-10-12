@@ -3,9 +3,11 @@
 import Fastify, { type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
-import { codigoValido, enmascarar, normalizarDestino, validarComunidad, validarNacimiento, validarRegistro, VERSION_TEXTOS, type Canal, type EntradaRegistro } from '../src/lib/registro';
+import { codigoValido, enmascarar, normalizarDestino, validarNacimiento, validarRegistro, VERSION_TEXTOS, type Canal, type EntradaRegistro } from '../src/lib/registro';
 import type { Paso, Perfil } from '../src/lib/api';
 import { MINUTOS_VIGENCIA, type Proposito, type Vias } from './envios';
+import { aLugar, registrarComunidad } from './comunidad';
+import { validarLugar } from '../src/lib/lugares';
 import type { Db } from './db';
 
 export const COOKIE_SESION = 'moai_sesion';
@@ -78,9 +80,11 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
 
   // Lo que el frontend necesita para saber qué paso falta (docs/09, apartado 5).
   const perfilDe = async (id: string): Promise<Perfil> => {
-    const [c] = await db.query<{ nombre: string; ciudad: string | null; barrio: string | null; fecha_nacimiento: string | null; comunidad_estado: Paso }>(
-      'select nombre, ciudad, barrio, fecha_nacimiento, comunidad_estado from cuentas where id = $1', [id]);
-    return { nombre: c.nombre, ciudad: c.ciudad, barrio: c.barrio, nacimientoPendiente: !c.fecha_nacimiento, comunidad: c.comunidad_estado };
+    const [c] = await db.query<{ nombre: string; fecha_nacimiento: string | null; comunidad_estado: Paso }>(
+      'select nombre, fecha_nacimiento, comunidad_estado from cuentas where id = $1', [id]);
+    const [lugar] = await db.query<{ id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean }>(
+      'select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [id]);
+    return { nombre: c.nombre, nacimientoPendiente: !c.fecha_nacimiento, comunidad: c.comunidad_estado, lugar: lugar ? aLugar(lugar) : null };
   };
   const cuentaDeSesion = async (request: FastifyRequest) => {
     const token = request.cookies[COOKIE_SESION];
@@ -158,7 +162,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     return perfilDe(id);
   });
 
-  // «Tu comunidad»: ciudad y barrio opcional, o «Lo haré después». Nunca coordenadas (regla 1).
+  // «Tu comunidad»: el primer lugar guardado, «Casa» (ciudad y, en Medellín, barrio), o «Lo haré después».
   app.post('/api/perfil/comunidad', async (request, reply) => {
     const id = await cuentaDeSesion(request);
     if (!id) return reply.code(401).send({ error: 'Sin sesión.' });
@@ -167,11 +171,17 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
       await db.query(`update cuentas set comunidad_estado = 'skipped' where id = $1`, [id]);
       return perfilDe(id);
     }
-    const resultado = validarComunidad(body.ciudad ?? '', body.barrio ?? '');
+    const resultado = validarLugar({ nombre: 'Casa', ciudad: body.ciudad ?? '', barrio: body.barrio || null });
     if (!resultado.ok) return reply.code(400).send({ errores: resultado.errores });
-    await db.query(`update cuentas set ciudad = $2, barrio = $3, comunidad_estado = 'completed' where id = $1`, [id, body.ciudad, resultado.barrio]);
+    const { ciudad, barrio, celda } = resultado.lugar;
+    await db.query('delete from lugares where cuenta_id = $1 and nombre = $2', [id, 'Casa']);
+    await db.query('update lugares set activo = false where cuenta_id = $1', [id]);
+    await db.query('insert into lugares (cuenta_id, nombre, ciudad, barrio, celda, activo) values ($1, $2, $3, $4, $5, true)', [id, 'Casa', ciudad, barrio, celda]);
+    await db.query(`update cuentas set comunidad_estado = 'completed' where id = $1`, [id]);
     return perfilDe(id);
   });
+
+  registrarComunidad(app, db, cuentaDeSesion, ahora);
 
   app.post('/api/salir', async (request, reply) => {
     const token = request.cookies[COOKIE_SESION];

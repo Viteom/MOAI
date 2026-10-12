@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { buscarMunicipios, municipioPorCodigo, paises, EDAD_MINIMA, WHATSAPP_DISPONIBLE, type Canal, type EntradaRegistro, type Errores } from '@/lib/registro';
 import type { Contacto, Envio, Perfil, Respuesta } from '@/lib/api';
 import { HojaBosque } from './bosque';
+import { barrioPorCodigo, buscarBarrios, hayBarrios } from '@/lib/lugares';
 
 const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
-function Campo({ etiqueta, error, children, ayuda }: { etiqueta: string; error?: string; ayuda?: string; children: (id: string, describedBy?: string) => ReactNode }) {
+export function Campo({ etiqueta, error, children, ayuda }: { etiqueta: string; error?: string; ayuda?: string; children: (id: string, describedBy?: string) => ReactNode }) {
   const id = useId();
   const nota = error ? `${id}-error` : ayuda ? `${id}-ayuda` : undefined;
   return <div className="campo">
@@ -41,7 +42,7 @@ function Contactos({ canal, onCanal, destino, onDestino, pais, onPais, error }: 
   </>;
 }
 
-function Ciudad({ valor, onValor, error }: { valor: string; onValor: (codigo: string) => void; error?: string }) {
+export function Ciudad({ valor, onValor, error }: { valor: string; onValor: (codigo: string) => void; error?: string }) {
   const elegida = municipioPorCodigo(valor);
   const [texto, setTexto] = useState(elegida ? `${elegida.nombre}, ${elegida.departamento}` : '');
   const [abierta, setAbierta] = useState(false);
@@ -239,16 +240,35 @@ export function Menor({ onPortada }: { onPortada: () => void }) {
   </HojaBosque>;
 }
 
-// P06 · Tu comunidad: solo manual (decisión de Mateo). Barrio opcional; se puede dejar para después.
+/// Barrio de Medellín (catálogo oficial): se elige de la lista; cada barrio tiene su celda de ~1 km.
+export function BarrioCampo({ valor, onValor, error, etiqueta = 'Tu barrio' }: { valor: string; onValor: (codigo: string) => void; error?: string; etiqueta?: string }) {
+  const elegido = barrioPorCodigo(valor);
+  const [texto, setTexto] = useState(elegido ? elegido.nombre : '');
+  const [abierta, setAbierta] = useState(false);
+  const opciones = abierta && !elegido ? buscarBarrios(texto) : [];
+  const lista = useId();
+  return <Campo etiqueta={etiqueta} error={error} ayuda="Elige el barrio de la lista. Nadie más lo ve.">{(id, d) => <div className="ciudad">
+    <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" role="combobox" aria-expanded={opciones.length > 0} aria-controls={lista} aria-autocomplete="list" autoComplete="off" placeholder="Escribe tu barrio"
+      value={texto} onChange={e => { setTexto(e.target.value); setAbierta(true); if (valor) onValor(''); }} onBlur={() => window.setTimeout(() => setAbierta(false), 150)}/>
+    {opciones.length > 0 && <ul id={lista} role="listbox" className="ciudad-opciones">
+      {opciones.map(b => <li key={b.codigo} role="option" aria-selected={false} onMouseDown={e => e.preventDefault()} onClick={() => { onValor(b.codigo); setTexto(b.nombre); setAbierta(false); }}>
+        <strong>{b.nombre}</strong><span>{b.comuna}</span>
+      </li>)}
+    </ul>}
+  </div>}</Campo>;
+}
+
+// P06 · Tu comunidad: el primer lugar guardado, «Casa». Solo manual (decisión de Mateo).
+// En Medellín, con el catálogo de barrios, se elige el barrio; en las demás ciudades, por ahora, solo el municipio.
 export function PasoComunidad({ guardar, onGuardado }: {
-  guardar: (comunidad: { ciudad: string; barrio?: string } | { omitir: true }) => Promise<Respuesta<Perfil>>; onGuardado: (perfil: Perfil) => void;
+  guardar: (comunidad: { ciudad: string; barrio?: string | null } | { omitir: true }) => Promise<Respuesta<Perfil>>; onGuardado: (perfil: Perfil) => void;
 }) {
   const [ciudad, setCiudad] = useState('');
   const [barrio, setBarrio] = useState('');
-  const [errores, setErrores] = useState<Errores>({});
+  const [errores, setErrores] = useState<Partial<Record<string, string>>>({});
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
-  async function enviar(datos: { ciudad: string; barrio?: string } | { omitir: true }) {
+  async function enviar(datos: { ciudad: string; barrio?: string | null } | { omitir: true }) {
     if (enviando) return;
     setEnviando(true); setError(''); setErrores({});
     const respuesta = await guardar(datos);
@@ -256,13 +276,13 @@ export function PasoComunidad({ guardar, onGuardado }: {
     if (respuesta.ok) onGuardado(respuesta.datos);
     else { setErrores(respuesta.errores ?? {}); setError(respuesta.errores ? '' : respuesta.error); }
   }
-  return <HojaBosque titulo="¿Dónde quieres conectar con tu comunidad?" bajada="Elige una zona para descubrir personas y encuentros cerca de ti.">
-    <form className="cuenta-form" onSubmit={e => { e.preventDefault(); void enviar({ ciudad, barrio }); }} noValidate>
-      <Ciudad valor={ciudad} onValor={setCiudad} error={errores.ciudad}/>
-      <Campo etiqueta="Tu barrio (opcional)" error={errores.barrio}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!errores.barrio} className="cuenta-campo" maxLength={80} placeholder="Por ejemplo, Laureles" value={barrio} onChange={e => setBarrio(e.target.value)}/>}</Campo>
-      <p className="campo-ayuda">No necesitamos la dirección de tu casa. Tu zona no se muestra en tu perfil.</p>
+  return <HojaBosque titulo="¿Dónde vives?" bajada="Así te muestro planes y personas cerca de ti. Después puedes agregar otros lugares, como la casa de tus papás.">
+    <form className="cuenta-form" onSubmit={e => { e.preventDefault(); void enviar({ ciudad, barrio: barrio || null }); }} noValidate>
+      <Ciudad valor={ciudad} onValor={c => { setCiudad(c); setBarrio(''); }} error={errores.ciudad}/>
+      {hayBarrios(ciudad) && <BarrioCampo valor={barrio} onValor={setBarrio} error={errores.barrio}/>}
+      <p className="campo-ayuda">No necesitamos la dirección de tu casa. Guardamos solo una zona de cerca de 1 km y nadie más la ve.</p>
       {error && <p className="campo-error" role="alert">{error}</p>}
-      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Guardando…' : 'Confirmar'}</Button>
+      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Guardando…' : 'Guardar como «Casa»'}</Button>
       <div className="cuenta-secundarias">
         <Button type="button" className="cuenta-enlace" onClick={() => void enviar({ omitir: true })}>Lo haré después</Button>
       </div>

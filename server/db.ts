@@ -28,6 +28,40 @@ alter table cuentas add column if not exists comunidad_estado text not null defa
 update cuentas set comunidad_estado = 'completed' where ciudad is not null and comunidad_estado = 'pending';
 alter table cuentas add column if not exists recordatorios int not null default 0;
 alter table cuentas add column if not exists ultimo_recordatorio timestamptz;
+create table if not exists lugares (
+  id uuid primary key default gen_random_uuid(),
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  nombre text not null,
+  ciudad char(5) not null,
+  barrio text,
+  celda text,
+  activo boolean not null default false,
+  creado_en timestamptz not null default now()
+);
+create unique index if not exists lugares_un_activo on lugares (cuenta_id) where activo;
+insert into lugares (cuenta_id, nombre, ciudad, activo) select c.id, 'Casa', c.ciudad, true from cuentas c where c.ciudad is not null and not exists (select 1 from lugares l where l.cuenta_id = c.id);
+create table if not exists planes (
+  id uuid primary key default gen_random_uuid(),
+  autor_id uuid not null references cuentas(id) on delete cascade,
+  titulo text not null,
+  descripcion text not null default '',
+  cuando timestamptz not null,
+  lugar_publico text not null,
+  ciudad char(5) not null,
+  barrio text,
+  celda text,
+  alcance text not null check (alcance in ('cerca', 'zona', 'ciudad')),
+  cupo int,
+  cancelado_en timestamptz,
+  creado_en timestamptz not null default now()
+);
+create index if not exists planes_ciudad_cuando on planes (ciudad, cuando);
+create table if not exists plan_asistentes (
+  plan_id uuid not null references planes(id) on delete cascade,
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  unido_en timestamptz not null default now(),
+  primary key (plan_id, cuenta_id)
+);
 create table if not exists consentimientos (
   id bigserial primary key,
   cuenta_id uuid not null references cuentas(id) on delete cascade,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { destinoSeguro, resolverRuta } from './rutas';
 import type { Perfil } from './api';
 
-const listo: Perfil = { nombre: 'Rosa', ciudad: '05001', barrio: null, nacimientoPendiente: false, comunidad: 'completed' };
+const listo: Perfil = { nombre: 'Rosa', nacimientoPendiente: false, comunidad: 'completed', lugar: null };
 
 const activa = { estado: 'activa' as const, perfil: listo };
 const conPasos = (cambio: Partial<Perfil>) => ({ estado: 'activa' as const, perfil: { ...listo, ...cambio } });
@@ -19,8 +19,8 @@ describe('resolverRuta', () => {
     expect(resolverRuta('/no-existe', anonima, null)).toBe('/');
   });
   it('con sesión: las pantallas de entrada llevan al destino o a la ciudad', () => {
-    expect(resolverRuta('/', activa, null)).toBe('/ciudad');
-    expect(resolverRuta('/verificar', activa, '/ciudad')).toBe('/ciudad');
+    expect(resolverRuta('/', activa, null)).toBe('/comunidad');
+    expect(resolverRuta('/verificar', activa, '/lugares')).toBe('/lugares');
     expect(resolverRuta('/ciudad', activa, null)).toBeNull();
   });
 });
@@ -32,7 +32,7 @@ describe('pasos pendientes', () => {
     expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'pending' }), null)).toBeNull();
   });
   it('lo omitido no se vuelve a preguntar', () => {
-    expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'skipped' }), null)).toBe('/ciudad');
+    expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'skipped' }), null)).toBe('/comunidad');
   });
   it('los textos legales se ven con o sin sesión', () => {
     expect(resolverRuta('/terminos', activa, null)).toBeNull();

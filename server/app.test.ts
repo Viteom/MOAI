@@ -29,7 +29,7 @@ const galleta = (respuesta: { cookies: { name: string; value: string }[] }) => {
   return c ? `${COOKIE_SESION}=${c.value}` : '';
 };
 
-const pendiente = { nombre: 'Rosa', ciudad: null, barrio: null, nacimientoPendiente: true, comunidad: 'pending' };
+const pendiente = { nombre: 'Rosa', nacimientoPendiente: true, comunidad: 'pending', lugar: null };
 
 async function sesionNueva() {
   await post('/api/registro', base);
@@ -191,12 +191,14 @@ describe('Pasos después del código', () => {
     expect((await conCookie('/api/perfil/nacimiento', { fechaNacimiento: '1950-02-30' }, cookie)).statusCode).toBe(400);
   });
 
-  it('guarda ciudad y barrio, o el salto, sin coordenadas', async () => {
+  it('guarda «Casa» con la ciudad, o el salto', async () => {
     const cookie = await sesionNueva();
     const malo = await conCookie('/api/perfil/comunidad', { ciudad: '99999' }, cookie);
-    expect(malo.json().errores.ciudad).toBe('Elige tu ciudad de la lista.');
-    const bueno = await conCookie('/api/perfil/comunidad', { ciudad: '05001', barrio: '  Laureles ' }, cookie);
-    expect(bueno.json()).toMatchObject({ ciudad: '05001', barrio: 'Laureles', comunidad: 'completed' });
+    expect(malo.json().errores.ciudad).toBe('Elige la ciudad de la lista.');
+    const bueno = await conCookie('/api/perfil/comunidad', { ciudad: '05001' }, cookie);
+    expect(bueno.json()).toMatchObject({ comunidad: 'completed', lugar: { nombre: 'Casa', zona: 'Medellín', activo: true } });
+    const barrioInventado = await conCookie('/api/perfil/comunidad', { ciudad: '05001', barrio: 'no-existe' }, cookie);
+    expect(barrioInventado.json().errores.barrio).toBe('Elige el barrio de la lista.');
     const salto = await conCookie('/api/perfil/comunidad', { omitir: true }, cookie);
     expect(salto.json().comunidad).toBe('skipped');
   });
