@@ -13,6 +13,7 @@ Los documentos viven como documentos de Claude. Para que Claude Code los lea, ex
 | Algoritmo de cuidado | https://claude.ai/artifact/8zKosYdGoe39ki2FQXewDk | `06-algoritmo-cuidado.md` |
 | Arquitectura técnica general | https://claude.ai/artifact/MsnDeEFXEKFDeCfAjvCqXY | `07-arquitectura-tecnica.md` |
 | Especificación del prototipo cero | https://claude.ai/artifact/1nuRowYiXx2tPiVep1vjXK | `08-prototipo-cero.md` |
+| Flujos de acceso, bienvenida y comunidad (v1.1) | En el repositorio | `09-flujos-acceso-y-comunidad.md` |
 
 Diseño en Figma: https://www.figma.com/design/ysY7rr3Nf7LOsPmekZwt3x
 
