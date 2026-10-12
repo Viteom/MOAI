@@ -3,7 +3,7 @@
 import { useId, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { buscarMunicipios, municipioPorCodigo, paises, EDAD_MINIMA, type Canal, type EntradaRegistro, type Errores } from '@/lib/registro';
+import { buscarMunicipios, municipioPorCodigo, paises, EDAD_MINIMA, WHATSAPP_DISPONIBLE, type Canal, type EntradaRegistro, type Errores } from '@/lib/registro';
 import type { Contacto, Envio, Respuesta } from '@/lib/api';
 import { Marco } from './marco';
 
@@ -36,9 +36,12 @@ function Contactos({ canal, onCanal, destino, onDestino, pais, onPais, error }: 
   const lista = useMemo(() => paises(), []);
   return <>
     <div className="canal" role="radiogroup" aria-label="¿Cómo te enviamos el código?">
-      {(['correo', 'whatsapp'] as const).map(valor => <button key={valor} type="button" role="radio" aria-checked={canal === valor} className="canal-opcion" onClick={() => onCanal(valor)}>
-        {valor === 'correo' ? 'Correo' : 'WhatsApp'}
-      </button>)}
+      {(['correo', 'whatsapp'] as const).map(valor => {
+        const apagado = valor === 'whatsapp' && !WHATSAPP_DISPONIBLE;
+        return <button key={valor} type="button" role="radio" aria-checked={canal === valor} disabled={apagado} className="canal-opcion" onClick={() => onCanal(valor)}>
+          {valor === 'correo' ? 'Correo' : 'WhatsApp'}{apagado && <span className="canal-pronto"> · muy pronto</span>}
+        </button>;
+      })}
     </div>
     {canal === 'correo'
       ? <Campo etiqueta="Tu correo" error={error}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" type="email" autoComplete="email" value={destino} onChange={e => onDestino(e.target.value)}/>}</Campo>
@@ -153,7 +156,7 @@ export function Acceso({ enviar, onEnviado, onVolver }: {
     setEnviando(false);
     if (respuesta.ok) onEnviado(contacto, respuesta.datos); else setError(respuesta.error);
   }
-  return <Hoja titulo="Qué bueno verte" bajada="Escribe tu correo o tu WhatsApp y te enviamos un código para entrar." onVolver={onVolver}>
+  return <Hoja titulo="Qué bueno verte" bajada={`Escribe tu correo${WHATSAPP_DISPONIBLE ? ' o tu WhatsApp' : ''} y te enviamos un código para entrar.`} onVolver={onVolver}>
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
       <Contactos canal={contacto.canal} onCanal={canal => setContacto(c => ({ ...c, canal, destino: '' }))} destino={contacto.destino} onDestino={destino => setContacto(c => ({ ...c, destino }))} pais={contacto.pais ?? 'CO'} onPais={pais => setContacto(c => ({ ...c, pais }))} error={error || undefined}/>
       <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando…' : 'Enviarme el código'}</Button>

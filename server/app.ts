@@ -22,6 +22,7 @@ const mensajes = {
   codigo: 'Ese código no coincide o ya venció. Revísalo o pide uno nuevo.',
   bloqueado: 'Hubo demasiados intentos con este código. Pide uno nuevo.',
   destino: 'Revisa tu correo o tu número.',
+  sinWhatsapp: 'WhatsApp todavía no está disponible. Por ahora, usa tu correo.',
 };
 
 export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date() }: Opciones) {
@@ -34,7 +35,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     const [{ total }] = await db.query<{ total: number }>(
       `select count(*)::int as total from verificaciones where destino = $1 and creada_en > now() - interval '1 hour'`, [destino]);
     if (total >= ENVIOS_POR_HORA) throw new Limite();
-    const via = vias[canal];
+    const via = vias[canal]!;
     const codigo = via.tipo === 'propio' ? String(randomInt(0, 1_000_000)).padStart(6, '0') : null;
     await db.query(
       `insert into verificaciones (destino, proposito, codigo_hash, vence_en) values ($1, $2, $3, now() + make_interval(mins => $4))`,
@@ -50,7 +51,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     if (!fila) return 'invalido';
     if (fila.intentos >= INTENTOS_POR_CODIGO) return 'bloqueado';
     await db.query('update verificaciones set intentos = intentos + 1 where id = $1', [fila.id]);
-    const via = vias[canal];
+    const via = vias[canal]!;
     const ok = via.tipo === 'propio'
       ? !!fila.codigo_hash && timingSafeEqual(Buffer.from(hmac(codigo)), Buffer.from(fila.codigo_hash))
       : await via.comprobar(destino, codigo);
@@ -76,6 +77,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
 
   app.post('/api/registro', async (request, reply) => {
     const resultado = validarRegistro((request.body ?? {}) as Partial<EntradaRegistro>, ahora());
+    if (resultado.ok && !vias[resultado.registro.canal]) return reply.code(400).send({ error: mensajes.sinWhatsapp });
     if (!resultado.ok) return reply.code(400).send({ errores: resultado.errores });
     const { nombre, canal, destino, ciudad, fechaNacimiento } = resultado.registro;
     const existente = await cuentaPorDestino(destino);
@@ -90,6 +92,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   app.post('/api/acceso', async (request, reply) => {
     const body = (request.body ?? {}) as { canal?: Canal; destino?: string; pais?: string };
     const canal: Canal = body.canal === 'whatsapp' ? 'whatsapp' : 'correo';
+    if (!vias[canal]) return reply.code(400).send({ error: mensajes.sinWhatsapp });
     const destino = normalizarDestino(canal, body.destino ?? '', body.pais);
     if (!destino) return reply.code(400).send({ error: mensajes.destino });
     const cuenta = await cuentaPorDestino(destino);
@@ -101,6 +104,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     const canal: Canal = body.canal === 'whatsapp' ? 'whatsapp' : 'correo';
     const destino = normalizarDestino(canal, body.destino ?? '', body.pais);
     const codigo = (body.codigo ?? '').trim();
+    if (!vias[canal]) return reply.code(400).send({ error: mensajes.sinWhatsapp });
     if (!destino || !codigoValido(codigo)) return reply.code(400).send({ error: mensajes.codigo });
     const cuenta = await cuentaPorDestino(destino);
     if (!cuenta) return reply.code(400).send({ error: mensajes.codigo });

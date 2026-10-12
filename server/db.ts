@@ -21,6 +21,8 @@ create table if not exists cuentas (
   verificada_en timestamptz,
   creada_en timestamptz not null default now()
 );
+alter table cuentas add column if not exists recordatorios int not null default 0;
+alter table cuentas add column if not exists ultimo_recordatorio timestamptz;
 create table if not exists consentimientos (
   id bigserial primary key,
   cuenta_id uuid not null references cuentas(id) on delete cascade,

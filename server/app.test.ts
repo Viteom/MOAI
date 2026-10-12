@@ -136,6 +136,18 @@ describe('Acceso con código', () => {
   });
 });
 
+describe('Sin proveedor de WhatsApp', () => {
+  it('rechaza WhatsApp con un mensaje claro y no crea la cuenta', async () => {
+    await app.close();
+    app = await crearApp({ db, vias: { correo }, secreto: 'prueba', ahora: () => hoy });
+    const respuesta = await post('/api/registro', { ...base, canal: 'whatsapp', pais: 'CO', destino: '3001234567' });
+    expect(respuesta.statusCode).toBe(400);
+    expect(respuesta.json().error).toMatch(/WhatsApp todavía no está disponible/);
+    expect(await db.query('select id from cuentas')).toEqual([]);
+    expect((await post('/api/acceso', { canal: 'whatsapp', pais: 'CO', destino: '3001234567' })).statusCode).toBe(400);
+  });
+});
+
 describe('WhatsApp con un verificador externo (Twilio Verify)', () => {
   it('delega el envío y la comprobación del código', async () => {
     const llamadas: string[] = [];

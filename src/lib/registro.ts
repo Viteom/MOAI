@@ -7,6 +7,8 @@ export type Canal = 'correo' | 'whatsapp';
 export type Municipio = { codigo: string; nombre: string; departamento: string };
 
 export const EDAD_MINIMA = 18;
+// Apagado hasta contratar Twilio (decisión de Mateo, octubre de 2026). El servidor también lo rechaza sin proveedor.
+export const WHATSAPP_DISPONIBLE = false;
 // Cambia cuando cambie el texto de términos o de tratamiento de datos: se guarda con cada aceptación.
 export const VERSION_TEXTOS = '2026-10-borrador';
 
