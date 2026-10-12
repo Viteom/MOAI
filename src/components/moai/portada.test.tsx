@@ -44,9 +44,12 @@ describe('Portada', () => {
     expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeInTheDocument();
   });
 
-  it('con una sesión abierta entra directo a la ciudad', async () => {
+  it('con una sesión abierta, Brisa saluda y luego entra a la ciudad', async () => {
     render(<Plataforma api={apiFalsa(true)} />);
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Hola de nuevo, Rosa.' })).toBeInTheDocument();
+    expect(screen.getByText(/inteligencia artificial/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    expect(screen.getByText('Tu ciudad, Rosa.')).toBeInTheDocument();
   });
 });
 
@@ -62,7 +65,10 @@ describe('Crear cuenta', () => {
 
     escribir('Código', '123456');
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
-    expect(await screen.findByText('Mucho gusto, Rosa.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Hola, soy Brisa.' })).toBeInTheDocument();
+    expect(screen.getByText(/inteligencia artificial/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    expect(screen.getByText('Mucho gusto, Rosa.')).toBeInTheDocument();
   });
 
   it('muestra los errores de cada campo', async () => {
@@ -81,13 +87,11 @@ describe('Crear cuenta', () => {
     expect(screen.getByLabelText(/Ley 1581/)).not.toBeChecked();
   });
 
-  it('con WhatsApp se elige el país, con Colombia primero', () => {
+  it('WhatsApp aparece como «muy pronto» y no se puede elegir', () => {
     render(<Plataforma api={apiFalsa()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'WhatsApp' }));
-    const pais = screen.getByLabelText('País') as HTMLSelectElement;
-    expect(pais.value).toBe('CO');
-    expect(pais.options[0].textContent).toBe('Colombia (+57)');
+    expect(screen.getByRole('radio', { name: /WhatsApp.*muy pronto/ })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Correo' })).toHaveAttribute('aria-checked', 'true');
   });
 });
 
@@ -95,10 +99,9 @@ describe('Iniciar sesión', () => {
   it('pide un código y con el correcto entra a la ciudad', async () => {
     render(<Plataforma api={apiFalsa()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'WhatsApp' }));
-    escribir('Tu número de WhatsApp', '300 123 4567');
+    escribir('Tu correo', 'rosa@ejemplo.co');
     fireEvent.click(screen.getByRole('button', { name: 'Enviarme el código' }));
-    expect(await screen.findByText(/\+57 •••• 4567/)).toBeInTheDocument();
+    expect(await screen.findByText(/r•••@ejemplo\.co/)).toBeInTheDocument();
 
     escribir('Código', '000000');
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
@@ -106,6 +109,8 @@ describe('Iniciar sesión', () => {
 
     escribir('Código', '123456');
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Hola de nuevo, Rosa.' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
+    expect(screen.getByText('Tu ciudad, Rosa.')).toBeInTheDocument();
   });
 });

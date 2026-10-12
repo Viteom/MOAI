@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { api as apiReal, type Api, type Contacto, type Envio, type Respuesta } from '@/lib/api';
 import { MoaiApp } from './app';
 import { Acceso, Codigo, Registro } from './cuenta';
+import { Bienvenida } from './bienvenida';
 import { Marco } from './marco';
 
 // Portada web (horizontal): una ciudad de fondo y texto mínimo.
@@ -23,13 +24,14 @@ export function Portada({ onCrear, onEntrar }: { onCrear: () => void; onEntrar: 
 type Paso =
   | { tipo: 'portada' } | { tipo: 'registro' } | { tipo: 'acceso' }
   | { tipo: 'codigo'; contacto: Contacto; envio: Envio; nuevo: boolean; reenviar: () => Promise<Respuesta<Envio>> }
+  | { tipo: 'bienvenida'; nombre: string; nuevo: boolean }
   | { tipo: 'app'; nombre: string; nuevo: boolean };
 
 export function Plataforma({ api = apiReal }: { api?: Api }) {
   const [paso, setPaso] = useState<Paso>({ tipo: 'portada' });
   useEffect(() => {
     let vigente = true;
-    api.sesion().then(r => { if (vigente && r.ok) setPaso(actual => actual.tipo === 'portada' ? { tipo: 'app', nombre: r.datos.nombre, nuevo: false } : actual); });
+    api.sesion().then(r => { if (vigente && r.ok) setPaso(actual => actual.tipo === 'portada' ? { tipo: 'bienvenida', nombre: r.datos.nombre, nuevo: false } : actual); });
     return () => { vigente = false; };
   }, [api]);
   const portada = () => setPaso({ tipo: 'portada' });
@@ -42,9 +44,10 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     onVolver={() => setPaso({ tipo: paso.nuevo ? 'registro' : 'acceso' })}
     comprobar={async codigo => {
       const respuesta = await api.verificar({ ...paso.contacto, codigo });
-      if (respuesta.ok) setPaso({ tipo: 'app', nombre: respuesta.datos.nombre, nuevo: paso.nuevo });
+      if (respuesta.ok) setPaso({ tipo: 'bienvenida', nombre: respuesta.datos.nombre, nuevo: paso.nuevo });
       return respuesta;
     }}/>;
+  if (paso.tipo === 'bienvenida') return <Bienvenida nombre={paso.nombre} nueva={paso.nuevo} onContinuar={() => setPaso({ ...paso, tipo: 'app' })}/>;
   if (paso.tipo === 'app') return <MoaiApp
     // Una cuenta nueva empieza su primer día con el nombre que ya dio; quien vuelve entra a su ciudad.
     inicio={paso.nuevo ? 2 : 'home'} estadoInicial={{ nombre: paso.nombre }}

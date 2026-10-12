@@ -328,3 +328,18 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .cuenta .portada-fondo { position: fixed; }
 @media (max-width: 900px) { .cuenta { padding-top: 104px; } .cuenta .portada-fondo::after { background: linear-gradient(180deg, color-mix(in oklab, var(--bosque) 55%, transparent), var(--bosque) 40%); } }
 @media (max-width: 520px) { .telefono { grid-template-columns: minmax(0, 1fr); } }
+/* Bienvenida de Brisa (después de entrar) */
+.brisa { position: relative; min-height: 100svh; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: center; padding: 96px 16px 48px; color: var(--niebla); background: radial-gradient(ellipse at 50% 30%, oklch(.3 .05 175), var(--bosque) 65%); }
+.brisa-fondo { position: absolute; inset: 0; z-index: -1; }
+.brisa-fondo video, .brisa-fondo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.brisa-esfera { position: absolute; left: 50%; top: 27%; width: 220px; height: 220px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 42% 40%, oklch(.98 .06 110) 0 6%, oklch(.88 .12 150 / .85) 18%, oklch(.7 .1 185 / .45) 42%, transparent 70%); box-shadow: 0 0 80px 30px oklch(.75 .12 160 / .25), 0 0 160px 60px oklch(.6 .1 190 / .15); }
+.brisa-marca { position: absolute; top: 36px; left: 0; right: 0; margin: 0; text-align: center; font-size: 18px; font-weight: 500; letter-spacing: .5em; padding-left: .5em; }
+.brisa-panel { width: min(520px, 100%); margin-top: 14vh; padding: 32px 36px 26px; border-radius: 28px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; background: color-mix(in oklab, var(--niebla) 10%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 38%, transparent); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); box-shadow: 0 20px 60px color-mix(in oklab, var(--bosque) 55%, transparent); }
+.brisa-panel h1 { margin: 0; font: 700 clamp(34px, 3.4vw, 46px)/1.1 var(--font-sans); text-shadow: 0 2px 18px color-mix(in oklab, var(--bosque) 60%, transparent); }
+.brisa-sub { margin: 0; font-size: 20px; }
+.brisa-boton { margin-top: 18px; min-height: 52px; min-width: 200px; padding: 0 32px; border-radius: 999px; font-size: 19px; font-weight: 500; color: var(--niebla); background: color-mix(in oklab, oklch(.5 .07 175) 55%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 45%, transparent); box-shadow: inset 0 1px 0 color-mix(in oklab, var(--niebla) 25%, transparent); }
+.brisa-boton:hover { background: color-mix(in oklab, oklch(.5 .07 175) 75%, transparent); }
+.brisa :focus-visible { outline: 3px solid var(--lima); outline-offset: 4px; }
+.brisa-ia { margin: 8px 0 0; font-size: 14px; color: color-mix(in oklab, var(--niebla) 75%, transparent); }
+.canal-opcion:disabled { cursor: not-allowed; opacity: .55; }
+.canal-pronto { font-size: 13px; }

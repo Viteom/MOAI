@@ -27,8 +27,13 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 - Registro: nombre, correo o WhatsApp (con código de país), ciudad (municipios de Colombia, DIVIPOLA del DANE en `src/lib/colombia/municipios.json`, sin coordenadas), fecha de nacimiento (18 años o más) y dos consentimientos separados que se guardan con su versión.
 - Servidor en `server/` (Node + Fastify + PostgreSQL). Sin `DATABASE_URL` usa PGlite en `.data/`. Sin claves, el código se escribe en la consola con el destino enmascarado. Comandos: `npm run dev:api` junto a `npm run dev`.
 - Reglas comunes en `src/lib/registro.ts`. El frontend solo habla con `/api` del mismo origen desde `src/lib/api.ts`; la sesión es una cookie httpOnly.
+- WhatsApp está apagado («muy pronto») hasta contratar Twilio: `WHATSAPP_DISPONIBLE` en `src/lib/registro.ts`, y el servidor lo rechaza si no hay proveedor.
+- Cuentas sin verificar: recordatorio por correo cada 3,5 días (dos por semana) y borrado a los 20 días (`server/mantenimiento.ts`, corre cada 6 horas).
+- La fecha de nacimiento completa se guarda: sirve para los «momentos de verdad» de la persona (por ejemplo, su cumpleaños).
+- Después del código, Brisa da la bienvenida (`bienvenida.tsx`) y se presenta como IA. Fondo: `public/backgrounds/brisa.mp4` y `brisa.jpg`, sin panel ni textos (en edición).
 - Lo que la persona responde en el primer día (semilla, oficios, gente…) todavía vive solo en memoria.
-- **Pendiente de revisión humana:** textos de términos y de tratamiento de datos (abogado, Ley 1581), plazo para borrar cuentas sin verificar, y si se guarda la fecha completa o solo la verificación de edad.
+- **Dirección para el primer día (Mateo):** nada de cuestionario. Brisa conversa como quien conoce a alguien: cómo va tu día, qué hiciste, y al otro día qué harías en tal caso. Los datos se llenan a medida que pasa la conversación, a lo largo de varios días.
+- **Revisión humana:** los textos de términos y de tratamiento de datos están con el abogado (Ley 1581).
 
 ## Reglas que no se negocian
 
