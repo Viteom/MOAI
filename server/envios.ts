@@ -11,6 +11,8 @@ export type Via = Propio | Externo;
 // WhatsApp es opcional: sin Twilio (hoy, por costo) el canal queda apagado en producción.
 export type Vias = { correo: Via; whatsapp?: Via };
 export type Recordar = (destino: string, nombre: string, diasRestantes: number) => Promise<void>;
+// Correo libre (por ahora, el resumen semanal de planes).
+export type Correo = (destino: string, asunto: string, texto: string) => Promise<void>;
 
 export const MINUTOS_VIGENCIA = 10;
 
@@ -70,7 +72,11 @@ export function recordatorioConsola(escribir: (linea: string) => void = console.
   return async (destino, _nombre, diasRestantes) => escribir(`[desarrollo] recordatorio para ${enmascarar('correo', destino)} (${diasRestantes} días para confirmar)`);
 }
 
-export function viasDesdeEntorno(env: NodeJS.ProcessEnv): { vias: Vias; recordar: Recordar } {
+export function correoConsola(escribir: (linea: string) => void = console.log): Correo {
+  return async (destino, asunto) => escribir(`[desarrollo] correo para ${enmascarar('correo', destino)}: ${asunto}`);
+}
+
+export function viasDesdeEntorno(env: NodeJS.ProcessEnv): { vias: Vias; recordar: Recordar; correo: Correo } {
   const produccion = env.NODE_ENV === 'production';
   const conResend = env.RESEND_API_KEY && env.CORREO_REMITENTE;
   const correo = conResend ? resend(env.RESEND_API_KEY!, env.CORREO_REMITENTE!) : null;
@@ -80,5 +86,6 @@ export function viasDesdeEntorno(env: NodeJS.ProcessEnv): { vias: Vias; recordar
   return {
     vias: { correo: correo ?? consola('correo'), whatsapp: twilio ?? (produccion ? undefined : consola('whatsapp')) },
     recordar: conResend && env.APP_URL ? recordatorioResend(env.RESEND_API_KEY!, env.CORREO_REMITENTE!, env.APP_URL) : recordatorioConsola(),
+    correo: conResend ? (destino, asunto, texto) => enviarResend(env.RESEND_API_KEY!, env.CORREO_REMITENTE!, destino, asunto, texto) : correoConsola(),
   };
 }

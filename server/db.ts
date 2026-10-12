@@ -56,12 +56,33 @@ create table if not exists planes (
   creado_en timestamptz not null default now()
 );
 create index if not exists planes_ciudad_cuando on planes (ciudad, cuando);
-create table if not exists plan_asistentes (
+alter table planes add column if not exists tipo text not null default 'otro';
+alter table planes add column if not exists repite text;
+drop table if exists plan_asistentes;
+create table if not exists asistencias (
   plan_id uuid not null references planes(id) on delete cascade,
   cuenta_id uuid not null references cuentas(id) on delete cascade,
+  ocurrencia timestamptz not null,
   unido_en timestamptz not null default now(),
-  primary key (plan_id, cuenta_id)
+  primary key (plan_id, cuenta_id, ocurrencia)
 );
+create table if not exists plan_mensajes (
+  id bigserial primary key,
+  plan_id uuid not null references planes(id) on delete cascade,
+  autor_id uuid not null references cuentas(id) on delete cascade,
+  texto text not null,
+  creado_en timestamptz not null default now()
+);
+create table if not exists avisos_vistos (
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  clave text not null,
+  visto_en timestamptz not null default now(),
+  primary key (cuenta_id, clave)
+);
+alter table cuentas add column if not exists sugerencias boolean not null default false;
+alter table cuentas add column if not exists gustos text[] not null default '{}';
+alter table cuentas add column if not exists resumen_semanal boolean not null default false;
+alter table cuentas add column if not exists ultimo_resumen timestamptz;
 create table if not exists consentimientos (
   id bigserial primary key,
   cuenta_id uuid not null references cuentas(id) on delete cascade,

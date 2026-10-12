@@ -47,6 +47,14 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     irAPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
     noIrAPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
     cancelarPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    plan: vi.fn(async () => ({ ok: false as const, error: 'No está.', status: 404 })),
+    repetirPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    mensajes: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    enviarMensaje: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cartas: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cartaVista: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    preferencias: vi.fn(async () => ({ ok: true as const, datos: { sugerencias: false, gustos: [], resumenSemanal: false } })),
+    guardarPreferencias: vi.fn(async (p) => ({ ok: true as const, datos: p })),
   };
 }
 

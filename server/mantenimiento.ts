@@ -2,7 +2,8 @@
 // - Se borran a los 20 días, con sus consentimientos (cascade) y sus códigos.
 // - Mientras tanto, si se registraron por correo, reciben un recordatorio cada 3,5 días (dos por semana).
 import type { Db } from './db';
-import type { Recordar } from './envios';
+import type { Correo, Recordar } from './envios';
+import { cuandoLegible, planesVisibles } from './comunidad';
 
 export const DIAS_PARA_VERIFICAR = 20;
 const HORAS_ENTRE_RECORDATORIOS = 84; // 3,5 días
@@ -29,4 +30,38 @@ export async function mantener(db: Db, recordar: Recordar): Promise<{ borradas: 
     }
   }
   return { borradas: borradas.length, recordadas };
+}
+
+// Resumen semanal «Planes cerca esta semana»: solo para quien lo activó, máximo uno por semana (regla 13),
+// y solo si de verdad hay planes. Nunca se envía un correo vacío para «recordar que existimos».
+export async function resumenSemanal(db: Db, correo: Correo, ahora: Date, urlApp = ''): Promise<number> {
+  const cuentas = await db.query<{ id: string; nombre: string; destino: string }>(
+    `select id, split_part(nombre, ' ', 1) as nombre, destino from cuentas
+     where resumen_semanal and canal = 'correo' and verificada_en is not null
+       and (ultimo_resumen is null or ultimo_resumen < $1::timestamptz - interval '7 days')`, [ahora]);
+  let enviados = 0;
+  for (const c of cuentas) {
+    const visibles = await planesVisibles(db, c.id, ahora);
+    const semana = ahora.getTime() + 7 * 864e5;
+    const planes = (visibles?.planes ?? []).filter(p => !p.mio && new Date(p.cuando).getTime() <= semana).slice(0, 5);
+    if (!planes.length) continue;
+    const lista = planes.map(p => `• ${p.titulo}\n  ${cuandoLegible(new Date(p.cuando))} · ${p.lugarPublico} · ${p.franja}`).join('\n\n');
+    try {
+      await correo(c.destino, 'Planes cerca esta semana',
+        `Hola, ${c.nombre}. Estos son algunos planes de tu comunidad para esta semana:\n\n${lista}\n\nSi alguno te provoca, entra a MOAI y súmate${urlApp ? ` (${urlApp})` : ''}.\n\nRecibes este correo porque lo activaste en «Avisos». Puedes apagarlo cuando quieras.`);
+      await db.query('update cuentas set ultimo_resumen = $2 where id = $1', [c.id, ahora]);
+      enviados++;
+    } catch {
+      console.error('falló un resumen semanal');
+    }
+  }
+  return enviados;
+}
+
+// Las conversaciones de los planes se borran 30 días después del plan (o de cancelarse).
+export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<void> {
+  await db.query(
+    `delete from plan_mensajes m using planes p where m.plan_id = p.id
+       and ((p.repite is null and p.cuando < $1::timestamptz - interval '30 days')
+         or (p.cancelado_en is not null and p.cancelado_en < $1::timestamptz - interval '30 days'))`, [ahora]);
 }
