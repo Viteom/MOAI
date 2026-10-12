@@ -348,3 +348,14 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .brisa.con-video .brisa-marca { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 /* Arriba alineado con el borde superior del panel del video (83 px sobre el centro, escalado); crece hacia abajo. */
 .brisa.con-video .brisa-panel { position: absolute; left: 50%; top: calc(50% - max(6.5vw, 11.6vh)); transform: translateX(-50%); margin: 0; width: min(calc(100vw - 32px), max(34vw, 60vh)); min-height: max(14.5vw, 26vh); justify-content: center; backdrop-filter: blur(22px) saturate(1.2); -webkit-backdrop-filter: blur(22px) saturate(1.2); background: color-mix(in oklab, oklch(.32 .04 175) 35%, transparent); }
+.brisa-secundarias { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 20px; margin-top: 2px; }
+.brisa-enlace { min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--niebla); font-size: 15px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.brisa h1:focus, .cuenta-hoja h1:focus, .abriendo h1:focus { outline: none; }
+/* P00 · Resolución de sesión */
+.abriendo { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; color: var(--niebla); background: var(--bosque); }
+.abriendo h1 { margin: 0; font: 700 32px/1 var(--font-sans); letter-spacing: .3em; padding-left: .3em; }
+.abriendo p { margin: 0; font-size: 18px; color: color-mix(in oklab, var(--niebla) 75%, transparent); }
+.cuenta-pie { margin: 6px 0 0; font-size: 16px; }
+.cuenta-pie button { border: 0; padding: 0; background: transparent; color: var(--lima); font-size: inherit; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.cuenta-aviso { margin: 0; padding: 12px 14px; border-radius: 14px; font-size: 16px; background: color-mix(in oklab, var(--bosque-alto) 85%, transparent); border: 1px solid color-mix(in oklab, var(--cian) 45%, transparent); }
+.cuenta-secundarias { display: flex; flex-wrap: wrap; gap: 4px 24px; }

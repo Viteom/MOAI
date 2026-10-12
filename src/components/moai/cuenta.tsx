@@ -13,7 +13,7 @@ function Hoja({ titulo, bajada, onVolver, children }: { titulo: string; bajada?:
   return <Marco className="cuenta">
     <section className="cuenta-hoja" aria-labelledby="cuenta-titulo">
       <Button className="cuenta-volver" onClick={onVolver}><ArrowLeft/>Volver</Button>
-      <h1 id="cuenta-titulo">{titulo}</h1>
+      <h1 id="cuenta-titulo" tabIndex={-1}>{titulo}</h1>
       {bajada && <p className="cuenta-bajada">{bajada}</p>}
       {children}
     </section>
@@ -44,7 +44,7 @@ function Contactos({ canal, onCanal, destino, onDestino, pais, onPais, error }: 
       })}
     </div>
     {canal === 'correo'
-      ? <Campo etiqueta="Tu correo" error={error}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" type="email" autoComplete="email" value={destino} onChange={e => onDestino(e.target.value)}/>}</Campo>
+      ? <Campo etiqueta="Tu correo electrónico" error={error}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo" type="email" autoComplete="email" value={destino} onChange={e => onDestino(e.target.value)}/>}</Campo>
       : <div className="telefono">
           <Campo etiqueta="País">{id => <select id={id} className="cuenta-campo" value={pais} onChange={e => onPais(e.target.value)}>
             {lista.map(p => <option key={p.codigo} value={p.codigo}>{p.nombre} ({p.prefijo})</option>)}
@@ -108,25 +108,34 @@ function Casilla({ marcada, onCambio, error, children }: { marcada: boolean; onC
   </div>;
 }
 
-export function Registro({ enviar, onEnviado, onVolver, hoy = new Date() }: {
-  enviar: (entrada: EntradaRegistro) => Promise<Respuesta<Envio>>; onEnviado: (contacto: Contacto, envio: Envio, entrada: EntradaRegistro) => void; onVolver: () => void; hoy?: Date;
+export const registroVacio = (): EntradaRegistro => ({ nombre: '', canal: 'correo', destino: '', pais: 'CO', ciudad: '', fechaNacimiento: '', aceptaTerminos: false, aceptaDatos: false });
+
+function Pie({ texto, accion, onClick }: { texto: string; accion: string; onClick: () => void }) {
+  return <p className="cuenta-pie">{texto} <button type="button" onClick={onClick}>{accion}</button></p>;
+}
+
+// P03 · Crear cuenta. Los datos viven en Plataforma: volver a Brisa y regresar no los borra.
+export function Registro({ entrada, onCambio, enviar, onEnviado, onVolver, onIniciarSesion, hoy = new Date() }: {
+  entrada: EntradaRegistro; onCambio: (cambio: Partial<EntradaRegistro>) => void;
+  enviar: (entrada: EntradaRegistro) => Promise<Respuesta<Envio>>; onEnviado: (contacto: Contacto, envio: Envio) => void;
+  onVolver: () => void; onIniciarSesion: () => void; hoy?: Date;
 }) {
-  const [entrada, setEntrada] = useState<EntradaRegistro>({ nombre: '', canal: 'correo', destino: '', pais: 'CO', ciudad: '', fechaNacimiento: '', aceptaTerminos: false, aceptaDatos: false });
   const [errores, setErrores] = useState<Errores>({});
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const cambiar = (cambio: Partial<EntradaRegistro>) => setEntrada(actual => ({ ...actual, ...cambio }));
+  const cambiar = onCambio;
   async function alEnviar(e: FormEvent) {
     e.preventDefault();
+    if (enviando) return;
     setEnviando(true); setError('');
     const respuesta = await enviar(entrada);
     setEnviando(false);
-    if (respuesta.ok) onEnviado({ canal: entrada.canal, destino: entrada.destino, pais: entrada.pais }, respuesta.datos, entrada);
+    if (respuesta.ok) onEnviado({ canal: entrada.canal, destino: entrada.destino, pais: entrada.pais }, respuesta.datos);
     else { setErrores(respuesta.errores ?? {}); setError(respuesta.errores ? '' : respuesta.error); }
   }
-  return <Hoja titulo="Crea tu cuenta" bajada="Te enviaremos un código para confirmar que eres tú. No usamos contraseñas." onVolver={onVolver}>
+  return <Hoja titulo="Empecemos por conocernos" bajada="Te enviaremos un código a tu correo para confirmar que eres tú. No usamos contraseñas." onVolver={onVolver}>
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
-      <Campo etiqueta="Tu nombre" error={errores.nombre} ayuda="Como te gusta que te llamen.">{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!errores.nombre} className="cuenta-campo" autoComplete="given-name" value={entrada.nombre} onChange={e => cambiar({ nombre: e.target.value })}/>}</Campo>
+      <Campo etiqueta="¿Cómo te llamas?" error={errores.nombre} ayuda="Tu nombre o como prefieras que te llamemos.">{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!errores.nombre} className="cuenta-campo" autoComplete="given-name" maxLength={60} value={entrada.nombre} onChange={e => cambiar({ nombre: e.target.value })}/>}</Campo>
       <Contactos canal={entrada.canal} onCanal={canal => cambiar({ canal, destino: '' })} destino={entrada.destino} onDestino={destino => cambiar({ destino })} pais={entrada.pais ?? 'CO'} onPais={pais => cambiar({ pais })} error={errores.destino}/>
       <Ciudad valor={entrada.ciudad} onValor={ciudad => cambiar({ ciudad })} error={errores.ciudad}/>
       <Nacimiento valor={entrada.fechaNacimiento} onValor={fechaNacimiento => cambiar({ fechaNacimiento })} error={errores.fechaNacimiento} hoy={hoy}/>
@@ -138,34 +147,41 @@ export function Registro({ enviar, onEnviado, onVolver, hoy = new Date() }: {
         <p className="campo-ayuda">Textos provisionales: están en revisión legal.</p>
       </div>
       {error && <p className="campo-error" role="alert">{error}</p>}
-      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando…' : 'Enviarme el código'}</Button>
+      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando código…' : 'Crear mi cuenta'}</Button>
+      <Pie texto="¿Ya tienes cuenta?" accion="Iniciar sesión" onClick={onIniciarSesion}/>
     </form>
   </Hoja>;
 }
 
-export function Acceso({ enviar, onEnviado, onVolver }: {
-  enviar: (contacto: Contacto) => Promise<Respuesta<Envio>>; onEnviado: (contacto: Contacto, envio: Envio) => void; onVolver: () => void;
+// P04 · Iniciar sesión. `aviso` explica por qué se llegó aquí (sesión vencida, recarga del código…).
+export function Acceso({ enviar, onEnviado, onVolver, onCrearCuenta, aviso }: {
+  enviar: (contacto: Contacto) => Promise<Respuesta<Envio>>; onEnviado: (contacto: Contacto, envio: Envio) => void;
+  onVolver: () => void; onCrearCuenta: () => void; aviso?: string;
 }) {
   const [contacto, setContacto] = useState<Contacto>({ canal: 'correo', destino: '', pais: 'CO' });
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
   async function alEnviar(e: FormEvent) {
     e.preventDefault();
+    if (enviando) return;
     setEnviando(true); setError('');
     const respuesta = await enviar(contacto);
     setEnviando(false);
     if (respuesta.ok) onEnviado(contacto, respuesta.datos); else setError(respuesta.error);
   }
-  return <Hoja titulo="Qué bueno verte" bajada={`Escribe tu correo${WHATSAPP_DISPONIBLE ? ' o tu WhatsApp' : ''} y te enviamos un código para entrar.`} onVolver={onVolver}>
+  return <Hoja titulo="Qué bueno verte de nuevo" bajada={`Escribe tu correo${WHATSAPP_DISPONIBLE ? ' o tu WhatsApp' : ''} para recibir un código de acceso.`} onVolver={onVolver}>
+    {aviso && <p className="cuenta-aviso" role="status">{aviso}</p>}
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
       <Contactos canal={contacto.canal} onCanal={canal => setContacto(c => ({ ...c, canal, destino: '' }))} destino={contacto.destino} onDestino={destino => setContacto(c => ({ ...c, destino }))} pais={contacto.pais ?? 'CO'} onPais={pais => setContacto(c => ({ ...c, pais }))} error={error || undefined}/>
-      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando…' : 'Enviarme el código'}</Button>
+      <Button type="submit" className="portada-boton principal" disabled={enviando}>{enviando ? 'Enviando código…' : 'Enviar código'}</Button>
+      <Pie texto="¿Es tu primera vez?" accion="Crear cuenta" onClick={onCrearCuenta}/>
     </form>
   </Hoja>;
 }
 
-export function Codigo({ envio, comprobar, reenviar, onVolver }: {
-  envio: Envio; comprobar: (codigo: string) => Promise<Respuesta<unknown>>; reenviar: () => Promise<Respuesta<Envio>>; onVolver: () => void;
+// P05 · Verificar. Los plazos y límites los decide el servidor; aquí solo se muestran sus mensajes.
+export function Codigo({ envio, comprobar, reenviar, onCambiarCorreo }: {
+  envio: Envio; comprobar: (codigo: string) => Promise<Respuesta<unknown>>; reenviar: () => Promise<Respuesta<Envio>>; onCambiarCorreo: () => void;
 }) {
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState('');
@@ -173,6 +189,7 @@ export function Codigo({ envio, comprobar, reenviar, onVolver }: {
   const [enviando, setEnviando] = useState(false);
   async function alEnviar(e: FormEvent) {
     e.preventDefault();
+    if (enviando) return;
     setEnviando(true); setError(''); setAviso('');
     const respuesta = await comprobar(codigo);
     setEnviando(false);
@@ -183,14 +200,17 @@ export function Codigo({ envio, comprobar, reenviar, onVolver }: {
     const respuesta = await reenviar();
     if (respuesta.ok) { setAviso('Te enviamos un código nuevo.'); setCodigo(''); } else setError(respuesta.error);
   }
-  const donde = envio.canal === 'correo' ? 'a tu correo' : 'a tu WhatsApp';
-  return <Hoja titulo="Revisa tu mensaje" bajada={`Te enviamos un código de 6 dígitos ${donde} ${envio.destinoVisible}. Vence en 10 minutos.`} onVolver={onVolver}>
+  const titulo = envio.canal === 'correo' ? 'Revisa tu correo' : 'Revisa tu WhatsApp';
+  return <Hoja titulo={titulo} bajada={`Escribe el código que enviamos a ${envio.destinoVisible}. Vence en 10 minutos.`} onVolver={onCambiarCorreo}>
     <form className="cuenta-form" onSubmit={alEnviar} noValidate>
-      <Campo etiqueta="Código" error={error || undefined}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+      <Campo etiqueta="Código de acceso" error={error || undefined} ayuda={envio.canal === 'correo' ? 'Si no lo ves, revisa la carpeta de correo no deseado.' : undefined}>{(id, d) => <input id={id} aria-describedby={d} aria-invalid={!!error} className="cuenta-campo codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
         value={codigo} onChange={e => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}/>}</Campo>
       {aviso && <p className="campo-ayuda" role="status">{aviso}</p>}
-      <Button type="submit" className="portada-boton principal" disabled={enviando || codigo.length !== 6}>{enviando ? 'Verificando…' : 'Entrar'}</Button>
-      <Button type="button" className="cuenta-enlace" onClick={otraVez}>No me llegó: enviar otro código</Button>
+      <Button type="submit" className="portada-boton principal" disabled={enviando || codigo.length !== 6}>{enviando ? 'Verificando…' : 'Verificar y continuar'}</Button>
+      <div className="cuenta-secundarias">
+        <Button type="button" className="cuenta-enlace" onClick={otraVez}>Enviar otro código</Button>
+        <Button type="button" className="cuenta-enlace" onClick={onCambiarCorreo}>Cambiar correo</Button>
+      </div>
     </form>
   </Hoja>;
 }

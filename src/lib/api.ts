@@ -4,7 +4,8 @@ import type { Canal, EntradaRegistro, Errores } from './registro';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 export type Perfil = { nombre: string; ciudad: string };
-export type Respuesta<T> = { ok: true; datos: T } | { ok: false; error: string; errores?: Errores };
+// `status` 0 = sin conexión: no es lo mismo que «sin sesión» (401).
+export type Respuesta<T> = { ok: true; datos: T } | { ok: false; error: string; errores?: Errores; status?: number };
 export type Contacto = { canal: Canal; destino: string; pais?: string };
 
 const sinConexion = 'No pudimos conectarnos. Revisa tu internet e intenta de nuevo.';
@@ -19,9 +20,9 @@ async function llamar<T>(ruta: string, cuerpo?: object): Promise<Respuesta<T>> {
     });
     const datos = await respuesta.json().catch(() => ({}));
     if (respuesta.ok) return { ok: true, datos: datos as T };
-    return { ok: false, error: datos.error ?? 'Algo salió mal. Intenta de nuevo.', errores: datos.errores };
+    return { ok: false, error: datos.error ?? 'Algo salió mal. Intenta de nuevo.', errores: datos.errores, status: respuesta.status };
   } catch {
-    return { ok: false, error: sinConexion };
+    return { ok: false, error: sinConexion, status: 0 };
   }
 }
 
