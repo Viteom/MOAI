@@ -2,25 +2,32 @@ import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-// Reglas del prototipo cero (AGENTS.md y CLAUDE.md): todo vive en memoria y
-// no hay solicitudes a otros dominios ni almacenamiento persistente.
+// Reglas de privacidad del frontend (AGENTS.md y CLAUDE.md): nada se guarda en el navegador,
+// no hay solicitudes a otros dominios y la única llamada de red es a /api del mismo origen.
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap(name => {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) return name === 'test' ? [] : sourceFiles(path);
-    return /\.(tsx?|css)$/.test(name) ? [path] : [];
+    return /\.(tsx?|css)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : [];
   });
 }
 const files = sourceFiles('src');
+const API = join('src', 'lib', 'api.ts');
 
-describe('Privacidad del prototipo', () => {
+describe('Privacidad del frontend', () => {
   it('no usa almacenamiento persistente del navegador', () => {
     const forbidden = /(localStorage|sessionStorage|indexedDB|document\.cookie)/;
     expect(files.filter(f => forbidden.test(readFileSync(f, 'utf8')))).toEqual([]);
   });
-  it('no hace solicitudes de red desde el código', () => {
+  it('solo src/lib/api.ts hace solicitudes de red', () => {
     const forbidden = /(\bfetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon|EventSource)/;
-    expect(files.filter(f => forbidden.test(readFileSync(f, 'utf8')))).toEqual([]);
+    expect(files.filter(f => f !== API && forbidden.test(readFileSync(f, 'utf8')))).toEqual([]);
+  });
+  it('src/lib/api.ts solo llama a /api del mismo origen', () => {
+    const codigo = readFileSync(API, 'utf8');
+    const destinos = [...codigo.matchAll(/fetch\s*\(\s*`([^`]*)`/g)].map(m => m[1]);
+    expect(destinos).toEqual(['/api/${ruta}']);
+    expect(codigo).toMatch(/credentials: 'same-origin'/);
   });
   it('no pide ubicación, contactos, cámara ni sensores del teléfono', () => {
     const forbidden = /(geolocation|getCurrentPosition|watchPosition|navigator\.contacts|getUserMedia|DeviceMotion|DeviceOrientation|bluetooth)/i;

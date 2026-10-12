@@ -6,7 +6,7 @@ MOAI es una plataforma de cuidado social contra la soledad, pensada para acompa�
 
 La voz de la interfaz se llama «Brisa» y es una inteligencia artificial (el nombre es provisional; la marca aún se está diseñando). El sello de la interfaz es «Mo».
 
-**Estado actual:** diseño y documentación, más un **prototipo cero** (web móvil sin servidor) que vive en este repositorio. Aún no existe código de producto. Los archivos de `docs/cypher/` son borradores que **no se han probado** contra una base de datos real.
+**Estado actual:** diseño y documentación, un **prototipo cero** (sin servidor) y, desde octubre de 2026, **cuentas reales** con servidor propio (ver «Cuentas»). Nada está en producción. Los archivos de `docs/cypher/` son borradores que **no se han probado** contra una base de datos real.
 
 ## El prototipo cero (ya existe en este repositorio)
 
@@ -18,6 +18,17 @@ Es una web móvil de una sola pantalla secuencial (primer día en Medellín), si
 - Comandos: `npm run dev`, `npm run test`, `npm run build`, `npm run typecheck`.
 - Reglas del prototipo (ver `AGENTS.md`): todo en memoria de React, escena intercambiable por una imagen del mismo origen en `public/backgrounds/{ciudad}-{hora}.jpg`, cero solicitudes a terceros.
 - Los textos «Brisa» y «Mo» son provisionales. El nombre de trabajo de la marca es «MOAI».
+
+## Cuentas (inicio de la Fase 1, octubre de 2026)
+
+Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es real.
+- Portada (`src/components/moai/portada.tsx`) con «Crear cuenta» e «Iniciar sesión». Pantallas de cuenta en `cuenta.tsx`.
+- Sin contraseñas: se entra siempre con un código de 6 dígitos por correo (Resend) o WhatsApp (Twilio Verify). Vence en 10 minutos, 5 intentos por código y 5 envíos por hora.
+- Registro: nombre, correo o WhatsApp (con código de país), ciudad (municipios de Colombia, DIVIPOLA del DANE en `src/lib/colombia/municipios.json`, sin coordenadas), fecha de nacimiento (18 años o más) y dos consentimientos separados que se guardan con su versión.
+- Servidor en `server/` (Node + Fastify + PostgreSQL). Sin `DATABASE_URL` usa PGlite en `.data/`. Sin claves, el código se escribe en la consola con el destino enmascarado. Comandos: `npm run dev:api` junto a `npm run dev`.
+- Reglas comunes en `src/lib/registro.ts`. El frontend solo habla con `/api` del mismo origen desde `src/lib/api.ts`; la sesión es una cookie httpOnly.
+- Lo que la persona responde en el primer día (semilla, oficios, gente…) todavía vive solo en memoria.
+- **Pendiente de revisión humana:** textos de términos y de tratamiento de datos (abogado, Ley 1581), plazo para borrar cuentas sin verificar, y si se guarda la fecha completa o solo la verificación de edad.
 
 ## Reglas que no se negocian
 

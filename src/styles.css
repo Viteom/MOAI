@@ -283,7 +283,6 @@
 .portada-boton.principal { background: var(--lima); color: var(--bosque); border-color: var(--lima); }
 .portada-boton.principal:hover { background: color-mix(in oklab, var(--lima) 85%, var(--niebla)); }
 .portada :focus-visible { outline: 3px solid var(--lima); outline-offset: 4px; }
-.portada-aviso { position: absolute; left: clamp(24px, 6vw, 96px); bottom: 24px; margin: 0; font-size: 14px; color: color-mix(in oklab, var(--niebla) 62%, transparent); }
 @media (max-width: 900px) {
   .portada { justify-content: flex-end; padding-bottom: 72px; }
   .portada-fondo { width: 100%; }
@@ -291,3 +290,41 @@
   .portada-acciones { margin-top: 32px; }
   .portada-boton { flex: 1 1 200px; }
 }
+
+/* Cuenta: crear, entrar y código (tarea 04). Mismo fondo que la portada. */
+.cuenta { justify-content: flex-start; overflow: visible; padding-top: 112px; padding-bottom: 64px; }
+.cuenta-hoja { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 14px; }
+.cuenta-hoja h1 { margin: 8px 0 0; font: 700 clamp(40px, 4.4vw, 60px)/1 var(--font-sans); }
+.cuenta-bajada { margin: 0 0 10px; font-size: 18px; line-height: 1.5; color: color-mix(in oklab, var(--niebla) 78%, transparent); }
+.cuenta-volver { align-self: flex-start; min-height: 48px; padding: 0 16px 0 10px; border-radius: 999px; background: transparent; color: var(--niebla); border: 1px solid color-mix(in oklab, var(--niebla) 30%, transparent); font-size: 16px; }
+.cuenta-volver:hover { background: color-mix(in oklab, var(--niebla) 10%, transparent); }
+.cuenta-form { display: flex; flex-direction: column; gap: 18px; }
+.cuenta-form > .portada-boton { align-self: flex-start; margin-top: 6px; }
+.campo { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.campo label, .campo legend { font-size: 16px; font-weight: 500; padding: 0; }
+.cuenta-campo { min-height: 56px; width: 100%; border-radius: 14px; padding: 0 16px; font-size: 18px; color: var(--niebla); background: color-mix(in oklab, var(--bosque-alto) 85%, transparent); border: 1.5px solid color-mix(in oklab, var(--niebla) 28%, transparent); }
+.cuenta-campo:focus { outline: none; border-color: var(--lima); box-shadow: 0 0 0 3px color-mix(in oklab, var(--lima) 30%, transparent); }
+.cuenta-campo[aria-invalid="true"] { border-color: var(--coral); }
+select.cuenta-campo { padding-right: 8px; }
+select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
+.cuenta-campo.codigo { font-size: 32px; letter-spacing: .4em; text-align: center; max-width: 280px; font-variant-numeric: tabular-nums; }
+.campo-ayuda { margin: 0; font-size: 14px; color: color-mix(in oklab, var(--niebla) 65%, transparent); }
+.campo-error { margin: 0; font-size: 15px; color: oklch(.82 .11 40); }
+.canal { display: inline-flex; align-self: flex-start; padding: 4px; gap: 4px; border-radius: 999px; background: color-mix(in oklab, var(--bosque-alto) 85%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 20%, transparent); }
+.canal-opcion { min-height: 44px; padding: 0 22px; border-radius: 999px; border: 0; background: transparent; color: var(--niebla); font-size: 16px; cursor: pointer; }
+.canal-opcion[aria-checked="true"] { background: var(--lima); color: var(--bosque); font-weight: 500; }
+.telefono { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 12px; align-items: start; }
+.ciudad { position: relative; }
+.ciudad-opciones { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 6px); margin: 0; padding: 6px; list-style: none; border-radius: 14px; background: var(--bosque-alto); border: 1px solid color-mix(in oklab, var(--niebla) 22%, transparent); box-shadow: 0 18px 40px color-mix(in oklab, var(--bosque) 80%, transparent); }
+.ciudad-opciones li { display: flex; justify-content: space-between; gap: 12px; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 16px; }
+.ciudad-opciones li:hover { background: color-mix(in oklab, var(--lima) 16%, transparent); }
+.ciudad-opciones span { color: color-mix(in oklab, var(--niebla) 62%, transparent); font-size: 14px; text-align: right; }
+.nacimiento-partes { display: grid; grid-template-columns: 1fr 1.6fr 1.2fr; gap: 10px; }
+.consentimientos { display: flex; flex-direction: column; gap: 12px; padding-top: 6px; }
+.casilla { display: grid; grid-template-columns: 28px 1fr; gap: 6px 12px; align-items: start; font-size: 16px; line-height: 1.45; }
+.casilla input { width: 24px; height: 24px; margin: 1px 0 0; accent-color: var(--lima); }
+.casilla .campo-error { grid-column: 2; }
+.cuenta-enlace { align-self: flex-start; min-height: 48px; padding: 0; background: transparent; border: 0; color: var(--niebla); font-size: 16px; text-decoration: underline; text-underline-offset: 4px; }
+.cuenta .portada-fondo { position: fixed; }
+@media (max-width: 900px) { .cuenta { padding-top: 104px; } .cuenta .portada-fondo::after { background: linear-gradient(180deg, color-mix(in oklab, var(--bosque) 55%, transparent), var(--bosque) 40%); } }
+@media (max-width: 520px) { .telefono { grid-template-columns: minmax(0, 1fr); } }
