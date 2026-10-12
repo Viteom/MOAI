@@ -1,12 +1,12 @@
 // Lugares guardados, planes de barrio, conversación del plan y cartas de Brisa (docs/09, apartado 9).
 // REVISIÓN HUMANA: ubicación aproximada guardada (celdas de ~1 km), lugares de familiares y mensajes entre vecinos.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { gridDistance } from 'h3-js';
+import { cellToBoundary, cellToLatLng, gridDisk, gridDistance } from 'h3-js';
 import {
   alcances, franja, MAX_LUGARES, nombreDeZona, nombreTipo, proximaOcurrencia, tipos, ultimaOcurrencia, validarLugar, validarPlan,
   type EntradaLugar, type EntradaPlan, type Repite, type Tipo,
 } from '../src/lib/lugares';
-import type { Carta, Lugar, Mensaje, Plan, Preferencias } from '../src/lib/api';
+import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api';
 import type { Db } from './db';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
@@ -34,7 +34,9 @@ export function alcanzaA(plan: { ciudad: string; celda: string | null; alcance: 
 }
 
 const hora = (fecha: Date) => new Intl.DateTimeFormat('es-CO', { hour: 'numeric', minute: '2-digit', timeZone: ZONA_HORARIA }).format(fecha);
-const dia = (fecha: Date) => new Intl.DateTimeFormat('es-CO', { weekday: 'long', timeZone: ZONA_HORARIA }).format(fecha);
+// «domingo» → «domingos»; «martes» se queda igual.
+const enPlural = (dia: string) => dia.endsWith('s') ? dia : `${dia}s`;
+const dia = (fecha: Date) =>new Intl.DateTimeFormat('es-CO', { weekday: 'long', timeZone: ZONA_HORARIA }).format(fecha);
 export const cuandoLegible = (fecha: Date) => new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: ZONA_HORARIA }).format(fecha);
 
 // Planes que ve una persona desde su lugar activo, con la próxima ocurrencia de cada uno.
@@ -60,7 +62,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date): Promi
     planes.push({
       id: p.id, titulo: p.titulo, descripcion: p.descripcion, cuando: proxima.toISOString(), lugarPublico: p.lugar_publico,
       zona: nombreDeZona(p.ciudad, p.barrio), franja: franja(distancia), alcance: p.alcance as Plan['alcance'], tipo: p.tipo,
-      repite: p.repite, diaRepite: p.repite ? dia(proxima) : null, autor: mio ? 'Tú' : p.autor, mio, voy,
+      repite: p.repite, diaRepite: p.repite ? enPlural(dia(proxima)) : null, autor: mio ? 'Tú' : p.autor, mio, voy,
       lleno: p.cupo !== null && van.length >= p.cupo,
       // Quién va: solo lo ve quien propuso el plan, y solo los primeros nombres (sin contadores, regla 5).
       asistentes: mio ? van.map(v => v.nombre) : undefined,
@@ -100,7 +102,7 @@ export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date): Promis
       const clave = `sug:${plan.id}`;
       if (plan.mio || plan.voy || plan.lleno || vistos.has(clave) || !pref.gustos.includes(plan.tipo) || new Date(plan.cuando).getTime() > pronto) continue;
       const fecha = new Date(plan.cuando);
-      const cuando = plan.repite ? `los ${dia(fecha)} a las ${hora(fecha)}` : `el ${cuandoLegible(fecha)}`;
+      const cuando = plan.repite ? `los ${enPlural(dia(fecha))} a las ${hora(fecha)}` : `el ${cuandoLegible(fecha)}`;
       cartas.push({
         clave, tipo: 'sugerencia', planId: plan.id, plan,
         texto: `${plan.autor} invita ${cuando} en ${plan.lugarPublico}: «${plan.titulo}». ¿Te sumas?`,
@@ -237,6 +239,35 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     if (texto.length > MAX_MENSAJE) return reply.code(400).send({ error: 'Ese mensaje es muy largo. Escríbelo en dos partes.' });
     await db.query('insert into plan_mensajes (plan_id, autor_id, texto) values ($1, $2, $3)', [request.params.plan, id, texto]);
     return mensajesDe(id, request.params.plan);
+  });
+
+  // ---- Mapa de la comunidad (diseño de Mateo) ----
+  // El tablero son los hexágonos a dos anillos de la zona activa. Todo va en metros relativos al centro
+  // de tu zona: nunca salen coordenadas. Las luces son planes (en lugares públicos), nunca personas.
+  app.get('/api/mapa', async (request, reply) => {
+    const id = await conSesion(request, reply); if (!id) return reply;
+    const visibles = await planesVisibles(db, id, ahora());
+    const [lugar] = await db.query<{ celda: string | null }>('select celda from lugares where cuenta_id = $1 and activo', [id]);
+    if (!visibles || !lugar?.celda) return { disponible: false } satisfies Mapa;
+    const [lat0, lng0] = cellToLatLng(lugar.celda);
+    const escalaX = 111_320 * Math.cos((lat0 * Math.PI) / 180);
+    const proyectar = (lat: number, lng: number): [number, number] => [Math.round((lng - lng0) * escalaX), Math.round(-(lat - lat0) * 110_574)];
+    const tablero = new Set(gridDisk(lugar.celda, 2));
+    const celdas = [...tablero].map(c => {
+      const [x, y] = proyectar(...cellToLatLng(c));
+      return { x, y, anillo: gridDistance(lugar.celda!, c), puntos: cellToBoundary(c).map(([la, lo]) => proyectar(la, lo)) };
+    });
+    const ids = visibles.planes.map(p => p.id);
+    const celdasDePlanes = ids.length ? await db.query<{ id: string; celda: string | null }>('select id, celda from planes where id = any($1)', [ids]) : [];
+    const planes = celdasDePlanes.flatMap(p => {
+      if (!p.celda || !tablero.has(p.celda)) return [];
+      // Varias luces en un mismo hexágono no se tapan: un desplazamiento fijo según el plan (hasta ~180 m).
+      const semilla = [...p.id].reduce((s, c) => (s * 31 + c.charCodeAt(0)) >>> 0, 7);
+      const angulo = (semilla % 360) * Math.PI / 180, radio = 60 + (semilla % 120);
+      const [x, y] = proyectar(...cellToLatLng(p.celda));
+      return [{ id: p.id, x: Math.round(x + radio * Math.cos(angulo)), y: Math.round(y + radio * Math.sin(angulo)) }];
+    });
+    return { disponible: true, celdas, planes } satisfies Mapa;
   });
 
   // ---- Brisa y avisos ----

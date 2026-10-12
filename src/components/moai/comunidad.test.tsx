@@ -8,13 +8,14 @@ const perfil: Perfil = { nombre: 'Rosa Prueba', nacimientoPendiente: false, comu
 const caminata: Plan = { id: 'p1', titulo: 'Caminata por el parque', descripcion: '', cuando: '2026-10-13T15:00:00.000Z', lugarPublico: 'Parque de los Deseos',
   zona: 'Medellín', franja: 'En tu ciudad', alcance: 'ciudad', tipo: 'caminar', repite: null, diaRepite: null, autor: 'Luis', mio: false, voy: false, lleno: false };
 const ok = <T,>(datos: T) => vi.fn(async () => ({ ok: true as const, datos }));
-const api = (extra: Partial<Api> = {}) => ({ planes: ok([caminata]), irAPlan: ok([{ ...caminata, voy: true }]), lugares: ok([casa]), cartas: ok([]), cartaVista: ok([]), ...extra }) as unknown as Api;
+const api = (extra: Partial<Api> = {}) => ({ planes: ok([caminata]), irAPlan: ok([{ ...caminata, voy: true }]), lugares: ok([casa]), cartas: ok([]), cartaVista: ok([]), mapa: ok({ disponible: false }), ...extra }) as unknown as Api;
 
 describe('Mi comunidad', () => {
   it('saluda, dice dónde está la persona y muestra los planes cercanos con distancia por franjas', async () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
-    expect(screen.getByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
-    expect(screen.getByText(/Estás en/)).toHaveTextContent('Estás en Casa · Medellín');
+    expect(screen.getByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Estás en/ })).toHaveTextContent('Estás en: Casa · Medellín');
+    expect(await screen.findByText(/Hola, Rosa. Puedes sumarte/)).toBeInTheDocument();
     expect(await screen.findByText('Caminata por el parque')).toBeInTheDocument();
     expect(screen.getByText('Parque de los Deseos · Medellín · En tu ciudad')).toBeInTheDocument();
     expect(screen.getByText(/inteligencia artificial/)).toBeInTheDocument();
@@ -131,5 +132,41 @@ describe('Avisos', () => {
     fireEvent.click(recomendaciones);
     fireEvent.click(await screen.findByRole('button', { name: 'Caminar' }));
     await vi.waitFor(() => expect(guardarPreferencias).toHaveBeenLastCalledWith({ sugerencias: true, gustos: ['caminar'], resumenSemanal: false }));
+  });
+});
+
+describe('Mapa de la comunidad', () => {
+  // Un tablero mínimo: tu zona en el centro y una vecina al norte, con la luz del plan de Luis.
+  const hex = (x: number, y: number, anillo: number) => ({ x, y, anillo, puntos: [[x - 500, y], [x - 250, y - 430], [x + 250, y - 430], [x + 500, y], [x + 250, y + 430], [x - 250, y + 430]] as [number, number][] });
+  const mapa = { disponible: true as const, celdas: [hex(0, 0, 0), hex(0, -860, 1)], planes: [{ id: 'p1', x: 0, y: -860 }] };
+
+  it('muestra el mapa por defecto: tu zona, una luz por plan y su burbuja', async () => {
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText('Tu zona')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mapa' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /Caminata por el parque · .* · Parque de los Deseos · En tu ciudad/ })).toBeInTheDocument();
+    expect(screen.getByText('caminata por el parque')).toBeInTheDocument(); // la burbuja: «Luis: caminata por el parque»
+  });
+
+  it('al tocar una luz se abre la tarjeta del plan con «Me sumo»', async () => {
+    const irAPlan = ok([{ ...caminata, voy: true }]);
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa), irAPlan })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(await screen.findByRole('button', { name: /Caminata por el parque · / }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Caminata por el parque' })).toBeInTheDocument();
+    expect(screen.getByText('Lugar público: Parque de los Deseos')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Me sumo' }));
+    expect(await screen.findByText('Vas a ir')).toBeInTheDocument();
+  });
+
+  it('se puede pasar a la lista', async () => {
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(await screen.findByRole('button', { name: 'Lista' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Planes cerca de ti' })).toBeInTheDocument();
+  });
+
+  it('sin barrio no hay mapa: queda la lista y lo explica', async () => {
+    render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText(/El mapa de hexágonos llega cuando tu lugar tiene barrio/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mapa' })).toBeNull();
   });
 });

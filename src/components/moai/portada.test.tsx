@@ -55,6 +55,7 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     cartaVista: vi.fn(async () => ({ ok: true as const, datos: [] })),
     preferencias: vi.fn(async () => ({ ok: true as const, datos: { sugerencias: false, gustos: [], resumenSemanal: false } })),
     guardarPreferencias: vi.fn(async (p) => ({ ok: true as const, datos: p })),
+    mapa: vi.fn(async () => ({ ok: true as const, datos: { disponible: false as const } })),
   };
 }
 
@@ -101,7 +102,7 @@ describe('Resolución de sesión (P00)', () => {
 
   it('con sesión y pasos resueltos entra directo a Mi comunidad', async () => {
     render(<Plataforma api={apiFalsa('activa')} />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
     expect(window.location.pathname).toBe('/comunidad');
   });
 
@@ -151,7 +152,7 @@ describe('Crear cuenta', () => {
     escribir('Tu ciudad', 'medel');
     fireEvent.click(screen.getByRole('option', { name: /Medellín/ }));
     clic('Guardar como «Casa»');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
     expect(api.guardarComunidad).toHaveBeenCalledWith({ ciudad: '05001', barrio: null });
   });
 
@@ -163,7 +164,7 @@ describe('Crear cuenta', () => {
     clic('Continuar');
     await titulo('¿Dónde vives?');
     clic('Lo haré después');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
     expect(screen.getByText('Elige dónde vives para ver planes cerca de ti.')).toBeInTheDocument();
     expect(api.guardarComunidad).toHaveBeenCalledWith({ omitir: true });
   });
@@ -240,7 +241,7 @@ describe('Iniciar sesión', () => {
     expect(await screen.findByText(/no coincide/)).toBeInTheDocument();
     escribir('Código de acceso', '123456');
     clic('Verificar y continuar');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa. Este es tu espacio.' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
   });
 
   it('«Cambiar correo» vuelve al formulario de acceso', async () => {

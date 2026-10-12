@@ -460,3 +460,87 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .mensaje-form { display: flex; gap: 10px; }
 .mensaje-form .cuenta-campo { flex: 1; min-width: 0; }
 .solo-lectores { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Mi comunidad con mapa (diseño de Mateo, 12 de octubre) */
+.comunidad { min-height: 100svh; color: var(--niebla); background: radial-gradient(ellipse at 50% 45%, oklch(.24 .045 165), oklch(.13 .02 175) 75%); }
+.comunidad-cabecera { position: sticky; top: 0; z-index: 20; margin: 0 auto; max-width: 1480px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; padding: 14px clamp(16px, 2.4vw, 28px); }
+.comunidad.en-mapa .comunidad-cabecera { position: absolute; left: 16px; right: 16px; top: 16px; padding: 10px 14px 10px 24px; border-radius: 22px; background: color-mix(in oklab, oklch(.18 .03 170) 82%, transparent); border: 1px solid color-mix(in oklab, oklch(.88 .1 150) 30%, transparent); backdrop-filter: blur(14px); }
+.comunidad-cabecera .diario-marca { padding-right: 18px; border-right: 1px solid color-mix(in oklab, var(--niebla) 30%, transparent); }
+.comunidad-cabecera h1 { margin: 0; font: 700 clamp(22px, 2vw, 28px)/1.1 var(--font-sans); }
+.comunidad-cabecera h1:focus { outline: none; }
+.selector-lugar-caja { position: relative; }
+.selector-lugar { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 999px; border: 1px solid color-mix(in oklab, oklch(.88 .1 150) 45%, transparent); background: color-mix(in oklab, oklch(.22 .04 170) 80%, transparent); color: var(--niebla); font-size: 16px; cursor: pointer; }
+.selector-lugar svg, .menu-boton svg { width: 20px; height: 20px; }
+.selector-lugar-lista { position: absolute; z-index: 30; top: calc(100% + 8px); left: 0; min-width: 260px; margin: 0; padding: 6px; list-style: none; border-radius: 16px; background: oklch(.2 .035 170); border: 1px solid color-mix(in oklab, var(--niebla) 20%, transparent); box-shadow: 0 18px 40px oklch(.1 .02 170 / .6); }
+.selector-lugar-lista button { width: 100%; min-height: 48px; padding: 8px 14px; display: flex; flex-direction: column; align-items: flex-start; border: 0; border-radius: 10px; background: transparent; color: var(--niebla); font-size: 16px; text-align: left; cursor: pointer; }
+.selector-lugar-lista button:hover, .selector-lugar-lista button[aria-current] { background: color-mix(in oklab, var(--lima) 16%, transparent); }
+.selector-lugar-lista span { font-size: 14px; color: color-mix(in oklab, var(--niebla) 65%, transparent); }
+.menu-lista { left: auto; right: 0; }
+.menu-boton { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--niebla) 30%, transparent); background: transparent; color: var(--niebla); cursor: pointer; }
+.modo { margin-left: auto; display: inline-flex; padding: 4px; border-radius: 999px; background: color-mix(in oklab, oklch(.22 .04 170) 80%, transparent); border: 1px solid color-mix(in oklab, oklch(.88 .1 150) 35%, transparent); }
+.modo button { min-height: 40px; min-width: 104px; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 16px; cursor: pointer; }
+.modo button[aria-pressed="true"] { background: color-mix(in oklab, oklch(.5 .1 140) 65%, transparent); color: var(--niebla); font-weight: 600; box-shadow: inset 0 0 0 1px var(--lima); }
+.comunidad-saludo { margin: 8px 0 0; }
+
+.comunidad-mapa { position: relative; min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 96px 16px 120px; overflow: hidden; }
+.mapa { position: relative; width: min(100%, calc((100svh - 200px) * 1.15), 1100px); }
+.mapa-tablero { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.hex polygon { stroke: oklch(.85 .1 175 / .45); stroke-width: 9; }
+.hex.anillo-2 polygon { opacity: .82; }
+.ventana { fill: oklch(.86 .12 85); opacity: .5; }
+.hex.anillo-2 .ventana { opacity: .3; }
+.hex-borde-centro { fill: none; stroke: oklch(.84 .17 150); stroke-width: 18; filter: drop-shadow(0 0 30px oklch(.84 .17 150)); }
+.luz-centro { fill: var(--lima); }
+.luz-halo { fill: var(--lima); opacity: .7; }
+.luz-semanal .luz-centro, .luz-semanal .luz-halo { fill: var(--cian); }
+.luz-mia .luz-centro, .luz-mia .luz-halo { fill: oklch(.93 .09 90); }
+.luz { animation: luz-respira 4s ease-in-out infinite; }
+.luz.elegida .luz-centro { stroke: var(--niebla); stroke-width: 10; }
+@keyframes luz-respira { 50% { opacity: .65; } }
+.mapa-luz { position: absolute; width: 48px; height: 48px; transform: translate(-50%, -50%); border-radius: 50%; border: 0; background: transparent; cursor: pointer; }
+.mapa-luz:focus-visible { outline: 3px solid var(--niebla); }
+.mapa-tu-zona { position: absolute; transform: translate(-50%, -50%); padding: 6px 16px; border-radius: 999px; background: oklch(.16 .03 175 / .85); border: 1px solid oklch(.84 .17 150 / .7); font-weight: 600; font-size: 17px; pointer-events: none; }
+.mapa-burbuja { position: absolute; transform: translate(-50%, calc(-100% - 26px)); max-width: 220px; padding: 10px 14px; border-radius: 16px; background: oklch(.2 .04 170 / .92); border: 1px solid oklch(.85 .1 175 / .55); color: var(--niebla); font-size: 16px; line-height: 1.3; text-align: left; cursor: pointer; box-shadow: 0 10px 28px oklch(.1 .02 170 / .5); }
+.mapa { --borde-burbuja: 120px; }
+.mapa-burbuja { z-index: 2; }
+.mapa-burbuja.abajo { transform: translate(-50%, 26px); }
+.mapa-burbuja-cola { position: absolute; z-index: 3; width: 16px; height: 16px; transform: translate(-50%, -34px) rotate(45deg); background: oklch(.2 .04 170 / .92); border-right: 1px solid oklch(.85 .1 175 / .55); border-bottom: 1px solid oklch(.85 .1 175 / .55); pointer-events: none; }
+.mapa-burbuja-cola.abajo { transform: translate(-50%, 18px) rotate(225deg); }
+.mapa-burbuja strong { display: block; color: var(--lima); }
+.mapa-brisa { position: absolute; top: 100px; right: clamp(16px, 3vw, 40px); display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; color: var(--niebla); cursor: pointer; }
+.mapa-brisa .orbe { position: relative; top: auto; left: auto; transform: none; --tam: 96px; --k: .48; }
+.mapa-brisa-globo { max-width: 240px; padding: 12px 16px; border-radius: 16px; background: oklch(.2 .04 170 / .9); border: 1px solid oklch(.85 .1 175 / .5); font-size: 16px; text-align: left; }
+.mapa-leyenda { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; margin: 0; padding: 10px 18px; list-style: none; border-radius: 999px; background: oklch(.18 .03 170 / .85); font-size: 15px; white-space: nowrap; }
+.mapa-leyenda li { display: flex; align-items: center; gap: 8px; }
+.mapa-leyenda span { width: 14px; height: 14px; border-radius: 50%; background: var(--lima); }
+.mapa-leyenda .luz-semanal { background: var(--cian); }
+.mapa-leyenda .luz-mia { background: oklch(.93 .09 90); }
+.mapa-contar { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 28px; min-height: 60px; padding: 0 26px; font-size: 19px; gap: 10px; box-shadow: 0 12px 30px oklch(.1 .02 170 / .5); }
+.mapa-contar svg { width: 22px; height: 22px; }
+.mapa-mas { position: absolute; top: 100px; left: clamp(16px, 3vw, 40px); min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid oklch(.85 .1 175 / .5); background: oklch(.18 .03 170 / .85); color: var(--niebla); font-size: 15px; cursor: pointer; }
+.mapa-tarjeta { position: absolute; z-index: 15; left: clamp(16px, 3vw, 40px); bottom: 28px; width: min(560px, calc(100% - 32px)); padding: 22px 24px; border-radius: 24px; display: flex; flex-direction: column; gap: 8px; background: oklch(.2 .04 170 / .94); border: 1px solid oklch(.85 .1 175 / .45); backdrop-filter: blur(14px); box-shadow: 0 20px 50px oklch(.1 .02 170 / .6); }
+.mapa-tarjeta h2 { margin: 0 40px 6px 0; font: 700 24px/1.2 var(--font-sans); }
+.mapa-tarjeta p { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 18px; }
+.mapa-tarjeta p svg { width: 22px; height: 22px; flex-shrink: 0; }
+.mapa-tarjeta-autor { color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 16px !important; }
+.mapa-tarjeta-boton { width: 100%; min-height: 58px; margin-top: 8px; font-size: 20px; }
+.mapa-cerrar { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--niebla); cursor: pointer; }
+.mapa-cerrar svg { width: 24px; height: 24px; }
+@media (max-width: 760px) {
+  .comunidad.en-mapa .comunidad-cabecera { left: 12px; right: 12px; top: 12px; padding: 14px; }
+  .comunidad-cabecera .diario-marca { border: 0; padding: 0; flex-basis: 100%; }
+  .modo { margin-left: 0; flex: 1; }
+  .modo button { flex: 1; }
+  .comunidad-mapa { padding-top: 250px; padding-bottom: 200px; align-items: flex-start; }
+  .mapa { width: 135%; margin-left: -17.5%; --borde-burbuja: calc(13% + 112px); }
+  .mapa-brisa { top: 190px; }
+  .mapa-brisa-globo { display: none; }
+  .mapa-brisa .orbe { --tam: 72px; --k: .36; }
+  .mapa-mas { top: 200px; }
+  /* En el teléfono la tarjeta, la leyenda y el botón quedan fijos abajo aunque el mapa se desplace. */
+  .mapa-leyenda { position: fixed; z-index: 12; bottom: 100px; gap: 12px; font-size: 14px; }
+  .mapa-contar { position: fixed; z-index: 12; bottom: 24px; left: 16px; right: 16px; justify-content: center; }
+  .mapa-tarjeta { position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; width: 100%; border-radius: 28px 28px 0 0; padding-bottom: 28px; }
+}
+
+.mapa-abriendo { min-height: 60svh; display: grid; place-items: center; color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 18px; }

@@ -21,6 +21,8 @@ export type Carta =
   | { clave: string; tipo: 'solo'; planId: string; texto: string; repetir: boolean }
   | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan };
 export type Preferencias = { sugerencias: boolean; gustos: Tipo[]; resumenSemanal: boolean };
+// El mapa de la comunidad: hexágonos a dos anillos de tu zona y las luces de los planes, en metros relativos a tu zona.
+export type Mapa = { disponible: false } | { disponible: true; celdas: { x: number; y: number; anillo: number; puntos: [number, number][] }[]; planes: { id: string; x: number; y: number }[] };
 // `status` 0 = sin conexión: no es lo mismo que «sin sesión» (401).
 export type Respuesta<T> = { ok: true; datos: T } | { ok: false; error: string; errores?: Errores; status?: number };
 export type Contacto = { canal: Canal; destino: string; pais?: string };
@@ -65,6 +67,7 @@ export const api = {
   enviarMensaje: (id: string, texto: string) => llamar<Mensaje[]>(`planes/${encodeURIComponent(id)}/mensajes`, { texto }),
   cartas: () => llamar<Carta[]>('brisa'),
   cartaVista: (clave: string) => llamar<Carta[]>('brisa/visto', { clave }),
+  mapa: () => llamar<Mapa>('mapa'),
   preferencias: () => llamar<Preferencias>('preferencias'),
   guardarPreferencias: (p: Preferencias) => llamar<Preferencias>('preferencias', p),
   salir: () => llamar<{ ok: true }>('salir', {}),

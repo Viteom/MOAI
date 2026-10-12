@@ -96,7 +96,8 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
       onMenor={() => { setMenor(true); setSesion({ estado: 'anonima' }); }}/>;
     if (ruta === '/configuracion/comunidad') return <PasoComunidad guardar={api.guardarComunidad} onGuardado={activa}/>;
     const salir = async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); };
-    if (ruta === '/comunidad') return <MiComunidad perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
+    const refrescar = () => void api.sesion().then(r => { if (r.ok) activa(r.datos); });
+    if (ruta === '/comunidad') return <MiComunidad perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={refrescar}/>;
     if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
     if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;
