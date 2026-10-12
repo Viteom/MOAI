@@ -9,7 +9,8 @@ import { latLngToCell } from 'h3-js';
 
 const RESOLUCION = 8;
 const menores = new Set(['de', 'del', 'la', 'las', 'el', 'los', 'y', 'e', 'en']);
-const titulo = texto => String(texto ?? '').trim().toLocaleLowerCase('es').split(/(\s+|-|\(|\.)/).map((parte, i) => {
+const titulo = texto => String(texto ?? '').trim().toLocaleLowerCase('es').split(/(\s+|-|\(|\.)/).map((parte, i, partes) => {
+  if (partes[i - 1] === '-') return parte.charAt(0).toLocaleUpperCase('es') + parte.slice(1); // El Nogal-Los Almendros
   if (/^[ivx]+$/i.test(parte) && parte.length <= 4 && i > 0) return parte.toUpperCase(); // números romanos: Belén II
   if (i > 0 && menores.has(parte)) return parte;
   return parte.charAt(0).toLocaleUpperCase('es') + parte.slice(1);
@@ -33,12 +34,16 @@ function centroide(geometria) {
   return mejor;
 }
 
+// La fuente trae algunas comunas sin tilde.
+const tildes = { Belen: 'Belén', 'La America': 'La América', 'San Cristobal': 'San Cristóbal', 'Santa Elena': 'Santa Elena' };
+const comuna = texto => tildes[titulo(texto)] ?? titulo(texto);
+
 const datos = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const barrios = [];
 for (const { properties: p, geometry } of datos.features) {
   const centro = geometry && centroide(geometry);
   if (!centro || !p.codigo || !p.nombre_barrio) continue;
-  barrios.push([String(p.codigo), titulo(p.nombre_barrio), titulo(p.nombre_comuna), latLngToCell(centro.lat, centro.lng, RESOLUCION)]);
+  barrios.push([String(p.codigo), titulo(p.nombre_barrio), comuna(p.nombre_comuna), latLngToCell(centro.lat, centro.lng, RESOLUCION)]);
 }
 barrios.sort((a, b) => a[1].localeCompare(b[1], 'es') || a[2].localeCompare(b[2], 'es'));
 writeFileSync('src/lib/colombia/barrios-medellin.json', JSON.stringify(barrios) + '\n');

@@ -42,10 +42,17 @@ describe('Mi comunidad', () => {
 });
 
 describe('Proponer un plan', () => {
+  it('en Medellín se elige el barrio y por defecto llega muy cerca', () => {
+    render(<NuevoPlan perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(screen.getByLabelText('Barrio del lugar')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Muy cerca/ })).toBeChecked();
+  });
+
   it('sin barrios en la ciudad, la invitación llega a toda la ciudad', async () => {
     const crearPlan = ok([caminata]);
     const ir = vi.fn();
-    render(<NuevoPlan perfil={perfil} api={api({ crearPlan })} ir={ir} onSalir={vi.fn()}/>);
+    const bogota = { ...perfil, lugar: { ...casa, ciudad: '11001', zona: 'Bogotá, D.C.' } };
+    render(<NuevoPlan perfil={bogota} api={api({ crearPlan })} ir={ir} onSalir={vi.fn()}/>);
     expect(screen.getByRole('radio', { name: /Mi ciudad/ })).toBeChecked();
     expect(screen.queryByRole('radio', { name: /Muy cerca/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Caminar' }));
@@ -56,7 +63,7 @@ describe('Proponer un plan', () => {
     fireEvent.change(screen.getByLabelText('¿Dónde? Un lugar público'), { target: { value: 'Parque de los Deseos' } });
     fireEvent.click(screen.getByRole('button', { name: 'Publicar' }));
     await vi.waitFor(() => expect(ir).toHaveBeenCalledWith('/comunidad'));
-    expect(crearPlan).toHaveBeenCalledWith(expect.objectContaining({ titulo: 'Voy a caminar, ¿alguien viene?', tipo: 'caminar', repite: 'semanal', ciudad: '05001', alcance: 'ciudad', cupo: null }));
+    expect(crearPlan).toHaveBeenCalledWith(expect.objectContaining({ titulo: 'Voy a caminar, ¿alguien viene?', tipo: 'caminar', repite: 'semanal', ciudad: '11001', alcance: 'ciudad', cupo: null }));
   });
 });
 

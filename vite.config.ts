@@ -16,5 +16,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // La suite completa corre en paralelo (jsdom + PGlite): 5 s se queda corto en equipos lentos.
+    testTimeout: 15000,
   },
 });

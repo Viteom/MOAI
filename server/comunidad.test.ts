@@ -300,3 +300,31 @@ describe('Resumen semanal por correo', () => {
     expect(await resumenSemanal(db, enviar, despuesDe(hoy.toISOString(), 24 * hora))).toBe(0);
   });
 });
+
+describe('Barrios reales de Medellín', () => {
+  // Laureles (1108); Belén (1603) está a un anillo, Barrio Cristóbal (1210) a dos y Alejandría (1416) a seis.
+  async function vecina(nombre: string, barrio: string) {
+    const p = await persona(nombre);
+    await p.pedir('POST', '/api/lugares', { nombre: 'Casa', ciudad: '05001', barrio });
+    return p;
+  }
+
+  it('«Muy cerca» llega al barrio vecino y no más allá; «Mi zona», dos anillos', async () => {
+    const rosa = await vecina('Rosa', '1108');
+    const ana = await vecina('Ana', '1603');
+    const luis = await vecina('Luis', '1210');
+    const marta = await vecina('Marta', '1416');
+    await rosa.pedir('POST', '/api/planes', { ...planCiudad, titulo: 'Voy a caminar', barrio: '1108', alcance: 'cerca' });
+    await rosa.pedir('POST', '/api/planes', { ...planCiudad, titulo: 'Voy por un tinto', barrio: '1108', alcance: 'zona' });
+    const titulos = async (p: Awaited<ReturnType<typeof vecina>>) => (await p.json('GET', '/api/planes')).map((x: { titulo: string; franja: string }) => `${x.titulo} · ${x.franja}`);
+    expect(await titulos(ana)).toEqual(['Voy a caminar · A menos de 2 km', 'Voy por un tinto · A menos de 2 km']);
+    expect(await titulos(luis)).toEqual(['Voy por un tinto · A menos de 4 km']);
+    expect(await titulos(marta)).toEqual([]);
+  });
+
+  it('el lugar muestra barrio y ciudad, nunca la celda', async () => {
+    const rosa = await persona('Rosa');
+    const [casa] = await rosa.json('POST', '/api/lugares', { nombre: 'Casa', ciudad: '05001', barrio: '1108' });
+    expect(casa).toEqual({ id: expect.any(String), nombre: 'Casa', ciudad: '05001', barrio: '1108', zona: 'Laureles, Medellín', activo: true });
+  });
+});
