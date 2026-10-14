@@ -12,3 +12,13 @@
 - Los servicios externos (Resend, Twilio) solo se llaman desde el servidor, con claves en `.env`.
 - Los códigos y los tokens de sesión se guardan con hash; nunca en claro. Los registros técnicos no llevan correos, teléfonos ni códigos (salvo el código de desarrollo en consola, con el destino enmascarado).
 - Ver también `CLAUDE.md` (reglas de privacidad y decisiones del proyecto).
+
+## Trabajo entre agentes (Claude Code y Codex)
+- Cada agente trabaja en su propia rama (`codex/...` para Codex) y abre un pull request; Mateo decide qué se une a `main`.
+- Las tareas para Codex están en `tasks/` con el prefijo `codex`; cada una dice qué carpetas no tocar.
+
+## Review guidelines
+- Responde en español.
+- Prioriza, en este orden: incumplimientos de las reglas de `CLAUDE.md` (ubicación exacta, datos personales en registros, almacenamiento en el navegador, solicitudes a terceros desde el frontend, contadores de vanidad, Brisa sin presentarse como IA), errores de seguridad en códigos, sesiones y cookies, y errores de lógica con un caso concreto que falle.
+- Señala lo que la interfaz promete sobre privacidad y el código no cumple (regla 10).
+- No comentes estilo ni gustos de diseño visual salvo que rompan accesibilidad (contraste, tamaño de toque, lector de pantalla).
