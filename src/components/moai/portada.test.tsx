@@ -139,7 +139,7 @@ describe('Resolución de sesión (P00)', () => {
   });
 
   it('una ruta privada sin sesión pide entrar y después vuelve a ella', async () => {
-    window.history.replaceState(null, '', '/ciudad');
+    window.history.replaceState(null, '', '/gente');
     render(<Plataforma api={apiFalsa('anonima', false)} />);
     expect(await screen.findByText('Tu sesión terminó. Vuelve a entrar para continuar.')).toBeInTheDocument();
     escribir('Tu correo electrónico', 'rosa@ejemplo.co');
@@ -147,7 +147,7 @@ describe('Resolución de sesión (P00)', () => {
     await titulo('Revisa tu correo');
     escribir('Código de acceso', '123456');
     clic('Verificar y continuar');
-    expect(await screen.findByText('Tu ciudad, Rosa.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi gente' })).toBeInTheDocument();
   });
 
   it('recargar en /verificar vuelve a pedir el código', async () => {

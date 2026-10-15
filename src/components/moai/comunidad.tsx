@@ -173,7 +173,6 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
 
       <div className="diario-acciones">
         <Button className="diario-boton principal" onClick={() => ir('/inicio?plan=1')}>Tengo ganas de…</Button>
-        <Button className="diario-boton" onClick={() => ir('/ciudad')}>Ver mi ciudad</Button>
       </div>
 
       <section aria-labelledby="planes-titulo">

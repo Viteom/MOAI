@@ -10,25 +10,25 @@ const anonima = { estado: 'anonima' as const };
 
 describe('resolverRuta', () => {
   it('mientras carga o sin red no decide nada', () => {
-    expect(resolverRuta('/ciudad', { estado: 'cargando' }, null)).toBeNull();
-    expect(resolverRuta('/ciudad', { estado: 'error' }, null)).toBeNull();
+    expect(resolverRuta('/gente', { estado: 'cargando' }, null)).toBeNull();
+    expect(resolverRuta('/gente', { estado: 'error' }, null)).toBeNull();
   });
   it('sin sesión: las públicas se quedan, las privadas piden entrar con destino', () => {
     expect(resolverRuta('/registro', anonima, null)).toBeNull();
-    expect(resolverRuta('/ciudad', anonima, null)).toBe('/acceso?destino=%2Fciudad');
+    expect(resolverRuta('/gente', anonima, null)).toBe('/acceso?destino=%2Fgente');
     expect(resolverRuta('/no-existe', anonima, null)).toBe('/');
   });
-  it('con sesión: las pantallas de entrada llevan al destino o a la ciudad', () => {
+  it('con sesión: las pantallas de entrada llevan al destino o al inicio', () => {
     expect(resolverRuta('/', activa, null)).toBe('/inicio');
     expect(resolverRuta('/verificar', activa, '/lugares')).toBe('/lugares');
-    expect(resolverRuta('/ciudad', activa, null)).toBeNull();
+    expect(resolverRuta('/gente', activa, null)).toBeNull();
   });
 });
 
 describe('pasos pendientes', () => {
   it('primero la fecha de nacimiento, luego la comunidad, conservando el destino', () => {
-    expect(resolverRuta('/ciudad', conPasos({ nacimientoPendiente: true, comunidad: 'pending' }), null)).toBe('/configuracion/nacimiento');
-    expect(resolverRuta('/verificar', conPasos({ comunidad: 'pending' }), '/ciudad')).toBe('/configuracion/comunidad?destino=%2Fciudad');
+    expect(resolverRuta('/gente', conPasos({ nacimientoPendiente: true, comunidad: 'pending' }), null)).toBe('/configuracion/nacimiento');
+    expect(resolverRuta('/verificar', conPasos({ comunidad: 'pending' }), '/gente')).toBe('/configuracion/comunidad?destino=%2Fgente');
     expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'pending' }), null)).toBeNull();
   });
   it('lo omitido no se vuelve a preguntar', () => {
@@ -45,6 +45,7 @@ describe('destinoSeguro', () => {
     expect(destinoSeguro('https://otro-sitio.example')).toBeNull();
     expect(destinoSeguro('//otro-sitio.example')).toBeNull();
     expect(destinoSeguro('/registro')).toBeNull();
-    expect(destinoSeguro('/ciudad')).toBe('/ciudad');
+    expect(destinoSeguro('/gente')).toBe('/gente');
+    expect(destinoSeguro('/ciudad')).toBeNull(); // el prototipo viejo ya no es un destino
   });
 });

@@ -5,7 +5,7 @@ import { Menu as Menu2 } from 'lucide-react';
 export type Ir = (ruta: string) => void;
 
 export function Diario({ titulo, bajada, ir, actual, onSalir, children }: { titulo: string; bajada?: ReactNode; ir: Ir; actual: string; onSalir: () => void; children: ReactNode }) {
-  const enlaces: [string, string][] = [['/inicio', 'Inicio'], ['/comunidad', 'Mi comunidad'], ['/lazos', 'Mis lazos'], ['/gente', 'Mi gente'], ['/zona', 'Mi zona'], ['/lugares', 'Mis lugares'], ['/avisos', 'Avisos'], ['/ciudad', 'Mi ciudad']];
+  const enlaces: [string, string][] = [['/inicio', 'Inicio'], ['/comunidad', 'Mi comunidad'], ['/lazos', 'Mis lazos'], ['/gente', 'Mi gente'], ['/zona', 'Mi zona'], ['/lugares', 'Mis lugares'], ['/avisos', 'Avisos']];
   return <div className="diario">
     <header className="diario-cabecera">
       <span className="diario-marca">MOAI</span>
@@ -36,7 +36,6 @@ export function MenuMas({ ir, onSalir, equipo, organizaciones }: { ir: Ir; onSal
       {organizaciones && <li><button type="button" onClick={() => ir('/planes/nuevo')}>Convocar como entidad</button></li>}
       <li><button type="button" onClick={() => ir('/lugares')}>Mis lugares</button></li>
       <li><button type="button" onClick={() => ir('/avisos')}>Avisos</button></li>
-      <li><button type="button" onClick={() => ir('/ciudad')}>Mi ciudad</button></li>
       {equipo && <li><button type="button" onClick={() => ir('/equipo')}>Equipo de MOAI</button></li>}
       <li><button type="button" onClick={onSalir}>Cerrar sesión</button></li>
     </ul>}

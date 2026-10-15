@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { api as apiReal, type Api, type Contacto, type Envio, type Perfil, type Respuesta } from '@/lib/api';
 import { resolverRuta, rutaDeMoai, rutaDePlan, useRuta, type Sesion } from '@/lib/rutas';
 import type { EntradaRegistro } from '@/lib/registro';
-import { MoaiApp } from './app';
 import { Acceso, Codigo, Menor, PasoComunidad, PasoNacimiento, Registro, TextoLegal, registroVacio } from './cuenta';
 import { Bienvenida } from './bienvenida';
 import { Avisos, MiComunidad, MisLugares, NuevoPlan, PlanDetalle } from './comunidad';
@@ -116,7 +115,6 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     const planId = rutaDePlan.exec(ruta)?.[1];
     if (planId) return <PlanDetalle key={planId} id={planId} api={api} ir={ir} onSalir={salir}/>;
     // «Mi ciudad»: la ciudad del prototipo (árbol, calle, carta de Brisa), que convive con Mi comunidad.
-    if (ruta === '/ciudad') return <MoaiApp inicio="home" estadoInicial={{ nombre: perfil.nombre }} cuenta={{ onSalir: salir }}/>;
   }
   if (ruta === '/') return <Portada onCrear={() => ir('/bienvenida')} onEntrar={() => ir('/acceso')}/>;
   return <Abriendo/>; // mientras el resolvedor redirige
