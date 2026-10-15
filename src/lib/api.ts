@@ -28,6 +28,7 @@ export type Carta =
   | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan }
   | { clave: string; tipo: 'gente'; texto: string; motivo?: string }
   | { clave: string; tipo: 'interno'; texto: string; motivo: string; personaId: string }
+  | { clave: string; tipo: 'cuidado'; texto: string }
   | { clave: string; tipo: 'saludo'; texto: string; ref: string; nombre: string; opciones: Saludo[]; plan: boolean };
 // Invierno y puerta abierta. `contadoA`: primeros nombres de quienes saben de tu invierno porque tú se lo contaste.
 export type Estado = { invierno: boolean; puertaAbierta: boolean; contadoA: string[] };

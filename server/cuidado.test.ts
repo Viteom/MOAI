@@ -93,3 +93,17 @@ describe('Moai interno', () => {
     expect((await rosa.json('POST', `/api/interno/${laura.id}/hablamos`))[0].pendiente).toBe(false);
   });
 });
+
+describe('Las personas cambian', () => {
+  it('a los 90 días de guardado, Brisa propone repetir el test una vez', async () => {
+    const rosa = await persona('Rosa');
+    await rosa.pedir('POST', '/api/cuidado', { respuestas: ['B', 'B', 'B', 'B', 'B', 'B'], guardar: true });
+    const repetir = async () => (await rosa.json('GET', '/api/brisa')).filter((c: { tipo: string }) => c.tipo === 'cuidado');
+    expect(await repetir()).toEqual([]);
+    reloj = new Date(hoy.getTime() + 91 * 864e5);
+    const [carta] = await repetir();
+    expect(carta.texto).toMatch(/Las personas cambian/);
+    await rosa.pedir('POST', '/api/brisa/visto', { clave: carta.clave });
+    expect(await repetir()).toEqual([]);
+  });
+});

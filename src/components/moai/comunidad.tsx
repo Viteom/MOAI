@@ -11,7 +11,8 @@ import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, nombreTipoOrganizacion } from '@/
 import { BarrioIlustrado } from './barrio';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { OrbeBrisa } from './bosque';
-import { Diario, type Ir } from './diario';
+import { ConversacionBrisa } from './brisa';
+import { Diario, MenuMas as Menu, type Ir } from './diario';
 import { ReportarPersona } from './gente';
 
 const capital = (texto: string) => texto.charAt(0).toLocaleUpperCase('es') + texto.slice(1);
@@ -83,22 +84,6 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
   </div>;
 }
 
-function Menu({ ir, onSalir, equipo, organizaciones }: { ir: Ir; onSalir: () => void; equipo?: boolean; organizaciones?: boolean }) {
-  const [abierto, setAbierto] = useState(false);
-  return <div className="selector-lugar-caja">
-    <button type="button" className="menu-boton" aria-expanded={abierto} aria-label="Más opciones" onClick={() => setAbierto(a => !a)}><Menu2 aria-hidden="true"/></button>
-    {abierto && <ul className="selector-lugar-lista menu-lista">
-      <li><button type="button" onClick={() => ir('/inicio')}>Inicio con Brisa</button></li>
-      <li><button type="button" onClick={() => ir('/gente')}>Mi gente</button></li>
-      {organizaciones && <li><button type="button" onClick={() => ir('/planes/nuevo')}>Convocar como entidad</button></li>}
-      <li><button type="button" onClick={() => ir('/lugares')}>Mis lugares</button></li>
-      <li><button type="button" onClick={() => ir('/avisos')}>Avisos</button></li>
-      <li><button type="button" onClick={() => ir('/ciudad')}>Mi ciudad</button></li>
-      {equipo && <li><button type="button" onClick={() => ir('/equipo')}>Equipo de MOAI</button></li>}
-      <li><button type="button" onClick={onSalir}>Cerrar sesión</button></li>
-    </ul>}
-  </div>;
-}
 
 export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: () => void }) {
   const [planes, setPlanes] = useState<Plan[] | null>(null);
@@ -108,6 +93,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [ayuda, setAyuda] = useState(false);
+  const [conBrisa, setConBrisa] = useState(false); // la conversación con Brisa, sobre la ciudad
   const usar = useCallback((r: Respuesta<Plan[]>) => { if (r.ok) { setPlanes(r.datos); setError(''); } else setError(r.error); }, []);
   const usarCartas = useCallback((r: Respuesta<Carta[]>) => { if (r.ok) setCartas(r.datos); }, []);
   const lugarId = perfil.lugar?.id;
@@ -146,7 +132,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
     : verMapa ? <div className="comunidad-mapa">
       {/* Escenario ilustrado, con planes reales en una capa independiente. */}
       <BarrioIlustrado mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
-      <button type="button" className="mapa-brisa" data-reserva onClick={() => cartas.length ? setModo('lista') : planes?.[0] && setElegido(mapa.planes[0]?.id ?? null)}>
+      <button type="button" className="mapa-brisa" data-reserva aria-expanded={conBrisa} aria-label={`Hablar con Brisa: ${mensajeBrisa}`} onClick={() => { setElegido(null); setConBrisa(true); }}>
         <OrbeBrisa/><span className="mapa-brisa-globo">{mensajeBrisa}</span>
       </button>
       {!planElegido && <div className="mapa-controles" data-reserva>
@@ -157,7 +143,11 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
         </ul>
         <Button className="diario-boton principal mapa-contar" onClick={() => ir('/inicio?plan=1')}><Pencil aria-hidden="true"/>Tengo ganas de…</Button>
       </div>}
-      {planElegido && <TarjetaMapa plan={planElegido} onCerrar={() => setElegido(null)} onAbrir={() => ir(`/planes/${planElegido.id}`)} {...acciones(planElegido.id)}/>}
+      {conBrisa && <aside className="panel-brisa vidrio flotante" data-reserva aria-label="Conversación con Brisa">
+        <button type="button" className="panel-cerrar" aria-label="Cerrar la conversación" onClick={() => setConBrisa(false)}>×</button>
+        <ConversacionBrisa perfil={perfil} api={api} ir={ir}/>
+      </aside>}
+      {planElegido && !conBrisa && <TarjetaMapa plan={planElegido} onCerrar={() => setElegido(null)} onAbrir={() => ir(`/planes/${planElegido.id}`)} {...acciones(planElegido.id)}/>}
     </div> : <main className="diario-contenido">
       <p className="diario-bajada comunidad-saludo">Hola, {nombre}. Puedes sumarte a algo que disfrutas o contar qué vas a hacer, por si alguien quiere acompañarte.</p>
       {!perfil.lugar && <div className="diario-aviso"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="diario-boton principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}

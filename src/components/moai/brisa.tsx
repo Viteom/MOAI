@@ -10,7 +10,8 @@ import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, preguntasCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
 import { OrbeBrisa } from './bosque';
-import { Diario, type Ir } from './diario';
+import { MenuMas, type Ir } from './diario';
+import { EscenaCuidado } from './escena';
 
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
 type Opcion = { texto: string; hacer: () => void };
@@ -58,7 +59,7 @@ export function entenderHora(texto: string): string | null {
   return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
 }
 
-function CartaEnChat({ carta, api, ir, alTerminar }: { carta: Carta; api: Api; ir: Ir; alTerminar: () => void }) {
+function CartaEnChat({ carta, api, ir, alTerminar, alCuidado }: { carta: Carta; api: Api; ir: Ir; alTerminar: () => void; alCuidado: () => void }) {
   const [hecho, setHecho] = useState('');
   const [porque, setPorque] = useState(false);
   const cerrar = async (texto: string) => { await api.cartaVista(carta.clave); setHecho(texto); alTerminar(); };
@@ -72,6 +73,7 @@ function CartaEnChat({ carta, api, ir, alTerminar }: { carta: Carta; api: Api; i
       {carta.tipo === 'gente' && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => ir('/gente'))}>Ir a Mi gente</Button>}
       {carta.tipo === 'saludo' && carta.opciones.map(o => <Button key={o} className="diario-boton" onClick={() => void api.saludar(carta.ref, o).then(r => cerrar(r.ok ? `Le mandaste: «${textoSaludo(o)}».` : r.error))}>{textoSaludo(o)}</Button>)}
       {carta.tipo === 'saludo' && carta.plan && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => ir('/inicio?plan=1'))}>Proponer algo juntos</Button>}
+      {carta.tipo === 'cuidado' && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => { setHecho('Vamos.'); alCuidado(); })}>Sí, volvamos a mirarlo</Button>}
       {carta.tipo === 'interno' && <Button className="diario-boton principal" onClick={() => void api.hablamos(carta.personaId).then(() => cerrar('Qué bueno. Esos vínculos también te cuidan a ti.'))}>Ya le escribí</Button>}
       <Button className="diario-boton" onClick={() => void cerrar('Entendido.')}>{carta.tipo === 'solo' && !carta.repetir ? 'Entendido' : 'Ahora no'}</Button>
       {motivo && <button type="button" className="brisa-enlace" aria-expanded={porque} onClick={() => setPorque(p => !p)}>¿Por qué veo esto?</button>}
@@ -92,7 +94,8 @@ function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
   </div>;
 }
 
-export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
+// La conversación con Brisa, sin marco: va en el panel de vidrio del inicio y en el del mapa.
+export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado' }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [opciones, setOpciones] = useState<Opcion[]>([]);
@@ -100,6 +103,7 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
   const paso = useRef<Paso>('libre');
   const borrador = useRef<Borrador | null>(null);
   const respuestas = useRef<Letra[]>([]);
+  const [escena, setEscena] = useState(false);
   const borradorPerfil = useRef<EntradaPerfil>({ frase: '', gustos: [], comparte: '', aprender: '', visible: false });
   const siguiente = useRef(0);
   const final = useRef<HTMLDivElement>(null);
@@ -208,26 +212,18 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
   }
   function empezarTest() {
     decir('Te haré seis preguntas. No hay respuestas buenas ni malas. Al final te muestro el resultado y tú decides si lo guardo.');
-    setOpciones([{ texto: 'Empezar', hacer: () => { respuestas.current = []; pregunta(0); } }, { texto: 'Ahora no', hacer: () => volver() }]);
+    setOpciones([{ texto: 'Empezar', hacer: () => setEscena(true) }, { texto: 'Ahora no', hacer: () => volver() }]);
   }
-  function pregunta(i: number) {
-    paso.current = 'test';
-    const p = preguntasCuidado[i];
-    decir(<span key={`p${i}`}><span className="campo-ayuda">{i + 1} de {preguntasCuidado.length}</span><br/>{p.pregunta}</span>);
-    setOpciones((['A', 'B', 'C'] as Letra[]).map(l => ({ texto: p.opciones[l], hacer: () => {
-      respuestas.current = [...respuestas.current, l];
-      if (i + 1 < preguntasCuidado.length) pregunta(i + 1); else terminarTest();
-    } })));
-  }
-  function terminarTest() {
-    paso.current = 'libre';
-    const letras = resultadoCuidado(respuestas.current)!;
-    mostrarResultado(letras, false);
-    decir('¿Quieres que lo guarde? Así puedo recordarte cuidar tus límites y a quienes te nutren. Solo tú lo ves y lo puedes borrar cuando quieras.');
-    setOpciones([
-      { texto: 'Sí, guárdalo', hacer: () => void api.responderCuidado(respuestas.current, true).then(r => { decir(r.ok ? 'Guardado. Lo tendré en cuenta para cuidarte.' : r.error); seguirConInterno(); }) },
-      { texto: 'Solo quería verlo', hacer: () => void api.responderCuidado(respuestas.current, false).then(() => { decir('Listo, no lo guardé.'); seguirConInterno(); }) },
-    ]);
+  // Las preguntas ocurren en la escena inmersiva; aquí se recibe lo que la persona decidió.
+  function alTerminarEscena(resp: Letra[] | null, guardar: boolean) {
+    setEscena(false);
+    if (!resp) { decir('Lo dejamos para otro momento. Las preguntas no se van a ningún lado.'); volver(); return; }
+    respuestas.current = resp;
+    mostrarResultado(resultadoCuidado(resp)!, false);
+    void api.responderCuidado(resp, guardar).then(r => {
+      decir(!r.ok ? r.error : guardar ? 'Guardado. Lo tendré en cuenta para cuidarte, y en unos meses te propongo repetirlo: las personas cambian.' : 'Listo, no lo guardé.');
+      seguirConInterno();
+    });
   }
   function mostrarResultado(letras: Letra[], guardado: boolean) {
     decir(...letras.map(l => textosCuidado[l]));
@@ -359,7 +355,6 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
       case 'plan-dia': { const dia = entenderDia(t, new Date()); if (dia && b) { b.dia = dia; preguntarHora(); } else { decir('No te entendí el día. Dime, por ejemplo, «mañana» o «el sábado».'); preguntarDia(); } return; }
       case 'plan-hora': { const hora = entenderHora(t); if (hora && b) { b.hora = hora; preguntarLugar(); } else { decir('No te entendí la hora. Dime, por ejemplo, «7 am» o «4:30 pm».'); preguntarHora(); } return; }
       case 'plan-donde': if (b && t.length >= 3) { b.lugar = t.slice(0, 80); mostrarBorrador(); } else preguntarLugar(); return;
-      case 'test': decir('Elige la opción que más se parezca a ti.'); setOpciones(preguntaActual()); return;
       case 'perfil-gustos': {
         const tipo = entenderPlan(t).tipo;
         if (tipo !== 'otro' && !borradorPerfil.current.gustos.includes(tipo)) borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, tipo];
@@ -378,11 +373,6 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
     decir('Todavía estoy aprendiendo a conversar, así que no siempre entiendo todo. Por ahora te puedo ayudar con esto:');
     setOpciones(menu());
   }
-  const preguntaActual = (): Opcion[] => {
-    const i = respuestas.current.length;
-    const p = preguntasCuidado[i];
-    return (['A', 'B', 'C'] as Letra[]).map(l => ({ texto: p.opciones[l], hacer: () => { respuestas.current = [...respuestas.current, l]; if (i + 1 < preguntasCuidado.length) pregunta(i + 1); else terminarTest(); } }));
-  };
 
   // ---- Saludo ----
   useEffect(() => {
@@ -400,28 +390,47 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
     } else setOpciones(menu());
     void api.cartas().then(r => {
       if (!r.ok || !r.datos.length) return;
-      decir('Antes, algo que quería contarte:', ...r.datos.map(c => <CartaEnChat key={c.clave} carta={c} api={api} ir={ir} alTerminar={() => {}}/>));
+      decir('Antes, algo que quería contarte:', ...r.datos.map(c => <CartaEnChat key={c.clave} carta={c} api={api} ir={ir} alTerminar={() => {}} alCuidado={() => setEscena(true)}/>));
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <Diario titulo={`Hola, ${nombre}`} ir={ir} actual="/inicio" onSalir={onSalir}>
-    <div className="brisa-chat">
-      <div className="brisa-quien"><OrbeBrisa/><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span>
-        <button type="button" className="brisa-enlace" onClick={() => ir('/comunidad')}>Ver el mapa de mi comunidad</button></div>
-      <div className="brisa-mensajes" aria-live="polite">
-        {mensajes.map(m => <div key={m.id} className={`burbuja de-${m.de}${m.nota ? ' nota' : ''}`}>{m.contenido}</div>)}
-        <div ref={final}/>
-      </div>
-      {opciones.length > 0 && <div className="brisa-opciones" role="group" aria-label="Respuestas sugeridas">
-        {opciones.map(o => <button key={o.texto} type="button" onClick={() => elegir(o)}>{o.texto}</button>)}
-      </div>}
-      <form className="mensaje-form brisa-escribir" onSubmit={enviar}>
-        <label htmlFor="a-brisa" className="solo-lectores">Escríbele a Brisa</label>
-        <input id="a-brisa" className="cuenta-campo" maxLength={300} placeholder="Escríbele a Brisa" value={texto} onChange={e => setTexto(e.target.value)} autoComplete="off"/>
-        <Button type="submit" className="diario-boton principal">Enviar</Button>
-      </form>
+  return <div className="brisa-chat">
+    <div className="brisa-quien"><OrbeBrisa/><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span>
+</div>
+    <div className="brisa-mensajes" aria-live="polite">
+      {mensajes.map(m => <div key={m.id} className={`burbuja de-${m.de}${m.nota ? ' nota' : ''}`}>{m.contenido}</div>)}
+      <div ref={final}/>
     </div>
-  </Diario>;
+    {opciones.length > 0 && <div className="brisa-opciones" role="group" aria-label="Respuestas sugeridas">
+      {opciones.map(o => <button key={o.texto} type="button" onClick={() => elegir(o)}>{o.texto}</button>)}
+    </div>}
+    <form className="mensaje-form brisa-escribir" onSubmit={enviar}>
+      <label htmlFor="a-brisa" className="solo-lectores">Escríbele a Brisa</label>
+      <input id="a-brisa" className="cuenta-campo" maxLength={300} placeholder="Escríbele a Brisa" value={texto} onChange={e => setTexto(e.target.value)} autoComplete="off"/>
+      <Button type="submit" className="diario-boton principal">Enviar</Button>
+    </form>
+    {escena && <EscenaCuidado onTerminar={alTerminarEscena}/>}
+    </div>;
+}
+
+// Inicio: la ciudad ilustrada de fondo y Brisa en un panel de vidrio al lado (referente de Mateo, 15 de octubre).
+export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
+  return <div className="inicio-ciudad">
+    <img className="inicio-fondo" src="/backgrounds/comunidad-ilustrada.webp" alt="" aria-hidden="true"/>
+    <header className="inicio-cabecera vidrio">
+      <span className="diario-marca">MOAI</span>
+      <nav aria-label="Secciones">
+        <button type="button" onClick={() => ir('/comunidad')}>Mapa</button>
+        <button type="button" onClick={() => ir('/gente')}>Mi gente</button>
+        <button type="button" onClick={() => ir('/zona')}>Mi zona</button>
+      </nav>
+      <MenuMas ir={ir} onSalir={onSalir} equipo={perfil.equipo} organizaciones={!!perfil.organizaciones?.length}/>
+    </header>
+    <aside className="panel-brisa vidrio" aria-labelledby="inicio-titulo">
+      <h1 id="inicio-titulo" tabIndex={-1}>Hola, {perfil.nombre.split(' ')[0]}</h1>
+      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar}/>
+    </aside>
+  </div>;
 }
 
 function TarjetaBorrador({ borrador }: { borrador: Borrador }) {

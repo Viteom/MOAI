@@ -13,7 +13,7 @@ import { cartasDeGente } from './moais';
 import { mensajePausa } from '../src/lib/moai';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
 import { organizacionesDe } from './equipo';
-import { cartaInterna } from './cuidado';
+import { cartaInterna, cartaRepetirCuidado } from './cuidado';
 import { cartasDeCercania, enInvierno } from './cercania';
 import type { Cifrador } from './cifrado';
 
@@ -130,6 +130,7 @@ export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: 
   if (refs && cifrador) cartas.push(...await cartasDeCercania(db, cuenta, ahora, refs, cifrador, vistos));
   // 4. Moai interno: recordar a alguien que te nutre, como mucho una vez por semana.
   if (cifrador) cartas.push(...await cartaInterna(db, cifrador, cuenta, ahora, vistos));
+  if (!invierno) cartas.push(...await cartaRepetirCuidado(db, cuenta, ahora, vistos));
   return cartas;
 }
 

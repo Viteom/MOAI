@@ -2,7 +2,7 @@
 // REVISIÓN HUMANA: puede ser dato sensible (Ley 1581). Se guarda solo con autorización explícita y cifrado.
 // Los nombres del Moai interno (gente que quizá no usa MOAI) también van cifrados. Nadie más los ve.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { DIAS_SIN_HABLAR, MAX_INTERNO, resultadoCuidado, validarPersonaInterna, type Letra } from '../src/lib/cuidado';
+import { DIAS_REPETIR_CUIDADO, DIAS_SIN_HABLAR, MAX_INTERNO, resultadoCuidado, validarPersonaInterna, type Letra } from '../src/lib/cuidado';
 import type { Carta, Cuidado, PersonaInterna } from '../src/lib/api';
 import type { Cifrador } from './cifrado';
 import type { Db } from './db';
@@ -41,6 +41,15 @@ export async function cartaInterna(db: Db, cifrador: Cifrador, cuenta: string, a
   const intro = letras?.includes('A') ? 'Cuidar a otros también cansa, y tú conectas con mucha intensidad. ' : '';
   return [{ clave, tipo: 'interno', personaId: persona.id, texto: `${intro}Hace un tiempo no hablas con ${persona.nombre}. ¿Le escribes hoy?`,
     motivo: 'Porque está en tu Moai interno: las personas que te nutren. Te lo recuerdo como mucho una vez por semana.' }];
+}
+
+// Repetir el test cada tanto: una invitación por cada vez que el resultado guardado cumple 90 días.
+export async function cartaRepetirCuidado(db: Db, cuenta: string, ahora: Date, vistos: Set<string>): Promise<Carta[]> {
+  const [fila] = await db.query<{ actualizado_en: string }>('select actualizado_en from cuidado where cuenta_id = $1', [cuenta]);
+  if (!fila || ahora.getTime() - new Date(fila.actualizado_en).getTime() < DIAS_REPETIR_CUIDADO * 864e5) return [];
+  const clave = `cuidado:repetir:${new Date(fila.actualizado_en).toISOString()}`;
+  if (vistos.has(clave)) return [];
+  return [{ clave, tipo: 'cuidado', texto: 'Hace unos meses respondimos juntas «¿Cómo cuidas y cómo te cuidas?». Las personas cambian, y está bien. ¿Volvemos a mirarlo?' }];
 }
 
 export function registrarCuidado(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, cifrador: Cifrador) {

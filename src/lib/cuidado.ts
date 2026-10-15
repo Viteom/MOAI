@@ -29,6 +29,9 @@ export function resultadoCuidado(respuestas: unknown): Letra[] | null {
   return (['A', 'B', 'C'] as Letra[]).filter(l => cuenta[l] === max);
 }
 
+// Las personas cambian: si el resultado guardado tiene más de 90 días, Brisa propone repetir las preguntas.
+export const DIAS_REPETIR_CUIDADO = 90;
+
 // Moai interno: quién te nutre, aunque no use MOAI. Privado; Brisa recuerda como mucho una vez por semana.
 export const MAX_INTERNO = 5;
 export const DIAS_SIN_HABLAR = 14;

@@ -741,3 +741,67 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .frase { font-family: var(--font-serif, Fraunces, serif); font-size: 19px; line-height: 1.4; }
 .en-comun { color: var(--lima); }
 .puerta-abierta { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: color-mix(in oklab, #ffb27a 22%, transparent); color: #ffcfa8; border: 1px solid color-mix(in oklab, #ffb27a 50%, transparent); }
+
+/* ==== Vidrio (referente 1 de Mateo): translúcido, desenfocado y con grano, sobre la ciudad ==== */
+.vidrio { position: relative; isolation: isolate; color: var(--niebla); background: color-mix(in oklab, oklch(.3 .035 165) 34%, transparent); border: 1px solid color-mix(in oklab, white 32%, transparent); border-radius: 28px; backdrop-filter: blur(18px) saturate(1.25); -webkit-backdrop-filter: blur(18px) saturate(1.25); box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), 0 18px 50px rgb(4 18 14 / .35); }
+.vidrio::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: .16; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>"); }
+
+/* Inicio: la ciudad ilustrada de fondo, encabezado de vidrio y Brisa al lado. */
+.inicio-ciudad { position: relative; min-height: 100svh; color: var(--niebla); background: var(--bosque); }
+.inicio-fondo { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.95) brightness(.82); }
+.inicio-cabecera { position: fixed; z-index: 10; top: 14px; left: 14px; right: 14px; display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 22px; border-radius: 22px; }
+.inicio-cabecera nav { display: flex; gap: 4px; margin-left: auto; }
+.inicio-cabecera nav button { min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--niebla); font-size: 16px; cursor: pointer; }
+.inicio-cabecera nav button:hover { background: rgb(255 255 255 / .1); }
+.panel-brisa { position: fixed; z-index: 9; top: 96px; right: 20px; bottom: 20px; width: min(440px, calc(100vw - 40px)); display: flex; flex-direction: column; padding: 18px 18px 14px; }
+.panel-brisa h1 { margin: 0 0 4px; font: 700 26px/1.2 var(--font-sans); }
+.panel-brisa h1:focus { outline: none; }
+.panel-brisa .brisa-chat { flex: 1; min-height: 0; }
+.panel-brisa .brisa-mensajes { flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; overscroll-behavior: contain; }
+.panel-brisa .brisa-escribir { position: static; padding: 0; background: none; }
+.panel-brisa .burbuja { font-size: 17px; }
+.panel-brisa .burbuja.de-brisa { background: rgb(255 255 255 / .1); border: 1px solid rgb(255 255 255 / .22); }
+.panel-brisa .burbuja.de-yo { background: color-mix(in oklab, var(--lima) 30%, transparent); border: 1px solid color-mix(in oklab, var(--lima) 45%, transparent); }
+.panel-brisa .brisa-opciones button { background: rgb(255 255 255 / .06); border-color: rgb(255 255 255 / .38); }
+.panel-brisa .cuenta-campo { background: rgb(255 255 255 / .08); }
+.panel-brisa.flotante { z-index: 30; top: 100px; }
+.panel-cerrar { position: absolute; top: 10px; right: 12px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(255 255 255 / .1); color: var(--niebla); font-size: 24px; cursor: pointer; z-index: 2; }
+@media (max-width: 760px) {
+  .inicio-cabecera { left: 10px; right: 10px; top: 10px; padding-left: 16px; }
+  .inicio-cabecera nav button { padding: 0 10px; font-size: 15px; }
+  .panel-brisa, .panel-brisa.flotante { top: 34svh; left: 10px; right: 10px; bottom: 10px; width: auto; border-radius: 24px; }
+}
+
+/* ==== Escena de cuidado (referente 2 de Mateo): bosque, dos círculos finos y la decisión al centro ==== */
+.escena { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; color: #f2f5ee; overflow: hidden; text-align: center; }
+.escena .brisa-fondo { position: absolute; }
+.escena .brisa-fondo video { filter: blur(5px) brightness(.5) saturate(.85); transform: scale(1.06); }
+.escena-velo { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 20%, rgb(8 20 14 / .55) 75%), linear-gradient(180deg, rgb(10 24 18 / .5), transparent 25%, transparent 70%, rgb(10 24 18 / .7)); }
+.escena > *:not(.brisa-fondo):not(.escena-velo) { position: relative; }
+.escena-rotulo { margin: 28px 0 0; font-size: 13px; letter-spacing: .28em; text-transform: uppercase; }
+.escena-paso { margin: 12px 0 0; padding: 5px 20px; border: 1px solid rgb(255 255 255 / .7); border-radius: 50%; font-size: 14px; letter-spacing: .08em; }
+.escena-circulos { position: absolute !important; top: 50%; left: 50%; width: min(78vw, 46vh); transform: translate(-50%, -50%); fill: none; stroke: rgb(255 255 255 / .75); stroke-width: 1; animation: escena-giro 60s linear infinite; }
+.escena-centro { flex: 1; width: min(560px, calc(100vw - 40px)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; animation: escena-entra .7s ease both; }
+.escena-pregunta { margin: 0; font: 400 clamp(22px, 2.6vw, 30px)/1.35 var(--font-serif, Fraunces, serif); text-shadow: 0 2px 18px rgb(0 0 0 / .45); }
+.escena-pregunta:focus { outline: none; }
+.escena-opciones { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; }
+.escena-opciones button { min-height: 52px; padding: 10px 22px; border: 1px solid rgb(255 255 255 / .75); border-radius: 999px; background: rgb(255 255 255 / .04); color: #f2f5ee; font-size: 17px; cursor: pointer; backdrop-filter: blur(6px); transition: background .25s, border-color .25s; }
+.escena-opciones button:hover, .escena-opciones button:focus-visible { background: rgb(255 255 255 / .16); border-color: #fff; outline: none; }
+.escena-aviso { margin: 0; max-width: 460px; font-size: 15px; line-height: 1.5; color: rgb(242 245 238 / .82); }
+.escena-onda { position: absolute !important; bottom: 76px; left: 0; width: 100%; height: 40px; fill: none; stroke: rgb(255 255 255 / .6); stroke-width: 1; }
+.escena-pie { margin: 0 0 26px; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: rgb(242 245 238 / .8); padding: 0 20px; }
+.escena-salir { position: absolute !important; top: 18px; right: 18px; min-height: 44px; padding: 0 18px; border: 1px solid rgb(255 255 255 / .5); border-radius: 999px; background: transparent; color: #f2f5ee; cursor: pointer; z-index: 2; }
+@keyframes escena-giro { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes escena-entra { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .escena-circulos, .escena-centro { animation: none; } }
+.inicio-cabecera nav button { white-space: nowrap; }
+@media (max-width: 420px) {
+  .inicio-cabecera { gap: 6px; padding-left: 14px; }
+  .inicio-cabecera .diario-marca { letter-spacing: .25em; font-size: 14px; }
+  .inicio-cabecera nav { gap: 0; }
+  .inicio-cabecera nav button { padding: 0 8px; font-size: 14px; }
+}
+/* Mientras carga el video del bosque (o si no carga), la escena sigue siendo un bosque oscuro, nunca transparente. */
+.escena { background: radial-gradient(ellipse at 50% 40%, #24402f, #0d1f18 70%); }
+@media (max-width: 520px) { .escena-rotulo { margin-top: 74px; } .escena-salir { top: 14px; right: 14px; } }
