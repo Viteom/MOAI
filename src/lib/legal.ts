@@ -1,0 +1,157 @@
+// Términos de uso y Política de tratamiento de datos (Ley 1581 de 2012 y Decreto 1074 de 2015, Colombia).
+// BORRADOR escrito por el equipo a partir de prácticas comunes de servicios similares: pasa al equipo jurídico
+// antes de salir a producción. Regla 10: cada frase debe coincidir con lo que hace el código. Si cambias
+// qué se guarda, cuánto dura o con quién se comparte, cambia este archivo y sube VERSION_TEXTOS (registro.ts).
+
+// Datos del responsable: los completa el equipo jurídico.
+export const RESPONSABLE = {
+  nombre: 'MOAI Ciudades del Cuidado',
+  identificacion: 'NIT por definir',
+  domicilio: 'Medellín, Colombia',
+  correo: 'correo de contacto por definir',
+};
+
+export const FECHA_TEXTOS = '14 de octubre de 2026';
+
+export type Seccion = { titulo: string; parrafos?: string[]; lista?: string[] };
+export type Texto = { titulo: string; bajada: string; secciones: Seccion[] };
+
+const contacto = `${RESPONSABLE.nombre} (${RESPONSABLE.identificacion}), con domicilio en ${RESPONSABLE.domicilio}. Correo: ${RESPONSABLE.correo}.`;
+
+export const privacidad: Texto = {
+  titulo: 'Política de tratamiento de datos',
+  bajada: `Versión borrador del ${FECHA_TEXTOS}. Te contamos qué datos guardamos, para qué, por cuánto tiempo y cómo puedes decidir sobre ellos.`,
+  secciones: [
+    { titulo: '1. Quién cuida tus datos', parrafos: [
+      `El responsable del tratamiento es ${contacto}`,
+      'Esta política sigue la Ley 1581 de 2012, el Decreto 1074 de 2015 y las demás normas colombianas de protección de datos personales.',
+    ] },
+    { titulo: '2. Qué datos guardamos', lista: [
+      'Tu nombre, tal como lo escribiste. En los planes, otras personas solo ven tu primer nombre.',
+      'Tu correo electrónico (o tu número de WhatsApp, cuando esa opción esté disponible), para enviarte los códigos de acceso.',
+      'Tu fecha de nacimiento, para confirmar que eres mayor de edad y recordar fechas importantes para ti, como tu cumpleaños.',
+      'Tu municipio y, si lo eliges, tu barrio.',
+      'Tus lugares guardados (hasta cinco), como zonas aproximadas de cerca de 1 km. Nunca guardamos tu dirección ni tus coordenadas, ni un historial de dónde has estado.',
+      'Los planes que propones (qué, cuándo y en qué lugar público), los planes a los que te sumas y los mensajes que escribes en la conversación de cada plan.',
+      'Tus preferencias: si quieres recomendaciones, los tipos de plan que te interesan y si quieres el correo semanal.',
+      'La prueba de que aceptaste estos textos: fecha y versión.',
+      'Datos técnicos mínimos para tu sesión: una cookie de sesión y los códigos de acceso, que guardamos cifrados (no en claro).',
+    ] },
+    { titulo: '3. Lo que no guardamos', lista: [
+      'Tu ubicación exacta, tu dirección ni un historial de ubicaciones.',
+      'Tu libreta de contactos.',
+      'Datos de salud ni deducciones sobre tu ánimo, tu salud o tu personalidad.',
+      'Contraseñas: entras siempre con un código que vence en 10 minutos.',
+      'Identificadores publicitarios. No usamos cookies de publicidad ni de seguimiento.',
+    ] },
+    { titulo: '4. Para qué los usamos', lista: [
+      'Crear tu cuenta, confirmar que el correo es tuyo y permitirte entrar.',
+      'Mostrarte planes de personas cercanas y mostrar los tuyos a quienes están cerca, según el alcance que elijas.',
+      'Que las personas que van a un plan puedan conversar entre ellas.',
+      'Enviarte recordatorios para confirmar tu cuenta y, solo si lo activas, un correo semanal con planes cercanos (máximo uno por semana).',
+      'Recomendarte planes, solo si lo activas y solo con los tipos de plan que elegiste. Siempre puedes ver por qué te recomendamos algo.',
+      'Cuidar la seguridad del servicio y cumplir obligaciones legales.',
+    ], parrafos: [
+      'No vendemos tus datos, no los usamos para publicidad y no los usamos para entrenar modelos de inteligencia artificial de terceros.',
+    ] },
+    { titulo: '5. Quién ve qué', lista: [
+      'Tu correo, tu fecha de nacimiento y tus lugares guardados: solo tú.',
+      'Tus planes: las personas cuya zona entra en el alcance que elegiste. Ven tu primer nombre, el plan, el lugar público, la fecha y una distancia aproximada por franjas, nunca exacta.',
+      'La conversación de un plan: solo quienes van a ese plan. Brisa no la lee.',
+    ] },
+    { titulo: '6. Brisa', parrafos: [
+      'Brisa es una inteligencia artificial, no una persona. Hoy sus mensajes se generan dentro de MOAI a partir de tus planes y preferencias, sin enviar tus datos a proveedores externos de inteligencia artificial. Si eso cambia, te lo diremos antes y te pediremos autorización.',
+    ] },
+    { titulo: '7. Cuánto tiempo los guardamos', lista: [
+      'Mientras tengas tu cuenta activa.',
+      'Si no confirmas tu cuenta, la borramos a los 20 días.',
+      'Si la fecha de nacimiento muestra que eres menor de 18 años, borramos la cuenta de inmediato.',
+      'Las conversaciones de los planes se borran 30 días después del plan o de su cancelación.',
+      'Las sesiones vencen a los 30 días.',
+      'Si pides borrar tu cuenta, borramos tus datos, salvo lo que la ley nos obligue a conservar.',
+    ] },
+    { titulo: '8. Con quién los compartimos', parrafos: [
+      'Solo con proveedores que nos ayudan a prestar el servicio y que actúan bajo nuestras instrucciones (encargados del tratamiento):',
+    ], lista: [
+      'Resend, para enviar los correos con tus códigos y avisos. Sus servidores pueden estar en Estados Unidos, lo que implica una transmisión internacional de tu correo y del contenido del mensaje.',
+      'Twilio, para los códigos por WhatsApp, cuando esa opción esté disponible.',
+      'El proveedor de alojamiento del servidor y la base de datos (por definir).',
+      'Autoridades, solo cuando una norma o una orden lo exija.',
+    ] },
+    { titulo: '9. Tus derechos', parrafos: ['Como titular de tus datos puedes, en cualquier momento y sin costo:'], lista: [
+      'Conocer, actualizar y corregir tus datos.',
+      'Pedir prueba de la autorización que nos diste.',
+      'Saber cómo hemos usado tus datos.',
+      'Revocar tu autorización y pedir que borremos tus datos, cuando no exista un deber legal de conservarlos.',
+      'Presentar quejas ante la Superintendencia de Industria y Comercio, después de haber hecho tu consulta o reclamo ante nosotros.',
+    ] },
+    { titulo: '10. Cómo ejercerlos', parrafos: [
+      `Escríbenos a ${RESPONSABLE.correo} desde el correo con el que creaste tu cuenta, diciendo qué necesitas.`,
+      'Respondemos las consultas en un máximo de 10 días hábiles (prorrogables 5 más) y los reclamos en un máximo de 15 días hábiles (prorrogables 8 más), como indica la ley. Si necesitamos más tiempo, te contamos por qué.',
+    ] },
+    { titulo: '11. Seguridad', parrafos: [
+      'Guardamos los códigos y las sesiones cifrados, usamos una cookie de sesión que el código de las páginas no puede leer, y nuestros registros técnicos no incluyen tu correo, tu ubicación ni tus mensajes. Ningún sistema es perfecto: si ocurre un incidente que afecte tus datos, te avisaremos a ti y a la autoridad.',
+    ] },
+    { titulo: '12. Menores de edad', parrafos: [
+      'MOAI es solo para personas mayores de 18 años. No recogemos datos de menores a sabiendas.',
+    ] },
+    { titulo: '13. Cambios a esta política', parrafos: [
+      'Si cambiamos qué datos guardamos o para qué, te lo contaremos antes y te pediremos aceptar la nueva versión. Guardamos la versión que aceptaste.',
+    ] },
+  ],
+};
+
+export const terminos: Texto = {
+  titulo: 'Términos de uso',
+  bajada: `Versión borrador del ${FECHA_TEXTOS}. Son las reglas para que MOAI sea un lugar seguro y cálido para todas las personas.`,
+  secciones: [
+    { titulo: '1. Qué es MOAI', parrafos: [
+      `MOAI es una plataforma para encontrarse con personas cercanas en planes sencillos y en lugares públicos. La ofrece ${contacto}`,
+      'Usar MOAI es gratis.',
+    ] },
+    { titulo: '2. Lo que MOAI no es', parrafos: [
+      'MOAI no es un servicio de emergencias, ni un servicio médico o psicológico, y no vigila a nadie. Si tú o alguien más está en peligro, llama a la línea de emergencias 123. Si estás pasando por un momento difícil, busca a una persona de confianza o a una línea de ayuda profesional.',
+    ] },
+    { titulo: '3. Quién puede usarlo', lista: [
+      'Personas mayores de 18 años.',
+      'Una cuenta por persona, con tu nombre real o el nombre con el que te conocen.',
+      'Tú cuidas el acceso a tu correo: quien tenga tus códigos puede entrar a tu cuenta.',
+    ] },
+    { titulo: '4. Los planes', lista: [
+      'Los planes son siempre en lugares públicos: un parque, una biblioteca, un café. Nunca en la casa de nadie.',
+      'No se permiten planes con fines comerciales, de venta, de captación de dinero, políticos o religiosos de proselitismo.',
+      'Quien propone un plan no es guía, ni anfitrión profesional, ni responde por los demás. Cada persona decide si va y cuida de sí misma.',
+      'Si cambias de idea, cancela o sal del plan para que nadie te espere.',
+    ] },
+    { titulo: '5. Cómo nos tratamos', parrafos: ['En MOAI no se permite:'], lista: [
+      'Acosar, amenazar, discriminar o humillar a otras personas.',
+      'Pedir dinero, datos personales o encuentros en lugares privados.',
+      'Hacerse pasar por otra persona.',
+      'Publicar contenido sexual, violento o ilegal.',
+      'Usar MOAI para enviar publicidad o mensajes masivos.',
+    ] },
+    { titulo: '6. Seguridad en los encuentros', lista: [
+      'Encuéntrate en el lugar público del plan y a la hora acordada.',
+      'Cuéntale a alguien de confianza a dónde vas.',
+      'No compartas tu dirección ni datos bancarios.',
+      'Si algo te incomoda, vete. No le debes explicaciones a nadie.',
+    ] },
+    { titulo: '7. Brisa', parrafos: [
+      'Brisa es una inteligencia artificial que te acompaña en MOAI. Puede equivocarse, no reemplaza a una persona y nunca da consejos médicos, legales ni financieros.',
+    ] },
+    { titulo: '8. Lo que publicas', parrafos: [
+      'Lo que escribes en tus planes y conversaciones es tuyo. Nos das permiso para mostrarlo a las personas que corresponda dentro de MOAI, y solo para eso. Si cancelas un plan, deja de mostrarse, y su conversación se borra 30 días después.',
+    ] },
+    { titulo: '9. Si algo sale mal', parrafos: [
+      'Podemos ocultar planes o suspender cuentas que incumplan estas reglas, y te contaremos por qué. Si crees que nos equivocamos, escríbenos.',
+      'MOAI se ofrece tal como está. Hacemos lo posible para que funcione bien, pero no respondemos por lo que ocurra entre personas en los encuentros, más allá de lo que la ley colombiana establezca.',
+    ] },
+    { titulo: '10. Tu cuenta', parrafos: [
+      `Puedes dejar de usar MOAI cuando quieras y pedir que borremos tu cuenta escribiendo a ${RESPONSABLE.correo}. Lo que pasa con tus datos está en la Política de tratamiento de datos.`,
+    ] },
+    { titulo: '11. Cambios y ley aplicable', parrafos: [
+      'Si cambiamos estos términos, te lo contaremos antes y te pediremos aceptarlos de nuevo.',
+      'Estos términos se rigen por las leyes de Colombia.',
+    ] },
+  ],
+};

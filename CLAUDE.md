@@ -37,7 +37,7 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 - **Planes de barrio (12 de octubre):** plantillas de tres toques («Voy a caminar, ¿alguien viene?»), planes semanales (sumarse vale para la próxima vez), conversación del plan solo para quienes van (Brisa no la lee; se borra a los 30 días), cartas de Brisa («fuiste por tu cuenta», sin culpas y sin inventar asistentes) y recomendaciones apagadas por defecto que solo usan los tipos de plan que la persona eligió en «Avisos», siempre con «¿Por qué veo esto?». Correo semanal opcional, máximo uno por semana y solo si hay planes. Brisa nunca deduce rutinas: solo recomienda planes que alguien publicó.
 - **Barrios de Medellín:** 349 barrios y veredas en `src/lib/colombia/barrios-medellin.json`, generados desde la capa de GeoMedellín con `node scripts/barrios-medellin.mjs archivo.geojson`. Confirmar la licencia de uso de la capa.
 - **Dirección para el primer día (Mateo):** nada de cuestionario. Brisa conversa como quien conoce a alguien: cómo va tu día, qué hiciste, y al otro día qué harías en tal caso. Los datos se llenan a medida que pasa la conversación, a lo largo de varios días.
-- **Revisión humana:** los textos de términos y de tratamiento de datos están con el abogado (Ley 1581).
+- **Textos legales (14 de octubre):** borradores del equipo en `src/lib/legal.ts` (Términos y Política de tratamiento de datos, Ley 1581), escritos a partir del código. Faltan razón social, NIT y correo de contacto. Pasan al equipo jurídico antes de producción. Si cambia qué se guarda o cuánto dura, se actualizan y se sube `VERSION_TEXTOS`.
 
 ## Reglas que no se negocian
 

@@ -1,12 +1,13 @@
 // Crear cuenta, iniciar sesión, código y los pasos siguientes (fecha de nacimiento y comunidad).
 // Diseño de Mateo (12 de octubre de 2026): panel de vidrio centrado sobre el bosque, con Brisa arriba.
-// REVISIÓN HUMANA: datos personales y consentimiento. Los textos legales son borradores pendientes de abogado.
+// REVISIÓN HUMANA: datos personales y consentimiento. Los textos legales (src/lib/legal.ts) son borradores del equipo; pasan a jurídica antes de producción.
 import { useId, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { buscarMunicipios, municipioPorCodigo, paises, EDAD_MINIMA, WHATSAPP_DISPONIBLE, type Canal, type EntradaRegistro, type Errores } from '@/lib/registro';
 import type { Contacto, Envio, Perfil, Respuesta } from '@/lib/api';
 import { HojaBosque } from './bosque';
 import { barrioPorCodigo, buscarBarrios, hayBarrios } from '@/lib/lugares';
+import { privacidad, terminos } from '@/lib/legal';
 
 const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
@@ -131,10 +132,10 @@ export function Registro({ entrada, onCambio, enviar, onEnviado, onVolver, onIni
       <Contactos canal={entrada.canal} onCanal={canal => onCambio({ canal, destino: '' })} destino={entrada.destino} onDestino={destino => onCambio({ destino })} pais={entrada.pais ?? 'CO'} onPais={pais => onCambio({ pais })} error={errores.destino}/>
       <div className="consentimientos">
         <Casilla marcada={entrada.aceptaTerminos} onCambio={aceptaTerminos => onCambio({ aceptaTerminos })} error={errores.aceptaTerminos}>
-          Acepto los <EnlaceLegal onAbrir={() => onLegal('terminos')}>Términos de uso</EnlaceLegal> y he leído la <EnlaceLegal onAbrir={() => onLegal('privacidad')}>Política de privacidad</EnlaceLegal>.
+          Acepto los <EnlaceLegal onAbrir={() => onLegal('terminos')}>Términos de uso</EnlaceLegal>.
         </Casilla>
         <Casilla marcada={entrada.aceptaDatos} onCambio={aceptaDatos => onCambio({ aceptaDatos })} error={errores.aceptaDatos}>
-          Autorizo el tratamiento de mis datos personales según la Ley 1581 de 2012.
+          Autorizo el tratamiento de mis datos personales según la <EnlaceLegal onAbrir={() => onLegal('privacidad')}>Política de tratamiento de datos</EnlaceLegal> (Ley 1581 de 2012).
         </Casilla>
       </div>
       {error && <p className="campo-error" role="alert">{error}</p>}
@@ -292,8 +293,15 @@ export function PasoComunidad({ guardar, onGuardado }: {
 
 // Términos y privacidad: páginas reales, con el texto pendiente de revisión legal.
 export function TextoLegal({ texto, onVolver }: { texto: 'terminos' | 'privacidad'; onVolver: () => void }) {
-  return <HojaBosque titulo={texto === 'terminos' ? 'Términos de uso' : 'Política de privacidad'} onVolver={onVolver}>
-    <p className="bosque-bajada">Este texto está en revisión legal y lo publicaremos aquí muy pronto.</p>
-    <p className="campo-ayuda bosque-centro">Mientras tanto: tus datos solo se usan para crear y cuidar tu cuenta. Puedes pedir verlos, corregirlos o borrarlos cuando quieras.</p>
+  const doc = texto === 'terminos' ? terminos : privacidad;
+  return <HojaBosque titulo={doc.titulo} onVolver={onVolver}>
+    <p className="bosque-bajada">{doc.bajada}</p>
+    <div className="texto-legal">
+      {doc.secciones.map(s => <section key={s.titulo}>
+        <h2>{s.titulo}</h2>
+        {s.parrafos?.map(p => <p key={p}>{p}</p>)}
+        {s.lista && <ul>{s.lista.map(l => <li key={l}>{l}</li>)}</ul>}
+      </section>)}
+    </div>
   </HojaBosque>;
 }

@@ -69,7 +69,7 @@ const titulo = (nombre: string | RegExp) => screen.findByRole('heading', { level
 function llenarRegistro() {
   escribir('¿Cómo te llamas?', 'Rosa');
   escribir('Tu correo electrónico', 'rosa@ejemplo.co');
-  fireEvent.click(screen.getByLabelText(/he leído la/));
+  fireEvent.click(screen.getByLabelText(/^Acepto los/));
   fireEvent.click(screen.getByLabelText(/Ley 1581/));
 }
 async function hastaElCodigo(api: Api) {
@@ -199,18 +199,18 @@ describe('Crear cuenta', () => {
     escribir('¿Cómo te llamas?', 'Rosa');
     fireEvent.click(screen.getByRole('link', { name: 'Términos de uso' }));
     expect(await titulo('Términos de uso')).toBeInTheDocument();
-    expect(screen.getByText(/en revisión legal/)).toBeInTheDocument();
+    expect(screen.getByText(/Lo que MOAI no es/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Volver' }));
     await titulo('Empecemos por conocernos');
     expect(screen.getByLabelText('¿Cómo te llamas?')).toHaveValue('Rosa');
-    expect(screen.getByLabelText(/he leído la/)).not.toBeChecked();
+    expect(screen.getByLabelText(/^Acepto los/)).not.toBeChecked();
   });
 
   it('muestra los errores de cada campo y las casillas empiezan sin marcar', async () => {
     window.history.replaceState(null, '', '/registro');
     render(<Plataforma api={apiFalsa()} />);
     await titulo('Empecemos por conocernos');
-    expect(screen.getByLabelText(/he leído la/)).not.toBeChecked();
+    expect(screen.getByLabelText(/^Acepto los/)).not.toBeChecked();
     expect(screen.getByLabelText(/Ley 1581/)).not.toBeChecked();
     expect(screen.queryByRole('radio', { name: /WhatsApp/ })).toBeNull(); // WhatsApp aún no está disponible
     clic('Crear mi cuenta');
