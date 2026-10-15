@@ -4,6 +4,7 @@ import type { Canal, EntradaRegistro, Errores } from './registro';
 import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo } from './lugares';
 import type { MotivoReporte } from './moai';
 import type { TipoOrganizacion } from './organizaciones';
+import type { Letra } from './cuidado';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
@@ -12,7 +13,7 @@ export type Paso = "pending" | "completed" | "skipped";
 export type Lugar = { id: string; nombre: string; ciudad: string; barrio: string | null; zona: string; activo: boolean };
 // `equipo`: la persona revisa reportes y entidades. `organizaciones`: entidades a nombre de las que puede convocar.
 export type OrganizacionPropia = { id: string; nombre: string; tipo: TipoOrganizacion };
-export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: Paso; lugar: Lugar | null; equipo?: boolean; organizaciones?: OrganizacionPropia[] };
+export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: Paso; lugar: Lugar | null; equipo?: boolean; organizaciones?: OrganizacionPropia[]; presentada?: boolean };
 // Un plan visto por alguien: la distancia va por franjas («A menos de 2 km»), nunca exacta.
 export type Plan = {
   id: string; titulo: string; descripcion: string; cuando: string; lugarPublico: string; zona: string; franja: string; alcance: Alcance;
@@ -24,7 +25,12 @@ export type Mensaje = { id: string; autor: string; mio: boolean; texto: string; 
 export type Carta =
   | { clave: string; tipo: 'solo'; planId: string; texto: string; repetir: boolean }
   | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan }
-  | { clave: string; tipo: 'gente'; texto: string; motivo?: string };
+  | { clave: string; tipo: 'gente'; texto: string; motivo?: string }
+  | { clave: string; tipo: 'interno'; texto: string; motivo: string; personaId: string };
+// Test de cuidado: las letras que predominan (puede haber empate) y si la persona autorizó guardarlo.
+export type Cuidado = { letras: Letra[] | null; guardado: boolean; fecha?: string };
+// Moai interno: quién te nutre. `pendiente`: hace un tiempo que no hablan (nunca se muestra cuántos días).
+export type PersonaInterna = { id: string; nombre: string; relacion: string; pendiente: boolean };
 // Otra persona, vista por ti: `ref` es una referencia que solo sirve en tu cuenta (nunca su identificador).
 export type Persona = { ref: string; nombre: string };
 // «¿Te viste con…?» después de un plan al que fuiste o que propusiste.
@@ -112,6 +118,13 @@ export const api = {
   organizaciones: () => llamar<OrganizacionEquipo[]>('equipo/organizaciones'),
   crearOrganizacion: (o: EntradaOrganizacion) => llamar<OrganizacionEquipo[]>('equipo/organizaciones', o),
   activarOrganizacion: (id: string, activa: boolean) => llamar<OrganizacionEquipo[]>(`equipo/organizaciones/${encodeURIComponent(id)}/activa`, { activa }),
+  cuidado: () => llamar<Cuidado>('cuidado'),
+  responderCuidado: (respuestas: Letra[], guardar: boolean) => llamar<Cuidado>('cuidado', { respuestas, guardar }),
+  borrarCuidado: () => llamar<Cuidado>('cuidado', undefined, 'DELETE'),
+  interno: () => llamar<PersonaInterna[]>('interno'),
+  agregarInterno: (p: { nombre: string; relacion: string }) => llamar<PersonaInterna[]>('interno', p),
+  hablamos: (id: string) => llamar<PersonaInterna[]>(`interno/${encodeURIComponent(id)}/hablamos`, {}),
+  quitarInterno: (id: string) => llamar<PersonaInterna[]>(`interno/${encodeURIComponent(id)}`, undefined, 'DELETE'),
   salir: () => llamar<{ ok: true }>('salir', {}),
 };
 export type Api = typeof api;

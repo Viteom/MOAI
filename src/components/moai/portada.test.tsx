@@ -65,6 +65,13 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     salirDeMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
     mensajesMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
     casos: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cuidado: vi.fn(async () => ({ ok: true as const, datos: { letras: null, guardado: false } })),
+    responderCuidado: vi.fn(async () => ({ ok: true as const, datos: { letras: ['B' as const], guardado: false } })),
+    borrarCuidado: vi.fn(async () => ({ ok: true as const, datos: { letras: null, guardado: false } })),
+    interno: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    agregarInterno: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    hablamos: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    quitarInterno: vi.fn(async () => ({ ok: true as const, datos: [] })),
     decidirCaso: vi.fn(async () => ({ ok: true as const, datos: [] })),
     organizaciones: vi.fn(async () => ({ ok: true as const, datos: [] })),
     crearOrganizacion: vi.fn(async () => ({ ok: true as const, datos: [] })),
@@ -116,10 +123,10 @@ describe('Resolución de sesión (P00)', () => {
     expect(api.sesion).toHaveBeenCalledTimes(2);
   });
 
-  it('con sesión y pasos resueltos entra directo a Mi comunidad', async () => {
+  it('con sesión y pasos resueltos entra directo a Brisa', async () => {
     render(<Plataforma api={apiFalsa('activa')} />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
-    expect(window.location.pathname).toBe('/comunidad');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/inicio');
   });
 
   it('una ruta privada sin sesión pide entrar y después vuelve a ella', async () => {
@@ -143,7 +150,7 @@ describe('Resolución de sesión (P00)', () => {
 });
 
 describe('Crear cuenta', () => {
-  it('Brisa → registro → código → fecha de nacimiento → casa → Mi comunidad', async () => {
+  it('Brisa → registro → código → fecha de nacimiento → casa → Brisa', async () => {
     const api = apiFalsa();
     render(<Plataforma api={api} />);
     await portadaLista();
@@ -168,7 +175,7 @@ describe('Crear cuenta', () => {
     escribir('Tu ciudad', 'medel');
     fireEvent.click(screen.getByRole('option', { name: /Medellín/ }));
     clic('Guardar como «Casa»');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
     expect(api.guardarComunidad).toHaveBeenCalledWith({ ciudad: '05001', barrio: null });
   });
 
@@ -180,8 +187,8 @@ describe('Crear cuenta', () => {
     clic('Continuar');
     await titulo('¿Dónde vives?');
     clic('Lo haré después');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
-    expect(screen.getByText('Elige dónde vives para ver planes cerca de ti.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(await screen.findByText(/primero cuéntame dónde vives/)).toBeInTheDocument();
     expect(api.guardarComunidad).toHaveBeenCalledWith({ omitir: true });
   });
 
@@ -257,7 +264,7 @@ describe('Iniciar sesión', () => {
     expect(await screen.findByText(/no coincide/)).toBeInTheDocument();
     escribir('Código de acceso', '123456');
     clic('Verificar y continuar');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
   });
 
   it('«Cambiar correo» vuelve al formulario de acceso', async () => {

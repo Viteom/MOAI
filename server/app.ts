@@ -10,6 +10,8 @@ import { aLugar, registrarComunidad } from './comunidad';
 import { registrarMoais } from './moais';
 import { crearRefs } from './personas';
 import { organizacionesDe, registrarEquipo } from './equipo';
+import { registrarCuidado } from './cuidado';
+import { crearCifrador } from './cifrado';
 import { RESPONSABLE } from '../src/lib/legal';
 import { validarLugar } from '../src/lib/lugares';
 import type { Db } from './db';
@@ -91,10 +93,11 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     const [c] = await db.query<{ nombre: string; fecha_nacimiento: string | null; comunidad_estado: Paso; destino: string }>(
       'select nombre, fecha_nacimiento, comunidad_estado, destino from cuentas where id = $1', [id]);
     const organizaciones = await organizacionesDe(db, id);
+    const [presentada] = await db.query(`select 1 from avisos_vistos where cuenta_id = $1 and clave = 'brisa:presentada'`, [id]);
     const [lugar] = await db.query<{ id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean }>(
       'select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [id]);
     return { nombre: c.nombre, nacimientoPendiente: !c.fecha_nacimiento, comunidad: c.comunidad_estado, lugar: lugar ? aLugar(lugar) : null,
-      ...(esEquipo(c.destino) ? { equipo: true } : {}), ...(organizaciones.length ? { organizaciones } : {}) };
+      ...(esEquipo(c.destino) ? { equipo: true } : {}), ...(organizaciones.length ? { organizaciones } : {}), ...(presentada ? { presentada: true } : {}) };
   };
   const cuentaDeSesion = async (request: FastifyRequest) => {
     const token = request.cookies[COOKIE_SESION];
@@ -193,7 +196,9 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   });
 
   const refs = crearRefs(secreto);
-  registrarComunidad(app, db, cuentaDeSesion, ahora, refs);
+  const cifrador = crearCifrador(secreto);
+  registrarComunidad(app, db, cuentaDeSesion, ahora, refs, cifrador);
+  registrarCuidado(app, db, cuentaDeSesion, ahora, cifrador);
   registrarMoais(app, db, cuentaDeSesion, ahora, refs);
   registrarEquipo(app, db, cuentaDeSesion, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
 

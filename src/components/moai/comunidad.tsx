@@ -83,12 +83,14 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
   </div>;
 }
 
-function Menu({ ir, onSalir, equipo }: { ir: Ir; onSalir: () => void; equipo?: boolean }) {
+function Menu({ ir, onSalir, equipo, organizaciones }: { ir: Ir; onSalir: () => void; equipo?: boolean; organizaciones?: boolean }) {
   const [abierto, setAbierto] = useState(false);
   return <div className="selector-lugar-caja">
     <button type="button" className="menu-boton" aria-expanded={abierto} aria-label="Más opciones" onClick={() => setAbierto(a => !a)}><Menu2 aria-hidden="true"/></button>
     {abierto && <ul className="selector-lugar-lista menu-lista">
+      <li><button type="button" onClick={() => ir('/inicio')}>Inicio con Brisa</button></li>
       <li><button type="button" onClick={() => ir('/gente')}>Mi gente</button></li>
+      {organizaciones && <li><button type="button" onClick={() => ir('/planes/nuevo')}>Convocar como entidad</button></li>}
       <li><button type="button" onClick={() => ir('/lugares')}>Mis lugares</button></li>
       <li><button type="button" onClick={() => ir('/avisos')}>Avisos</button></li>
       <li><button type="button" onClick={() => ir('/ciudad')}>Mi ciudad</button></li>
@@ -137,7 +139,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
         <button type="button" aria-pressed={modo === 'mapa'} onClick={() => setModo('mapa')}>Mapa</button>
         <button type="button" aria-pressed={modo === 'lista'} onClick={() => setModo('lista')}>Lista</button>
       </div>}
-      <Menu ir={ir} onSalir={onSalir} equipo={perfil.equipo}/>
+      <Menu ir={ir} onSalir={onSalir} equipo={perfil.equipo} organizaciones={!!perfil.organizaciones?.length}/>
     </header>
 
     {perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>
@@ -153,7 +155,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
           {planes?.some(p => p.organizacion) && <li><span className="luz-ciudad"/>Convocatorias</li>}
           {fueraDelMapa.length > 0 && <li><button type="button" className="mapa-mas" onClick={() => setModo('lista')}>Más en tu ciudad · Ver lista</button></li>}
         </ul>
-        <Button className="diario-boton principal mapa-contar" onClick={() => ir('/planes/nuevo')}><Pencil aria-hidden="true"/>Contar qué voy a hacer</Button>
+        <Button className="diario-boton principal mapa-contar" onClick={() => ir('/inicio?plan=1')}><Pencil aria-hidden="true"/>Tengo ganas de…</Button>
       </div>}
       {planElegido && <TarjetaMapa plan={planElegido} onCerrar={() => setElegido(null)} onAbrir={() => ir(`/planes/${planElegido.id}`)} {...acciones(planElegido.id)}/>}
     </div> : <main className="diario-contenido">
@@ -178,7 +180,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
       </section>
 
       <div className="diario-acciones">
-        <Button className="diario-boton principal" onClick={() => ir('/planes/nuevo')}>Contar qué voy a hacer</Button>
+        <Button className="diario-boton principal" onClick={() => ir('/inicio?plan=1')}>Tengo ganas de…</Button>
         <Button className="diario-boton" onClick={() => ir('/ciudad')}>Ver mi ciudad</Button>
       </div>
 

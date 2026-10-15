@@ -3,7 +3,8 @@
 // hasta 5. Nada de contadores ni calificaciones visibles (regla 5): reportar es privado y nunca dice quién fue.
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import type { Api, Gente, Mensaje, MoaiResumen, Respuesta } from '@/lib/api';
+import type { Api, Gente, Mensaje, MoaiResumen, PersonaInterna, Respuesta } from '@/lib/api';
+import { MAX_INTERNO } from '@/lib/cuidado';
 import { MAX_DETALLE_REPORTE, MAX_MOAI, motivosReporte, type MotivoReporte } from '@/lib/moai';
 import { Diario, type Ir } from './diario';
 import { Campo } from './cuenta';
@@ -60,6 +61,48 @@ function useGente(api: Api) {
 
 const fechaCorta = (iso: string) => new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(iso));
 
+// Mi Moai interno: quién te nutre, aunque no use MOAI. Solo tú lo ves; se guarda cifrado.
+function MoaiInterno({ api }: { api: Api }) {
+  const [lista, setLista] = useState<PersonaInterna[] | null>(null);
+  const [nueva, setNueva] = useState({ nombre: '', relacion: '' });
+  const [errores, setErrores] = useState<Record<string, string>>({});
+  const [error, setError] = useState('');
+  const [porQuitar, setPorQuitar] = useState<string | null>(null);
+  const usar = (r: Respuesta<PersonaInterna[]>, despues?: () => void) => {
+    if (r.ok) { setLista(r.datos); setErrores({}); setError(''); despues?.(); }
+    else { setErrores((r.errores ?? {}) as Record<string, string>); setError(r.errores ? '' : r.error); }
+  };
+  useEffect(() => { void api.interno().then(r => usar(r)); }, [api]);
+  async function agregar(e: FormEvent) {
+    e.preventDefault();
+    usar(await api.agregarInterno(nueva), () => setNueva({ nombre: '', relacion: '' }));
+  }
+  return <section className="interno" aria-labelledby="interno-titulo">
+    <h2 id="interno-titulo">Mi Moai interno</h2>
+    <p className="campo-ayuda">Las personas que te nutren y te recargan, aunque no usen MOAI. Solo tú las ves. Brisa te recordará, como mucho una vez por semana, alimentar esos vínculos.</p>
+    {error && <p className="campo-error" role="alert">{error}</p>}
+    <ul className="personas">
+      {lista?.map(p => <li key={p.id}>
+        <strong>{p.nombre}{p.relacion && <span className="plan-donde"> · {p.relacion}</span>}</strong>
+        {p.pendiente && <span className="plan-voy">Hace un tiempo no hablan</span>}
+        <div className="plan-acciones">
+          <Button className="diario-boton" onClick={() => void api.hablamos(p.id).then(r => usar(r))}>Ya hablamos</Button>
+          {porQuitar === p.id
+            ? <><Button className="diario-boton" onClick={() => void api.quitarInterno(p.id).then(r => usar(r, () => setPorQuitar(null)))}>Sí, quitar</Button><Button className="diario-boton" onClick={() => setPorQuitar(null)}>No</Button></>
+            : <Button className="diario-boton" onClick={() => setPorQuitar(p.id)}>Quitar</Button>}
+        </div>
+      </li>)}
+    </ul>
+    {lista && lista.length < MAX_INTERNO && <form className="cuenta-form diario-form" onSubmit={agregar} noValidate>
+      <div className="telefono">
+        <Campo etiqueta="¿Quién te nutre?" error={errores.nombre}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={40} placeholder="Por ejemplo, Laura" value={nueva.nombre} onChange={e => setNueva(n => ({ ...n, nombre: e.target.value }))}/>}</Campo>
+        <Campo etiqueta="¿Quién es para ti? (opcional)" error={errores.relacion}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={40} placeholder="Mi amiga del colegio" value={nueva.relacion} onChange={e => setNueva(n => ({ ...n, relacion: e.target.value }))}/>}</Campo>
+      </div>
+      <Button type="submit" className="diario-boton principal">Agregar</Button>
+    </form>}
+  </section>;
+}
+
 export function MiGente({ api, ir, onSalir }: { api: Api; ir: Ir; onSalir: () => void }) {
   const { gente, error, usar } = useGente(api);
   const [proponer, setProponer] = useState<string | null>(null);
@@ -77,6 +120,7 @@ export function MiGente({ api, ir, onSalir }: { api: Api; ir: Ir; onSalir: () =>
     {gente === null && !error && <p role="status">Abriendo…</p>}
     {gente && <>
       {gente.pausa && <Pausa/>}
+      <MoaiInterno api={api}/>
 
       {gente.invitaciones.length > 0 && <section aria-labelledby="invitaciones-titulo">
         <h2 id="invitaciones-titulo">Para responder</h2>

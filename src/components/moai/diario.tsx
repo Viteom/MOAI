@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 export type Ir = (ruta: string) => void;
 
 export function Diario({ titulo, bajada, ir, actual, onSalir, children }: { titulo: string; bajada?: ReactNode; ir: Ir; actual: string; onSalir: () => void; children: ReactNode }) {
-  const enlaces: [string, string][] = [['/comunidad', 'Mi comunidad'], ['/gente', 'Mi gente'], ['/lugares', 'Mis lugares'], ['/avisos', 'Avisos'], ['/ciudad', 'Mi ciudad']];
+  const enlaces: [string, string][] = [['/inicio', 'Inicio'], ['/comunidad', 'Mi comunidad'], ['/gente', 'Mi gente'], ['/lugares', 'Mis lugares'], ['/avisos', 'Avisos'], ['/ciudad', 'Mi ciudad']];
   return <div className="diario">
     <header className="diario-cabecera">
       <span className="diario-marca">MOAI</span>

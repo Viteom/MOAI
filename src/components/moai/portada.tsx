@@ -9,6 +9,7 @@ import { Bienvenida } from './bienvenida';
 import { Avisos, MiComunidad, MisLugares, NuevoPlan, PlanDetalle } from './comunidad';
 import { MiGente, MoaiDetalle } from './gente';
 import { Equipo } from './equipo';
+import { InicioBrisa } from './brisa';
 import { Marco } from './marco';
 
 // P01 · Portada pública (horizontal): una ciudad de fondo y texto mínimo.
@@ -99,6 +100,7 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     if (ruta === '/configuracion/comunidad') return <PasoComunidad guardar={api.guardarComunidad} onGuardado={activa}/>;
     const salir = async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); };
     const refrescar = () => void api.sesion().then(r => { if (r.ok) activa(r.datos); });
+    if (ruta === '/inicio') return <InicioBrisa key={window.location.search} perfil={perfil} api={api} ir={ir} onSalir={salir} empezarPlan={new URLSearchParams(window.location.search).has('plan')}/>;
     if (ruta === '/comunidad') return <MiComunidad perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={refrescar}/>;
     if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
     if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;

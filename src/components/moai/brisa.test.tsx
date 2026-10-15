@@ -1,0 +1,72 @@
+import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { entenderDia, entenderHora, entenderPlan, InicioBrisa } from './brisa';
+import type { Api, Perfil } from '@/lib/api';
+
+const casa = { id: 'l1', nombre: 'Casa', ciudad: '05001', barrio: '1108', zona: 'Laureles, Medellín', activo: true };
+const perfil: Perfil = { nombre: 'Rosa Pérez', nacimientoPendiente: false, comunidad: 'completed', lugar: casa };
+const ok = <T,>(datos: T) => vi.fn(async () => ({ ok: true as const, datos }));
+const api = (extra: Partial<Api> = {}) => ({ cartas: ok([]), cartaVista: ok([]), planes: ok([]), cuidado: ok({ letras: null, guardado: false }), crearPlan: ok([]), responderCuidado: ok({ letras: ['A'], guardado: true }), ...extra }) as unknown as Api;
+const elegir = (texto: string) => fireEvent.click(screen.getByRole('button', { name: texto }));
+
+describe('Brisa entiende', () => {
+  it('días, horas y planes dichos con palabras', () => {
+    const miercoles = new Date(2026, 9, 14, 10);
+    expect(entenderDia('mañana', miercoles)?.getDate()).toBe(15);
+    expect(entenderDia('el sábado', miercoles)?.getDate()).toBe(17);
+    expect(entenderDia('el miércoles', miercoles)?.getDate()).toBe(21); // el próximo, no hoy
+    expect(entenderDia('cuando sea', miercoles)).toBeNull();
+    expect(entenderHora('4 pm')).toBe('16:00');
+    expect(entenderHora('7:30')).toBe('07:30');
+    expect(entenderHora('25')).toBeNull();
+    expect(entenderPlan('Quiero caminar por la quebrada')).toEqual({ tipo: 'caminar', titulo: 'Voy a caminar por la quebrada, ¿alguien se suma?' });
+    expect(entenderPlan('tengo ganas de un tinto').tipo).toBe('tinto');
+  });
+});
+
+describe('Inicio con Brisa', () => {
+  it('se presenta como compañera, con sello IA y, la primera vez, aclara que no es una persona', async () => {
+    const a = api();
+    render(<InicioBrisa perfil={perfil} api={a} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(screen.getByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(screen.getByText(/Soy Brisa, tu compañera en MOAI/)).toBeInTheDocument();
+    expect(screen.getByText('IA')).toBeInTheDocument();
+    expect(screen.getByText('No soy una persona: soy una inteligencia artificial.')).toBeInTheDocument();
+    expect(a.cartaVista).toHaveBeenCalledWith('brisa:presentada');
+  });
+
+  it('arma un plan conversando y lo publica', async () => {
+    const crearPlan = ok([]);
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ crearPlan })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(screen.queryByText(/No soy una persona/)).toBeNull();
+    fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'Quiero caminar temprano' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    elegir('Sábado');
+    elegir(new Intl.DateTimeFormat('es-CO', { hour: 'numeric', minute: '2-digit' }).format(new Date(2000, 0, 1, 7)));
+    elegir('Un parque cercano');
+    elegir('Sí, compartir');
+    await vi.waitFor(() => expect(crearPlan).toHaveBeenCalledWith(expect.objectContaining({
+      titulo: 'Voy a caminar temprano, ¿alguien se suma?', tipo: 'caminar', lugarPublico: 'Un parque cercano', ciudad: '05001', barrio: '1108', alcance: 'cerca', repite: null })));
+    expect(await screen.findByText(/Ya lo pueden ver tus vecinos/)).toBeInTheDocument();
+  });
+
+  it('el test de cuidado: seis preguntas, resultado en palabras y se guarda solo si la persona quiere', async () => {
+    const responderCuidado = ok({ letras: ['A' as const], guardado: true });
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ responderCuidado })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    elegir('Cuidarme');
+    elegir(await screen.findByRole('button', { name: '¿Cómo cuido y cómo me cuido?' }).then(b => b.textContent!));
+    elegir('Empezar');
+    for (const opcion of ['Lo siento como si fuera mío', 'Su tristeza me desborda', 'Intento resolverlo, aunque me agote', 'Con mucho peso encima', 'Los entiendo, desde cierta distancia', 'Se me borran los límites']) elegir(opcion);
+    expect(screen.getByText(/Conectas con mucha intensidad/)).toBeInTheDocument();
+    expect(screen.getByText(/no es un diagnóstico/)).toBeInTheDocument();
+    elegir('Sí, guárdalo');
+    await vi.waitFor(() => expect(responderCuidado).toHaveBeenCalledWith(['A', 'A', 'A', 'A', 'B', 'A'], true));
+  });
+
+  it('ante señales de riesgo deriva a una persona y a la línea 123', () => {
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'ya no aguanto más' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    expect(screen.getByText('123')).toBeInTheDocument();
+  });
+});

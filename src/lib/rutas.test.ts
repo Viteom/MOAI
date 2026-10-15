@@ -19,7 +19,7 @@ describe('resolverRuta', () => {
     expect(resolverRuta('/no-existe', anonima, null)).toBe('/');
   });
   it('con sesión: las pantallas de entrada llevan al destino o a la ciudad', () => {
-    expect(resolverRuta('/', activa, null)).toBe('/comunidad');
+    expect(resolverRuta('/', activa, null)).toBe('/inicio');
     expect(resolverRuta('/verificar', activa, '/lugares')).toBe('/lugares');
     expect(resolverRuta('/ciudad', activa, null)).toBeNull();
   });
@@ -32,7 +32,7 @@ describe('pasos pendientes', () => {
     expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'pending' }), null)).toBeNull();
   });
   it('lo omitido no se vuelve a preguntar', () => {
-    expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'skipped' }), null)).toBe('/comunidad');
+    expect(resolverRuta('/configuracion/comunidad', conPasos({ comunidad: 'skipped' }), null)).toBe('/inicio');
   });
   it('los textos legales se ven con o sin sesión', () => {
     expect(resolverRuta('/terminos', activa, null)).toBeNull();

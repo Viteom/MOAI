@@ -5,12 +5,13 @@ import type { Perfil } from './api';
 
 export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar', '/terminos', '/privacidad'] as const;
 export const rutasPasos = ['/configuracion/nacimiento', '/configuracion/comunidad'] as const;
-export const rutasPrivadas = ['/comunidad', '/gente', '/lugares', '/planes/nuevo', '/avisos', '/ciudad', '/equipo'] as const;
+export const rutasPrivadas = ['/inicio', '/comunidad', '/gente', '/lugares', '/planes/nuevo', '/avisos', '/ciudad', '/equipo'] as const;
 // El detalle de cada plan: /planes/<uuid>.
 export const rutaDePlan = /^\/planes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 // Cada Moai: /moais/<uuid>.
 export const rutaDeMoai = /^\/moais\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
-export const DESTINO_INICIAL = '/comunidad';
+// Brisa es la pantalla de inicio (decisión de Mateo, 15 de octubre).
+export const DESTINO_INICIAL = '/inicio';
 // Se pueden ver con o sin sesión (los textos legales se abren desde el registro).
 const rutasAbiertas = ['/terminos', '/privacidad'];
 

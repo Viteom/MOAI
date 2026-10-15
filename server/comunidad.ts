@@ -13,6 +13,8 @@ import { cartasDeGente } from './moais';
 import { mensajePausa } from '../src/lib/moai';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
 import { organizacionesDe } from './equipo';
+import { cartaInterna } from './cuidado';
+import type { Cifrador } from './cifrado';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
 type FilaPlan = {
@@ -83,7 +85,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?:
 
 // Lo que Brisa le cuenta a la persona en Mi comunidad. Nunca inventa asistentes ni deduce rutinas:
 // solo habla de planes que alguien publicó y de lo que la persona eligió (regla 9).
-export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: Refs): Promise<Carta[]> {
+export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: Refs, cifrador?: Cifrador): Promise<Carta[]> {
   const vistos = new Set((await db.query<{ clave: string }>('select clave from avisos_vistos where cuenta_id = $1', [cuenta])).map(v => v.clave));
   const cartas: Carta[] = [];
 
@@ -121,10 +123,12 @@ export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: 
   }
   // 3. Mi gente: encuentros por confirmar, invitaciones y, si la persona activó sugerencias, proponer un Moai.
   if (refs) cartas.push(...await cartasDeGente(db, cuenta, ahora, refs, vistos, !!pref?.sugerencias));
+  // 4. Moai interno: recordar a alguien que te nutre, como mucho una vez por semana.
+  if (cifrador) cartas.push(...await cartaInterna(db, cifrador, cuenta, ahora, vistos));
   return cartas;
 }
 
-export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, refs: Refs) {
+export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, refs: Refs, cifrador: Cifrador) {
   const conSesion = async (request: FastifyRequest, reply: FastifyReply) => {
     const id = await cuentaDeSesion(request);
     if (!id) void reply.code(401).send({ error: 'Sin sesión.' });
@@ -289,14 +293,14 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   // ---- Brisa y avisos ----
   app.get('/api/brisa', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    return cartasDeBrisa(db, id, ahora(), refs);
+    return cartasDeBrisa(db, id, ahora(), refs, cifrador);
   });
 
   app.post('/api/brisa/visto', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     const clave = String((request.body as { clave?: string } | undefined)?.clave ?? '').slice(0, 200);
     if (clave) await db.query('insert into avisos_vistos (cuenta_id, clave) values ($1, $2) on conflict do nothing', [id, clave]);
-    return cartasDeBrisa(db, id, ahora(), refs);
+    return cartasDeBrisa(db, id, ahora(), refs, cifrador);
   });
 
   const preferenciasDe = async (cuenta: string): Promise<Preferencias> => {

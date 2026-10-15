@@ -179,6 +179,20 @@ create table if not exists organizacion_responsables (
   primary key (organizacion_id, cuenta_id)
 );
 alter table planes add column if not exists organizacion_id uuid references organizaciones(id) on delete cascade;
+create table if not exists cuidado (
+  cuenta_id uuid primary key references cuentas(id) on delete cascade,
+  respuestas text not null,
+  autorizado_en timestamptz not null,
+  actualizado_en timestamptz not null
+);
+create table if not exists moai_interno (
+  id uuid primary key default gen_random_uuid(),
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  nombre text not null,
+  relacion text not null,
+  ultimo_contacto timestamptz,
+  creado_en timestamptz not null
+);
 `;
 
 export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {
