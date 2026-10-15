@@ -719,3 +719,11 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .brisa-plan span { color: color-mix(in oklab, var(--niebla) 72%, transparent); }
 .brisa-escribir { position: sticky; bottom: 0; padding: 10px 0 14px; background: linear-gradient(transparent, var(--bosque) 30%); }
 .interno { padding: 16px 18px; border-radius: 18px; border: 1px solid color-mix(in oklab, #ffb27a 45%, transparent); }
+
+/* Bucle sin salto del video de Brisa: dos copias apiladas que se funden. */
+.brisa-fondo { overflow: hidden; }
+.brisa-fondo video { position: absolute; inset: 0; }
+/* La que entra se funde encima; la que sale sigue entera debajo hasta quedar cubierta (sin transparencias a medio camino). */
+.brisa-fondo video, .orbe video { opacity: 0; z-index: 0; transition: opacity 0s linear .9s; }
+.brisa-fondo video.visible, .orbe video.visible { opacity: 1; z-index: 1; transition: opacity .9s ease-in-out; }
+.orbe { background: transparent; }
