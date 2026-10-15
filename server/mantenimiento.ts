@@ -5,6 +5,8 @@ import type { Db } from './db';
 import type { Correo, Recordar } from './envios';
 import { cuandoLegible, planesVisibles } from './comunidad';
 import { DIAS_MENSAJES_MOAI } from '../src/lib/moai';
+import { enInvierno } from './cercania';
+import type { Cifrador } from './cifrado';
 
 export const DIAS_PARA_VERIFICAR = 20;
 const HORAS_ENTRE_RECORDATORIOS = 84; // 3,5 días
@@ -35,13 +37,14 @@ export async function mantener(db: Db, recordar: Recordar): Promise<{ borradas: 
 
 // Resumen semanal «Planes cerca esta semana»: solo para quien lo activó, máximo uno por semana (regla 13),
 // y solo si de verdad hay planes. Nunca se envía un correo vacío para «recordar que existimos».
-export async function resumenSemanal(db: Db, correo: Correo, ahora: Date, urlApp = ''): Promise<number> {
+export async function resumenSemanal(db: Db, correo: Correo, ahora: Date, urlApp = '', cifrador?: Cifrador): Promise<number> {
   const cuentas = await db.query<{ id: string; nombre: string; destino: string }>(
     `select id, split_part(nombre, ' ', 1) as nombre, destino from cuentas
      where resumen_semanal and canal = 'correo' and verificada_en is not null
        and (ultimo_resumen is null or ultimo_resumen < $1::timestamptz - interval '7 days')`, [ahora]);
   let enviados = 0;
   for (const c of cuentas) {
+    if (cifrador && await enInvierno(db, cifrador, c.id)) continue; // en invierno, nada de correos de planes
     const visibles = await planesVisibles(db, c.id, ahora);
     const semana = ahora.getTime() + 7 * 864e5;
     const planes = (visibles?.planes ?? []).filter(p => !p.mio && new Date(p.cuando).getTime() <= semana).slice(0, 5);
@@ -67,4 +70,5 @@ export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<v
        and ((p.repite is null and p.cuando < $1::timestamptz - interval '30 days')
          or (p.cancelado_en is not null and p.cancelado_en < $1::timestamptz - interval '30 days'))`, [ahora]);
   await db.query(`delete from moai_mensajes where creado_en < $1::timestamptz - make_interval(days => $2)`, [ahora, DIAS_MENSAJES_MOAI]);
+  await db.query(`delete from saludos where creado_en < $1::timestamptz - interval '30 days'`, [ahora]); // los saludos de lejos duran 30 días
 }

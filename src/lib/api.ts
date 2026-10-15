@@ -5,6 +5,7 @@ import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo } from './lugares
 import type { MotivoReporte } from './moai';
 import type { TipoOrganizacion } from './organizaciones';
 import type { Letra } from './cuidado';
+import type { EntradaPerfil, Saludo } from './perfil';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
@@ -26,7 +27,12 @@ export type Carta =
   | { clave: string; tipo: 'solo'; planId: string; texto: string; repetir: boolean }
   | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan }
   | { clave: string; tipo: 'gente'; texto: string; motivo?: string }
-  | { clave: string; tipo: 'interno'; texto: string; motivo: string; personaId: string };
+  | { clave: string; tipo: 'interno'; texto: string; motivo: string; personaId: string }
+  | { clave: string; tipo: 'saludo'; texto: string; ref: string; nombre: string; opciones: Saludo[]; plan: boolean };
+// Invierno y puerta abierta. `contadoA`: primeros nombres de quienes saben de tu invierno porque tú se lo contaste.
+export type Estado = { invierno: boolean; puertaAbierta: boolean; contadoA: string[] };
+// Un vecino de tu zona que aprobó mostrar su perfil. La puerta abierta solo se ve si ya se vieron.
+export type Vecino = { ref: string; nombre: string; frase: string; comparte: string; gustos: Tipo[]; enComun: Tipo[]; franja: string; puertaAbierta: boolean; saludado: boolean };
 // Test de cuidado: las letras que predominan (puede haber empate) y si la persona autorizó guardarlo.
 export type Cuidado = { letras: Letra[] | null; guardado: boolean; fecha?: string };
 // Moai interno: quién te nutre. `pendiente`: hace un tiempo que no hablan (nunca se muestra cuántos días).
@@ -36,7 +42,7 @@ export type Persona = { ref: string; nombre: string };
 // «¿Te viste con…?» después de un plan al que fuiste o que propusiste.
 export type Encuentro = { planId: string; titulo: string; ocurrencia: string; personas: Persona[] };
 // Personas con las que las dos confirmaron «Ya nos vimos».
-export type Conocido = Persona & { moaiComun: boolean; propuesta: boolean };
+export type Conocido = Persona & { moaiComun: boolean; propuesta: boolean; puertaAbierta?: boolean };
 export type MoaiResumen = { id: string; nombre: string; miembros: (Persona & { yo: boolean })[]; esperando: string[] };
 export type Invitacion =
   | { id: string; tipo: 'nuevo'; de: string; nombre: string }
@@ -125,6 +131,14 @@ export const api = {
   agregarInterno: (p: { nombre: string; relacion: string }) => llamar<PersonaInterna[]>('interno', p),
   hablamos: (id: string) => llamar<PersonaInterna[]>(`interno/${encodeURIComponent(id)}/hablamos`, {}),
   quitarInterno: (id: string) => llamar<PersonaInterna[]>(`interno/${encodeURIComponent(id)}`, undefined, 'DELETE'),
+  perfilPublico: () => llamar<EntradaPerfil>('perfil-publico'),
+  guardarPerfilPublico: (p: EntradaPerfil) => llamar<EntradaPerfil>('perfil-publico', p),
+  zona: () => llamar<Vecino[]>('zona'),
+  saludar: (ref: string, saludo: Saludo) => llamar<{ ok: true }>('saludos', { ref, saludo }),
+  estado: () => llamar<Estado>('estado'),
+  invierno: (activo: boolean) => llamar<Estado>('estado/invierno', { activo }),
+  contarInvierno: (refs: string[]) => llamar<Estado>('estado/invierno/contar', { refs }),
+  puerta: (abierta: boolean) => llamar<Estado>('estado/puerta', { abierta }),
   salir: () => llamar<{ ok: true }>('salir', {}),
 };
 export type Api = typeof api;

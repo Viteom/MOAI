@@ -11,6 +11,7 @@ import { registrarMoais } from './moais';
 import { crearRefs } from './personas';
 import { organizacionesDe, registrarEquipo } from './equipo';
 import { registrarCuidado } from './cuidado';
+import { registrarCercania } from './cercania';
 import { crearCifrador } from './cifrado';
 import { RESPONSABLE } from '../src/lib/legal';
 import { validarLugar } from '../src/lib/lugares';
@@ -199,6 +200,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   const cifrador = crearCifrador(secreto);
   registrarComunidad(app, db, cuentaDeSesion, ahora, refs, cifrador);
   registrarCuidado(app, db, cuentaDeSesion, ahora, cifrador);
+  registrarCercania(app, db, cuentaDeSesion, ahora, refs, cifrador);
   registrarMoais(app, db, cuentaDeSesion, ahora, refs);
   registrarEquipo(app, db, cuentaDeSesion, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
 

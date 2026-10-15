@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import type { Api, Carta, Perfil, Plan } from '@/lib/api';
+import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, preguntasCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
 import { OrbeBrisa } from './bosque';
@@ -14,7 +15,7 @@ import { Diario, type Ir } from './diario';
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
 type Opcion = { texto: string; hacer: () => void };
 type Borrador = { titulo: string; tipo: Tipo; dia?: Date; hora?: string; lugar?: string; semanal: boolean };
-type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test';
+type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'perfil-gustos' | 'perfil-comparte' | 'perfil-aprender' | 'perfil-frase';
 
 const RIESGO = /(suicid|matarme|quitarme la vida|no quiero vivir|me quiero morir|hacerme daño|no aguanto más)/i;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -69,6 +70,8 @@ function CartaEnChat({ carta, api, ir, alTerminar }: { carta: Carta; api: Api; i
       {carta.tipo === 'solo' && carta.repetir && <Button className="diario-boton principal" onClick={() => void api.repetirPlan(carta.planId).then(() => cerrar('Listo: queda cada semana.'))}>Sí, cada semana</Button>}
       {carta.tipo === 'sugerencia' && <Button className="diario-boton principal" onClick={() => void api.irAPlan(carta.planId).then(() => cerrar('Te sumaste. Nos vemos allá.'))}>Me sumo</Button>}
       {carta.tipo === 'gente' && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => ir('/gente'))}>Ir a Mi gente</Button>}
+      {carta.tipo === 'saludo' && carta.opciones.map(o => <Button key={o} className="diario-boton" onClick={() => void api.saludar(carta.ref, o).then(r => cerrar(r.ok ? `Le mandaste: «${textoSaludo(o)}».` : r.error))}>{textoSaludo(o)}</Button>)}
+      {carta.tipo === 'saludo' && carta.plan && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => ir('/inicio?plan=1'))}>Proponer algo juntos</Button>}
       {carta.tipo === 'interno' && <Button className="diario-boton principal" onClick={() => void api.hablamos(carta.personaId).then(() => cerrar('Qué bueno. Esos vínculos también te cuidan a ti.'))}>Ya le escribí</Button>}
       <Button className="diario-boton" onClick={() => void cerrar('Entendido.')}>{carta.tipo === 'solo' && !carta.repetir ? 'Entendido' : 'Ahora no'}</Button>
       {motivo && <button type="button" className="brisa-enlace" aria-expanded={porque} onClick={() => setPorque(p => !p)}>¿Por qué veo esto?</button>}
@@ -89,7 +92,7 @@ function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
   </div>;
 }
 
-export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezarPlan?: boolean }) {
+export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [opciones, setOpciones] = useState<Opcion[]>([]);
@@ -97,6 +100,7 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: {
   const paso = useRef<Paso>('libre');
   const borrador = useRef<Borrador | null>(null);
   const respuestas = useRef<Letra[]>([]);
+  const borradorPerfil = useRef<EntradaPerfil>({ frase: '', gustos: [], comparte: '', aprender: '', visible: false });
   const siguiente = useRef(0);
   const final = useRef<HTMLDivElement>(null);
   const iniciado = useRef(false);
@@ -111,7 +115,8 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: {
     { texto: 'Conocer vecinos', hacer: () => conocer() },
     { texto: 'Qué pasa cerca', hacer: () => void cerca() },
     { texto: 'Tengo ganas de…', hacer: () => iniciarPlan() },
-    { texto: 'Cuidarme', hacer: () => void cuidarme() },
+    { texto: 'Cómo estoy', hacer: () => void comoEstoy() },
+    { texto: 'Cuéntame de ti', hacer: () => void iniciarPerfil() },
     { texto: 'Cómo funciona', hacer: () => comoFunciona() },
   ], []); // eslint-disable-line react-hooks/exhaustive-deps
   const volver = (pregunta = '¿Qué más te provoca?') => { paso.current = 'libre'; decir(pregunta); setOpciones(menu()); };
@@ -120,7 +125,7 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: {
   function conocer() {
     decir('Aquí la gente se conoce haciendo cosas sencillas juntas: una caminata, un tinto, una partida en el parque.',
       'Después de cada plan te pregunto con quién te viste. Con esas personas puedes formar un Moai, aunque sean solo dos.');
-    setOpciones([{ texto: 'Qué pasa cerca', hacer: () => void cerca() }, { texto: 'Ir a Mi gente', hacer: () => ir('/gente') }, { texto: 'Ver el mapa', hacer: () => ir('/comunidad') }]);
+    setOpciones([{ texto: 'Ver vecinos de mi zona', hacer: () => ir('/zona') }, { texto: 'Qué pasa cerca', hacer: () => void cerca() }, { texto: 'Ir a Mi gente', hacer: () => ir('/gente') }]);
   }
   async function cerca() {
     if (!perfil.lugar) { decir('Primero cuéntame dónde vives, así te muestro lo que pasa cerca.'); setOpciones([{ texto: 'Elegir mi lugar', hacer: () => ir('/lugares') }]); return; }
@@ -234,6 +239,108 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: {
     setOpciones([{ texto: 'Sí, armarlo', hacer: () => ir('/gente') }, { texto: 'Después', hacer: () => volver() }]);
   }
 
+  // ---- Cuéntame de ti: la tarjeta que verán tus vecinos (solo si la apruebas) ----
+  async function iniciarPerfil() {
+    const r = await api.perfilPublico();
+    borradorPerfil.current = { ...(r.ok ? r.datos : borradorPerfil.current), gustos: [] };
+    decir('Me encantaría conocerte un poco más. Con lo que me cuentes armo una tarjeta para tus vecinos, sin foto ni ubicación, y solo la muestro si tú quieres.',
+      '¿Qué te gusta hacer? Elige todo lo que quieras.');
+    preguntarGustos();
+  }
+  function preguntarGustos() {
+    paso.current = 'perfil-gustos';
+    const elegidos = borradorPerfil.current.gustos;
+    setOpciones([
+      ...plantillas.filter(p => !elegidos.includes(p.tipo)).map(p => ({ texto: p.nombre, hacer: () => { borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, p.tipo]; preguntarGustos(); } })),
+      { texto: elegidos.length ? 'Eso es todo' : 'Prefiero no decir', hacer: () => preguntarComparte() },
+    ]);
+  }
+  function preguntarComparte() {
+    paso.current = 'perfil-comparte';
+    decir('¿Hay algo que sepas hacer y te guste compartir o enseñar? Cocinar, arreglar cosas, contar historias… Escríbemelo.');
+    setOpciones([{ texto: 'Por ahora nada', hacer: () => preguntarAprender() }]);
+  }
+  function preguntarAprender() {
+    paso.current = 'perfil-aprender';
+    decir('¿Y algo que te gustaría aprender?');
+    setOpciones([{ texto: 'Por ahora nada', hacer: () => preguntarFrase() }]);
+  }
+  function preguntarFrase() {
+    paso.current = 'perfil-frase';
+    decir('Última: si tus vecinos te conocieran por una frase, ¿cuál sería? Por ejemplo, «Me gusta madrugar a regar mis matas».');
+    setOpciones([{ texto: 'Prefiero no escribirla', hacer: () => mostrarPerfil() }]);
+  }
+  function mostrarPerfil() {
+    paso.current = 'libre';
+    const p = { ...borradorPerfil.current };
+    if (!p.frase && !p.comparte && !p.gustos.length) { decir('Está bien, no hace falta contar nada ahora. Cuando quieras, aquí estoy.'); volver(); return; }
+    decir('Así te verían tus vecinos:', <TarjetaPerfil key={`perfil-${siguiente.current}`} nombre={nombre} perfil={p}/>,
+      '¿La muestro en Mi zona? Solo la verían vecinos de tu zona, nunca tu dirección. Puedes cambiarlo cuando quieras.');
+    const guardar = (visible: boolean) => void api.guardarPerfilPublico({ ...p, visible }).then(r => {
+      decir(!r.ok ? r.error : visible ? 'Listo, tu tarjeta ya se ve en Mi zona. Cuando alguien te salude, te cuento.' : 'Guardado. No se muestra a nadie por ahora.');
+      setOpciones([{ texto: 'Ver Mi zona', hacer: () => ir('/zona') }, { texto: 'Volver', hacer: () => volver() }]);
+    });
+    setOpciones([{ texto: 'Sí, mostrarla', hacer: () => guardar(true) }, { texto: 'Guardarla sin mostrar', hacer: () => guardar(false) }, { texto: 'Empezar de nuevo', hacer: () => void iniciarPerfil() }]);
+  }
+
+  // ---- Cómo estoy: puerta abierta e invierno. Los declara la persona; nada se deduce (regla 6) ----
+  async function comoEstoy() {
+    const r = await api.estado();
+    if (r.ok && r.datos.invierno) {
+      decir('Sigo aquí contigo. ¿Cómo va tu invierno?');
+      setOpciones([
+        { texto: 'Ya salí del invierno', hacer: () => void api.invierno(false).then(() => { decir('Me alegra mucho. Vuelvo a contarte de planes cerca, con calma.'); volver(); }) },
+        { texto: 'Sigo igual', hacer: () => void acompanarInvierno() },
+      ]);
+      return;
+    }
+    decir('¿Cómo estás estos días?');
+    setOpciones([
+      { texto: 'Bien', hacer: () => volver('¡Qué bueno! ¿Qué te provoca hoy?') },
+      { texto: 'Más o menos', hacer: () => ofrecerPuerta() },
+      { texto: 'Me siento sola o solo', hacer: () => ofrecerPuerta() },
+      { texto: 'En invierno', hacer: () => void api.invierno(true).then(() => { decir('Gracias por contármelo. Voy a bajar el ritmo: mientras dure, no te sugiero planes ni te llegan correos de planes.'); void acompanarInvierno(); }) },
+      { texto: 'Quiero cuidarme', hacer: () => void cuidarme() },
+    ]);
+  }
+  function ofrecerPuerta() {
+    decir('Gracias por contarme. Si quieres, dejo tu puerta abierta: las personas con las que ya te viste sabrán que esta semana te caería bien compañía. Se cierra sola en 7 días.');
+    setOpciones([
+      { texto: 'Sí, abrir mi puerta', hacer: () => void api.puerta(true).then(r => { decir(r.ok ? 'Listo, tu puerta está abierta esta semana.' : r.error); volver(); }) },
+      { texto: 'Prefiero que no', hacer: () => volver('Está bien. ¿Hay algo que te provoque hoy?') },
+      { texto: 'Quiero cuidarme', hacer: () => void cuidarme() },
+    ]);
+  }
+  async function acompanarInvierno() {
+    const [interno, gente] = await Promise.all([api.interno(), api.gente()]);
+    const conocidos = gente.ok ? gente.datos.conocidos.map(c => ({ ref: c.ref, nombre: c.nombre })) : [];
+    decir('¿A quién te gustaría tener cerca estos días?');
+    setOpciones([
+      ...(interno.ok ? interno.datos.slice(0, 3).map(p => ({ texto: `Escribirle a ${p.nombre}`, hacer: () => escribirA(p.nombre) })) : []),
+      ...(conocidos.length ? [{ texto: 'Contarle a alguien con quien me vi', hacer: () => elegirAQuienContar(conocidos, []) }] : []),
+      { texto: 'Solo quiero que me acompañes', hacer: () => {
+        decir('Aquí estoy. No tienes que hacer nada ni explicar nada.', 'Si en algún momento sientes que estás en peligro, llama a la línea 123 o a alguien de confianza.');
+        volver('Cuando quieras, seguimos.');
+      } },
+    ]);
+  }
+  function escribirA(quien: string) {
+    const mensaje = `Hola, ${quien}. Estos días ando en invierno y me haría bien hablar contigo.`;
+    decir(<span key={`wa-${siguiente.current}`}>Te dejo un mensaje listo; cámbialo como quieras. Tú lo envías y nadie más lo ve.<br/>«{mensaje}»<br/><a className="brisa-enlace" href={`whatsapp://send?text=${encodeURIComponent(mensaje)}`}>Abrir WhatsApp con este mensaje</a></span>);
+    volver('¿Algo más en lo que te acompañe?');
+  }
+  function elegirAQuienContar(conocidos: { ref: string; nombre: string }[], elegidos: string[]) {
+    if (!elegidos.length) decir('¿A quién se lo cuento? Solo sabrán que estás pasando un invierno, nada más.');
+    setOpciones([
+      ...conocidos.filter(c => !elegidos.includes(c.ref)).map(c => ({ texto: c.nombre, hacer: () => elegirAQuienContar(conocidos, [...elegidos, c.ref]) })),
+      ...(elegidos.length ? [{ texto: 'Contarles', hacer: () => void api.contarInvierno(elegidos).then(r => {
+        decir(r.ok ? `Listo, se lo conté a ${r.datos.contadoA.join(', ')}. Cuando salgas del invierno, lo olvido.` : r.error);
+        volver();
+      }) }] : []),
+      { texto: 'Mejor no', hacer: () => volver() },
+    ]);
+  }
+
   // ---- Lo que escribe la persona ----
   function enviar(e: FormEvent) {
     e.preventDefault();
@@ -253,10 +360,19 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: {
       case 'plan-hora': { const hora = entenderHora(t); if (hora && b) { b.hora = hora; preguntarLugar(); } else { decir('No te entendí la hora. Dime, por ejemplo, «7 am» o «4:30 pm».'); preguntarHora(); } return; }
       case 'plan-donde': if (b && t.length >= 3) { b.lugar = t.slice(0, 80); mostrarBorrador(); } else preguntarLugar(); return;
       case 'test': decir('Elige la opción que más se parezca a ti.'); setOpciones(preguntaActual()); return;
+      case 'perfil-gustos': {
+        const tipo = entenderPlan(t).tipo;
+        if (tipo !== 'otro' && !borradorPerfil.current.gustos.includes(tipo)) borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, tipo];
+        preguntarGustos(); return;
+      }
+      case 'perfil-comparte': borradorPerfil.current.comparte = t.slice(0, 80); preguntarAprender(); return;
+      case 'perfil-aprender': borradorPerfil.current.aprender = t.slice(0, 80); preguntarFrase(); return;
+      case 'perfil-frase': borradorPerfil.current.frase = t.replace(/^[«"]|[»"]$/g, '').slice(0, 140); mostrarPerfil(); return;
     }
     const plano = sinTildes(t);
     if (/vecin|conocer gente|amig/.test(plano)) { conocer(); return; }
     if (/que pasa|planes|cerca|hay algo/.test(plano)) { void cerca(); return; }
+    if (/sol[ao]\b|triste|invierno|desanimad/.test(plano)) { void comoEstoy(); return; }
     if (/cuid|cansad|agotad|nutre|limite/.test(plano)) { void cuidarme(); return; }
     if (/quiero|ganas|voy a|me gustaria/.test(plano) || PALABRAS.some(([re]) => re.test(plano))) { iniciarPlan(entenderPlan(t)); return; }
     decir('Todavía estoy aprendiendo a conversar, así que no siempre entiendo todo. Por ahora te puedo ayudar con esto:');
@@ -274,7 +390,9 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezarPlan = false }: {
     iniciado.current = true;
     decir(`Soy Brisa, tu compañera en MOAI. Estoy aquí para ayudarte a encontrar a tu gente, cerca de casa.`);
     if (!perfil.presentada) { nota('No soy una persona: soy una inteligencia artificial.'); void api.cartaVista('brisa:presentada'); }
-    if (empezarPlan) { iniciarPlan(); return; }
+    if (empezar === 'plan') { iniciarPlan(); return; }
+    if (empezar === 'perfil') { void iniciarPerfil(); return; }
+    if (empezar === 'estado') { void comoEstoy(); return; }
     decir('Aquí puedes conocer a tus vecinos, sumarte a lo que pasa en tu zona y, con el tiempo, formar tu Moai. ¿Qué te provoca hoy?');
     if (!perfil.lugar) {
       decir('Para mostrarte lo que pasa cerca, primero cuéntame dónde vives. Solo guardo una zona aproximada, nunca tu dirección.');
@@ -311,5 +429,15 @@ function TarjetaBorrador({ borrador }: { borrador: Borrador }) {
     <strong>{borrador.titulo}</strong>
     <span>{fechaLarga(borrador.dia!)} · {horaLegible(borrador.hora!)}</span>
     <span>{borrador.lugar}</span>
+  </div>;
+}
+
+function TarjetaPerfil({ nombre, perfil }: { nombre: string; perfil: EntradaPerfil }) {
+  return <div className="brisa-plan">
+    <strong>{nombre}</strong>
+    {perfil.frase && <span className="frase">«{perfil.frase}»</span>}
+    {perfil.gustos.length > 0 && <span>Le gusta: {perfil.gustos.map(g => plantillas.find(p => p.tipo === g)?.nombre.toLowerCase()).join(', ')}</span>}
+    {perfil.comparte && <span>Comparte: {perfil.comparte}</span>}
+    {perfil.aprender && <span>Quiere aprender: {perfil.aprender}</span>}
   </div>;
 }

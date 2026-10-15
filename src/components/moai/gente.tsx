@@ -169,6 +169,7 @@ export function MiGente({ api, ir, onSalir }: { api: Api; ir: Ir; onSalir: () =>
         <ul className="personas">
           {gente.conocidos.map(c => <li key={c.ref}>
             <strong>{c.nombre}</strong>
+            {c.puertaAbierta && <span className="puerta-abierta" title="Esta semana le caería bien compañía">Puerta abierta</span>}
             {proponer === c.ref ? <form className="cuenta-form diario-form" onSubmit={e => void enviarPropuesta(e, c.ref)} noValidate>
               <Campo etiqueta={`¿Cómo se llamaría su Moai?`} error={errorNombre} ayuda={`Si ${c.nombre} acepta, nace su Moai. Luego pueden sumar a más gente, hasta ${MAX_MOAI}.`}>{(id, d) =>
                 <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={40} placeholder="Por ejemplo, Los del parque" value={nombreMoai} onChange={e => setNombreMoai(e.target.value)}/>}</Campo>

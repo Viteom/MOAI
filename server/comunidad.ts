@@ -14,6 +14,7 @@ import { mensajePausa } from '../src/lib/moai';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
 import { organizacionesDe } from './equipo';
 import { cartaInterna } from './cuidado';
+import { cartasDeCercania, enInvierno } from './cercania';
 import type { Cifrador } from './cifrado';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
@@ -104,8 +105,10 @@ export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: 
   }
 
   // 2. Recomendaciones: solo si la persona las activó, y solo de los tipos de plan que eligió.
+  // En invierno Brisa baja el ritmo: no sugiere planes ni Moais.
+  const invierno = cifrador ? await enInvierno(db, cifrador, cuenta) : false;
   const [pref] = await db.query<{ sugerencias: boolean; gustos: string[] }>('select sugerencias, gustos from cuentas where id = $1', [cuenta]);
-  if (pref?.sugerencias && pref.gustos.length) {
+  if (pref?.sugerencias && pref.gustos.length && !invierno) {
     const visibles = await planesVisibles(db, cuenta, ahora);
     const pronto = ahora.getTime() + 7 * 864e5;
     for (const plan of visibles?.planes ?? []) {
@@ -122,7 +125,9 @@ export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: 
     }
   }
   // 3. Mi gente: encuentros por confirmar, invitaciones y, si la persona activó sugerencias, proponer un Moai.
-  if (refs) cartas.push(...await cartasDeGente(db, cuenta, ahora, refs, vistos, !!pref?.sugerencias));
+  if (refs) cartas.push(...await cartasDeGente(db, cuenta, ahora, refs, vistos, !!pref?.sugerencias && !invierno));
+  // 5. Cercanía: saludos de lejos, un invierno que te contaron, puertas abiertas de tu gente.
+  if (refs && cifrador) cartas.push(...await cartasDeCercania(db, cuenta, ahora, refs, cifrador, vistos));
   // 4. Moai interno: recordar a alguien que te nutre, como mucho una vez por semana.
   if (cifrador) cartas.push(...await cartaInterna(db, cifrador, cuenta, ahora, vistos));
   return cartas;

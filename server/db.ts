@@ -185,6 +185,34 @@ create table if not exists cuidado (
   autorizado_en timestamptz not null,
   actualizado_en timestamptz not null
 );
+create table if not exists perfiles (
+  cuenta_id uuid primary key references cuentas(id) on delete cascade,
+  frase text not null default '',
+  gustos text[] not null default '{}',
+  comparte text not null default '',
+  aprender text not null default '',
+  visible boolean not null default false,
+  actualizado_en timestamptz not null
+);
+create table if not exists estados (
+  cuenta_id uuid primary key references cuentas(id) on delete cascade,
+  invierno text not null,
+  puerta_hasta timestamptz,
+  actualizado_en timestamptz not null
+);
+create table if not exists invierno_avisos (
+  de uuid not null references cuentas(id) on delete cascade,
+  a uuid not null references cuentas(id) on delete cascade,
+  creado_en timestamptz not null,
+  primary key (de, a)
+);
+create table if not exists saludos (
+  id bigserial primary key,
+  de uuid not null references cuentas(id) on delete cascade,
+  a uuid not null references cuentas(id) on delete cascade,
+  saludo text not null,
+  creado_en timestamptz not null
+);
 create table if not exists moai_interno (
   id uuid primary key default gen_random_uuid(),
   cuenta_id uuid not null references cuentas(id) on delete cascade,

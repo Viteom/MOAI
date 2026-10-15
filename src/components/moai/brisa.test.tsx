@@ -6,7 +6,7 @@ import type { Api, Perfil } from '@/lib/api';
 const casa = { id: 'l1', nombre: 'Casa', ciudad: '05001', barrio: '1108', zona: 'Laureles, Medellín', activo: true };
 const perfil: Perfil = { nombre: 'Rosa Pérez', nacimientoPendiente: false, comunidad: 'completed', lugar: casa };
 const ok = <T,>(datos: T) => vi.fn(async () => ({ ok: true as const, datos }));
-const api = (extra: Partial<Api> = {}) => ({ cartas: ok([]), cartaVista: ok([]), planes: ok([]), cuidado: ok({ letras: null, guardado: false }), crearPlan: ok([]), responderCuidado: ok({ letras: ['A'], guardado: true }), ...extra }) as unknown as Api;
+const api = (extra: Partial<Api> = {}) => ({ cartas: ok([]), cartaVista: ok([]), planes: ok([]), cuidado: ok({ letras: null, guardado: false }), crearPlan: ok([]), responderCuidado: ok({ letras: ['A'], guardado: true }), estado: ok({ invierno: false, puertaAbierta: false, contadoA: [] }), invierno: ok({ invierno: true, puertaAbierta: false, contadoA: [] }), interno: ok([{ id: 'p1', nombre: 'Laura', relacion: '', pendiente: false }]), gente: ok({ encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false }), perfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: false }), guardarPerfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: true }), ...extra }) as unknown as Api;
 const elegir = (texto: string) => fireEvent.click(screen.getByRole('button', { name: texto }));
 
 describe('Brisa entiende', () => {
@@ -53,7 +53,8 @@ describe('Inicio con Brisa', () => {
   it('el test de cuidado: seis preguntas, resultado en palabras y se guarda solo si la persona quiere', async () => {
     const responderCuidado = ok({ letras: ['A' as const], guardado: true });
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ responderCuidado })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    elegir('Cuidarme');
+    elegir('Cómo estoy');
+    elegir(await screen.findByRole('button', { name: 'Quiero cuidarme' }).then(b => b.textContent!));
     elegir(await screen.findByRole('button', { name: '¿Cómo cuido y cómo me cuido?' }).then(b => b.textContent!));
     elegir('Empezar');
     for (const opcion of ['Lo siento como si fuera mío', 'Su tristeza me desborda', 'Intento resolverlo, aunque me agote', 'Con mucho peso encima', 'Los entiendo, desde cierta distancia', 'Se me borran los límites']) elegir(opcion);
@@ -68,5 +69,35 @@ describe('Inicio con Brisa', () => {
     fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'ya no aguanto más' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
     expect(screen.getByText('123')).toBeInTheDocument();
+  });
+});
+
+describe('Brisa acompaña', () => {
+  it('arma la tarjeta conversando y la muestra solo si la persona quiere', async () => {
+    const guardarPerfilPublico = vi.fn(async (p: object) => ({ ok: true as const, datos: p })) as unknown as Api['guardarPerfilPublico'];
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ guardarPerfilPublico })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    elegir('Cuéntame de ti');
+    elegir(await screen.findByRole('button', { name: 'La huerta' }).then(b => b.textContent!));
+    elegir('Tejer');
+    elegir('Eso es todo');
+    fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'Enseño a tejer' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    elegir('Por ahora nada');
+    fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'Me gusta madrugar a regar mis matas' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    expect(screen.getByText('«Me gusta madrugar a regar mis matas»')).toBeInTheDocument();
+    elegir('Sí, mostrarla');
+    await vi.waitFor(() => expect(guardarPerfilPublico).toHaveBeenCalledWith({ frase: 'Me gusta madrugar a regar mis matas', gustos: ['huerta', 'tejer'], comparte: 'Enseño a tejer', aprender: '', visible: true }));
+  });
+
+  it('en invierno baja el ritmo y ofrece escribirle a alguien del Moai interno, sin enviar nada por su cuenta', async () => {
+    const invierno = vi.fn(async () => ({ ok: true as const, datos: { invierno: true, puertaAbierta: false, contadoA: [] } }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ invierno })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    elegir('Cómo estoy');
+    elegir(await screen.findByRole('button', { name: 'En invierno' }).then(b => b.textContent!));
+    expect(invierno).toHaveBeenCalledWith(true);
+    elegir(await screen.findByRole('button', { name: 'Escribirle a Laura' }).then(b => b.textContent!));
+    const enlace = screen.getByRole('link', { name: 'Abrir WhatsApp con este mensaje' });
+    expect(enlace.getAttribute('href')).toMatch(/^whatsapp:\/\/send\?text=Hola%2C%20Laura/);
   });
 });

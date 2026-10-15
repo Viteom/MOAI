@@ -10,6 +10,7 @@ import { Avisos, MiComunidad, MisLugares, NuevoPlan, PlanDetalle } from './comun
 import { MiGente, MoaiDetalle } from './gente';
 import { Equipo } from './equipo';
 import { InicioBrisa } from './brisa';
+import { MiZona } from './zona';
 import { Marco } from './marco';
 
 // P01 · Portada pública (horizontal): una ciudad de fondo y texto mínimo.
@@ -100,12 +101,13 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     if (ruta === '/configuracion/comunidad') return <PasoComunidad guardar={api.guardarComunidad} onGuardado={activa}/>;
     const salir = async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); };
     const refrescar = () => void api.sesion().then(r => { if (r.ok) activa(r.datos); });
-    if (ruta === '/inicio') return <InicioBrisa key={window.location.search} perfil={perfil} api={api} ir={ir} onSalir={salir} empezarPlan={new URLSearchParams(window.location.search).has('plan')}/>;
+    if (ruta === '/inicio') return <InicioBrisa key={window.location.search} perfil={perfil} api={api} ir={ir} onSalir={salir} empezar={(['plan', 'perfil', 'estado'] as const).find(e => new URLSearchParams(window.location.search).has(e))}/>;
     if (ruta === '/comunidad') return <MiComunidad perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={refrescar}/>;
     if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
     if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/gente') return <MiGente api={api} ir={ir} onSalir={salir}/>;
+    if (ruta === '/zona') return <MiZona api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/equipo') return <Equipo api={api} ir={ir} onSalir={salir} permitido={!!perfil.equipo}/>;
     const moaiId = rutaDeMoai.exec(ruta)?.[1];
     if (moaiId) return <MoaiDetalle key={moaiId} id={moaiId} api={api} ir={ir} onSalir={salir}/>;

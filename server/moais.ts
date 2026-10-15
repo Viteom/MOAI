@@ -39,9 +39,10 @@ async function encuentrosPendientes(db: Db, cuenta: string, ahora: Date): Promis
 }
 
 // Las dos confirmaron que se vieron en un mismo plan. `veces`: cuántos encuentros confirmados (solo para Brisa, nunca se muestra).
-async function conocidosDe(db: Db, cuenta: string) {
-  return db.query<{ id: string; nombre: string; veces: number; moai_comun: boolean; propuesta: boolean }>(
+export async function conocidosDe(db: Db, cuenta: string, ahora = new Date()) {
+  return db.query<{ id: string; nombre: string; veces: number; moai_comun: boolean; propuesta: boolean; puerta: boolean }>(
     `select n1.a as id, split_part(c.nombre, ' ', 1) as nombre, count(*)::int as veces,
+            exists (select 1 from estados e where e.cuenta_id = n1.a and e.puerta_hasta > $2) as puerta,
             exists (select 1 from moai_miembros x join moai_miembros y on x.moai_id = y.moai_id where x.cuenta_id = $1 and y.cuenta_id = n1.a) as moai_comun,
             exists (select 1 from moai_invitaciones i where i.estado = 'abierta' and i.moai_id is null and ((i.de = $1 and i.a = n1.a) or (i.de = n1.a and i.a = $1))) as propuesta
      from nos_vimos n1
@@ -49,7 +50,7 @@ async function conocidosDe(db: Db, cuenta: string) {
      join cuentas c on c.id = n1.a
      where n1.de = $1 and n1.si and ${noBloqueados('$1', 'n1.a')}
      group by n1.a, c.nombre
-     order by nombre`, [cuenta]);
+     order by nombre`, [cuenta, ahora]);
 }
 
 const miembrosDe = (db: Db, moai: string) => db.query<{ id: string; nombre: string }>(
@@ -78,7 +79,7 @@ export async function genteDe(db: Db, cuenta: string, ahora: Date, refs: Refs): 
     if (!e) encuentros.push(e = { planId: f.plan_id, titulo: f.titulo, ocurrencia, personas: [] });
     e.personas.push({ ref: refs.ref(cuenta, f.persona), nombre: f.nombre });
   }
-  const conocidos: Conocido[] = (await conocidosDe(db, cuenta)).map(c => ({ ref: refs.ref(cuenta, c.id), nombre: c.nombre, moaiComun: c.moai_comun, propuesta: c.propuesta }));
+  const conocidos: Conocido[] = (await conocidosDe(db, cuenta, ahora)).map(c => ({ ref: refs.ref(cuenta, c.id), nombre: c.nombre, moaiComun: c.moai_comun, propuesta: c.propuesta, puertaAbierta: c.puerta }));
 
   const moais: MoaiResumen[] = [];
   for (const m of await db.query<{ id: string; nombre: string }>(

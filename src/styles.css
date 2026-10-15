@@ -727,3 +727,17 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .brisa-fondo video, .orbe video { opacity: 0; z-index: 0; transition: opacity 0s linear .9s; }
 .brisa-fondo video.visible, .orbe video.visible { opacity: 1; z-index: 1; transition: opacity .9s ease-in-out; }
 .orbe { background: transparent; }
+
+/* Mi zona: tarjetas de vecinos y puerta abierta. */
+.vecinos { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.vecino { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border-radius: 18px; background: color-mix(in oklab, var(--bosque-alto) 92%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 14%, transparent); }
+.vecino.puerta { border-color: #ffb27a; }
+.vecino p { margin: 0; }
+.vecino-cabeza { display: flex; align-items: center; gap: 12px; }
+.vecino-cabeza > div { display: flex; flex-direction: column; flex: 1; }
+.vecino-cabeza strong { font-size: 19px; }
+.vecino-cabeza span { color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 15px; }
+.vecino-inicial { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 18px; color: var(--bosque); background: var(--lima); }
+.frase { font-family: var(--font-serif, Fraunces, serif); font-size: 19px; line-height: 1.4; }
+.en-comun { color: var(--lima); }
+.puerta-abierta { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: color-mix(in oklab, #ffb27a 22%, transparent); color: #ffcfa8; border: 1px solid color-mix(in oklab, #ffb27a 50%, transparent); }
