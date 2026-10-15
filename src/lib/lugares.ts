@@ -3,6 +3,7 @@
 // La celda H3 de ~1 km sale del catálogo de barrios; nunca hay dirección ni coordenadas (regla 1).
 import barriosJson from './colombia/barrios-medellin.json';
 import { municipioPorCodigo } from './registro';
+import { MAX_CUPO_PLAN } from './organizaciones';
 
 export const MEDELLIN = '05001';
 export const MAX_LUGARES = 5;
@@ -66,7 +67,7 @@ export type EntradaPlan = { titulo: string; descripcion?: string; cuando: string
 export type ErroresPlan = Partial<Record<keyof EntradaPlan, string>>;
 const DIAS_MAXIMOS = 60;
 
-export function validarPlan(entrada: Partial<EntradaPlan>, ahora: Date): { ok: true; plan: Required<Omit<EntradaPlan, 'cuando'>> & { cuando: Date; celda: string | null } } | { ok: false; errores: ErroresPlan } {
+export function validarPlan(entrada: Partial<EntradaPlan>, ahora: Date, { maxCupo = MAX_CUPO_PLAN } = {}): { ok: true; plan: Required<Omit<EntradaPlan, 'cuando'>> & { cuando: Date; celda: string | null } } | { ok: false; errores: ErroresPlan } {
   const errores: ErroresPlan = {};
   const limpio = (t?: string) => (t ?? '').trim().replace(/\s+/g, ' ');
   const titulo = limpio(entrada.titulo);
@@ -88,7 +89,7 @@ export function validarPlan(entrada: Partial<EntradaPlan>, ahora: Date): { ok: t
   // Sin barrio no hay celda: el plan solo puede llegar a toda la ciudad.
   if (alcance !== 'ciudad' && !barrio) errores.alcance = hayBarrios(ciudad) ? 'Elige el barrio del lugar para que llegue a quienes viven cerca.' : 'En esta ciudad, por ahora, los planes llegan a toda la ciudad.';
   const cupo = entrada.cupo ?? null;
-  if (cupo !== null && (!Number.isInteger(cupo) || cupo < 2 || cupo > 30)) errores.cupo = 'El cupo va de 2 a 30 personas.';
+  if (cupo !== null && (!Number.isInteger(cupo) || cupo < 2 || cupo > maxCupo)) errores.cupo = `El cupo va de 2 a ${maxCupo} personas.`;
   const tipo: Tipo = tipos.includes(entrada.tipo as Tipo) ? entrada.tipo as Tipo : 'otro';
   const repite: Repite = entrada.repite === 'semanal' ? 'semanal' : null;
   if (Object.keys(errores).length) return { ok: false, errores };
@@ -97,7 +98,7 @@ export function validarPlan(entrada: Partial<EntradaPlan>, ahora: Date): { ok: t
 
 // ---- Planes de barrio (12 de octubre): cerca, gratis o casi, cortos y algo que harías igual ----
 // Plantillas de tres toques. El texto dice «voy a…», no «organizo…»: si nadie se suma, igual lo hiciste.
-export type Tipo = 'caminar' | 'tinto' | 'huerta' | 'ajedrez' | 'tejer' | 'mandados' | 'otro';
+export type Tipo = 'caminar' | 'tinto' | 'huerta' | 'ajedrez' | 'tejer' | 'mandados' | 'voluntariado' | 'otro';
 export const plantillas: { tipo: Exclude<Tipo, 'otro'>; nombre: string; titulo: string; lugar: string }[] = [
   { tipo: 'caminar', nombre: 'Caminar', titulo: 'Voy a caminar, ¿alguien viene?', lugar: 'Un parque cercano' },
   { tipo: 'tinto', nombre: 'Un tinto', titulo: 'Voy por un tinto, ¿me acompañas?', lugar: 'Una panadería o un café' },
@@ -105,6 +106,7 @@ export const plantillas: { tipo: Exclude<Tipo, 'otro'>; nombre: string; titulo: 
   { tipo: 'ajedrez', nombre: 'Ajedrez o parqués', titulo: 'Voy a jugar en el parque, ¿una partida?', lugar: 'Las mesas del parque' },
   { tipo: 'tejer', nombre: 'Tejer', titulo: 'Voy a tejer un rato, ¿quién se suma?', lugar: 'La biblioteca del barrio' },
   { tipo: 'mandados', nombre: 'Mandados', titulo: 'Voy a hacer mandados, ¿alguien me acompaña?', lugar: 'La plaza de mercado' },
+  { tipo: 'voluntariado', nombre: 'Echar una mano', titulo: 'Voy a sembrar unos árboles, ¿alguien se suma?', lugar: 'El parque del barrio' },
 ];
 export const tipos: Tipo[] = [...plantillas.map(p => p.tipo), 'otro'];
 export const nombreTipo = (tipo: Tipo) => plantillas.find(p => p.tipo === tipo)?.nombre.toLowerCase() ?? 'otros planes';

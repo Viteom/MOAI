@@ -3,17 +3,20 @@
 import type { Canal, EntradaRegistro, Errores } from './registro';
 import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo } from './lugares';
 import type { MotivoReporte } from './moai';
+import type { TipoOrganizacion } from './organizaciones';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
 export type Paso = "pending" | "completed" | "skipped";
 // Un lugar guardado. `zona` es el nombre legible («Laureles, Medellín»); la celda nunca sale del servidor.
 export type Lugar = { id: string; nombre: string; ciudad: string; barrio: string | null; zona: string; activo: boolean };
-export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: Paso; lugar: Lugar | null };
+// `equipo`: la persona revisa reportes y entidades. `organizaciones`: entidades a nombre de las que puede convocar.
+export type OrganizacionPropia = { id: string; nombre: string; tipo: TipoOrganizacion };
+export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: Paso; lugar: Lugar | null; equipo?: boolean; organizaciones?: OrganizacionPropia[] };
 // Un plan visto por alguien: la distancia va por franjas («A menos de 2 km»), nunca exacta.
 export type Plan = {
   id: string; titulo: string; descripcion: string; cuando: string; lugarPublico: string; zona: string; franja: string; alcance: Alcance;
-  tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; autorRef?: string; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
+  tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; autorRef?: string; organizacion?: { nombre: string; tipo: TipoOrganizacion }; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
 };
 // `cuando` es la próxima ocurrencia (en los planes semanales, la de esta semana o la siguiente).
 export type Mensaje = { id: string; autor: string; mio: boolean; texto: string; creado: string };
@@ -35,6 +38,14 @@ export type Invitacion =
   | { id: string; tipo: 'aprobar'; de: string; nombre: string; persona: string };
 export type Gente = { encuentros: Encuentro[]; conocidos: Conocido[]; moais: MoaiResumen[]; invitaciones: Invitacion[]; pausa: boolean };
 export type Reporte = { ref: string; motivo: MotivoReporte; detalle?: string; bloquear?: boolean };
+// Solo para el equipo: una persona reportada y sus reportes.
+export type CasoReporte = {
+  cuenta: string; nombre: string; correo: string; suspendida: boolean; pausa: boolean; pendientes: number;
+  reportes: { id: string; de: string; motivo: string; detalle: string; fecha: string; revisado: boolean; decision: string | null }[];
+};
+export type Decision = 'sin_medidas' | 'suspender' | 'reactivar';
+export type OrganizacionEquipo = { id: string; nombre: string; tipo: TipoOrganizacion; activa: boolean; responsables: string[] };
+export type EntradaOrganizacion = { nombre: string; tipo: TipoOrganizacion | ''; responsable: string };
 export type Preferencias = { sugerencias: boolean; gustos: Tipo[]; resumenSemanal: boolean };
 // El mapa de la comunidad: hexágonos a dos anillos de tu zona y las luces de los planes, en metros relativos a tu zona.
 export type Mapa = { disponible: false } | { disponible: true; celdas: { id?: string; x: number; y: number; anillo: number; puntos: [number, number][] }[]; planes: { id: string; x: number; y: number }[] };
@@ -72,7 +83,7 @@ export const api = {
   activarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}/activar`, {}),
   borrarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}`, undefined, 'DELETE'),
   planes: () => llamar<Plan[]>('planes'),
-  crearPlan: (plan: EntradaPlan) => llamar<Plan[]>('planes', plan),
+  crearPlan: (plan: EntradaPlan & { organizacion?: string | null }) => llamar<Plan[]>('planes', plan),
   irAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/ir`, {}),
   noIrAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/no-ir`, {}),
   cancelarPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/cancelar`, {}),
@@ -96,6 +107,11 @@ export const api = {
   enviarMensajeMoai: (id: string, texto: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`, { texto }),
   bloquear: (ref: string) => llamar<Gente>('personas/bloquear', { ref }),
   reportar: (reporte: Reporte) => llamar<Gente>('personas/reportar', reporte),
+  casos: () => llamar<CasoReporte[]>('equipo/casos'),
+  decidirCaso: (cuenta: string, decision: Decision) => llamar<CasoReporte[]>(`equipo/casos/${encodeURIComponent(cuenta)}`, { decision }),
+  organizaciones: () => llamar<OrganizacionEquipo[]>('equipo/organizaciones'),
+  crearOrganizacion: (o: EntradaOrganizacion) => llamar<OrganizacionEquipo[]>('equipo/organizaciones', o),
+  activarOrganizacion: (id: string, activa: boolean) => llamar<OrganizacionEquipo[]>(`equipo/organizaciones/${encodeURIComponent(id)}/activa`, { activa }),
   salir: () => llamar<{ ok: true }>('salir', {}),
 };
 export type Api = typeof api;

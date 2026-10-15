@@ -9,6 +9,8 @@ import { MINUTOS_VIGENCIA, type Proposito, type Vias } from './envios';
 import { aLugar, registrarComunidad } from './comunidad';
 import { registrarMoais } from './moais';
 import { crearRefs } from './personas';
+import { organizacionesDe, registrarEquipo } from './equipo';
+import { RESPONSABLE } from '../src/lib/legal';
 import { validarLugar } from '../src/lib/lugares';
 import type { Db } from './db';
 
@@ -17,8 +19,9 @@ const DIAS_SESION = 30;
 const ENVIOS_POR_HORA = 5;
 const INTENTOS_POR_CODIGO = 5;
 
-type Opciones = { db: Db; vias: Vias; secreto: string; produccion?: boolean; ahora?: () => Date };
-type Cuenta = { id: string; nombre: string; verificada_en: string | null };
+// `equipo`: correos de las personas del equipo de MOAI que revisan reportes y dan de alta entidades (EQUIPO_CORREOS).
+type Opciones = { db: Db; vias: Vias; secreto: string; produccion?: boolean; ahora?: () => Date; equipo?: string[] };
+type Cuenta = { id: string; nombre: string; verificada_en: string | null; suspendida_en: string | null };
 class Limite extends Error {}
 
 const mensajes = {
@@ -28,13 +31,16 @@ const mensajes = {
   bloqueado: 'Hubo demasiados intentos con este código. Pide uno nuevo.',
   destino: 'Revisa tu correo o tu número.',
   sinWhatsapp: 'WhatsApp todavía no está disponible. Por ahora, usa tu correo.',
+  suspendida: `Tu cuenta está suspendida porque recibimos reportes sobre ella. Si crees que es un error, escríbenos a ${RESPONSABLE.correo}.`,
 };
 
-export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date() }: Opciones) {
+export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date(), equipo = [] }: Opciones) {
   const app = Fastify({ logger: false, bodyLimit: 16 * 1024 });
   await app.register(cookie);
   const hmac = (valor: string) => createHmac('sha256', secreto).update(valor).digest('hex');
   const sha = (valor: string) => createHash('sha256').update(valor).digest('hex');
+  const correosEquipo = new Set(equipo.map(c => c.trim().toLowerCase()).filter(Boolean));
+  const esEquipo = (destino: string) => correosEquipo.has(destino.toLowerCase());
 
   async function enviarCodigo(canal: Canal, destino: string, proposito: Proposito) {
     const [{ total }] = await db.query<{ total: number }>(
@@ -78,21 +84,23 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   }
 
   const cuentaPorDestino = async (destino: string) =>
-    (await db.query<Cuenta>('select id, nombre, verificada_en from cuentas where destino = $1', [destino]))[0];
+    (await db.query<Cuenta>('select id, nombre, verificada_en, suspendida_en from cuentas where destino = $1', [destino]))[0];
 
   // Lo que el frontend necesita para saber qué paso falta (docs/09, apartado 5).
   const perfilDe = async (id: string): Promise<Perfil> => {
-    const [c] = await db.query<{ nombre: string; fecha_nacimiento: string | null; comunidad_estado: Paso }>(
-      'select nombre, fecha_nacimiento, comunidad_estado from cuentas where id = $1', [id]);
+    const [c] = await db.query<{ nombre: string; fecha_nacimiento: string | null; comunidad_estado: Paso; destino: string }>(
+      'select nombre, fecha_nacimiento, comunidad_estado, destino from cuentas where id = $1', [id]);
+    const organizaciones = await organizacionesDe(db, id);
     const [lugar] = await db.query<{ id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean }>(
       'select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [id]);
-    return { nombre: c.nombre, nacimientoPendiente: !c.fecha_nacimiento, comunidad: c.comunidad_estado, lugar: lugar ? aLugar(lugar) : null };
+    return { nombre: c.nombre, nacimientoPendiente: !c.fecha_nacimiento, comunidad: c.comunidad_estado, lugar: lugar ? aLugar(lugar) : null,
+      ...(esEquipo(c.destino) ? { equipo: true } : {}), ...(organizaciones.length ? { organizaciones } : {}) };
   };
   const cuentaDeSesion = async (request: FastifyRequest) => {
     const token = request.cookies[COOKIE_SESION];
     if (!token) return null;
     const [fila] = await db.query<{ id: string }>(
-      'select c.id from sesiones s join cuentas c on c.id = s.cuenta_id where s.token_hash = $1 and s.vence_en > now()', [sha(token)]);
+      'select c.id from sesiones s join cuentas c on c.id = s.cuenta_id where s.token_hash = $1 and s.vence_en > now() and c.suspendida_en is null', [sha(token)]);
     return fila?.id ?? null;
   };
 
@@ -130,6 +138,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     if (!destino || !codigoValido(codigo)) return reply.code(400).send({ error: mensajes.codigo });
     const cuenta = await cuentaPorDestino(destino);
     if (!cuenta) return reply.code(400).send({ error: mensajes.codigo });
+    if (cuenta.suspendida_en) return reply.code(403).send({ error: mensajes.suspendida, suspendida: true });
     const resultado = await comprobarCodigo(canal, destino, codigo);
     if (resultado === 'bloqueado') return reply.code(429).send({ error: mensajes.bloqueado });
     if (resultado === 'invalido') return reply.code(400).send({ error: mensajes.codigo });
@@ -186,6 +195,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   const refs = crearRefs(secreto);
   registrarComunidad(app, db, cuentaDeSesion, ahora, refs);
   registrarMoais(app, db, cuentaDeSesion, ahora, refs);
+  registrarEquipo(app, db, cuentaDeSesion, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
 
   app.post('/api/salir', async (request, reply) => {
     const token = request.cookies[COOKIE_SESION];

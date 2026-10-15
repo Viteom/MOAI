@@ -11,11 +11,14 @@ import type { Db } from './db';
 import { enPausa, type Refs } from './personas';
 import { cartasDeGente } from './moais';
 import { mensajePausa } from '../src/lib/moai';
+import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
+import { organizacionesDe } from './equipo';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
 type FilaPlan = {
   id: string; autor_id: string; autor: string; titulo: string; descripcion: string; cuando: string; lugar_publico: string; ciudad: string;
   barrio: string | null; celda: string | null; alcance: string; cupo: number | null; tipo: Tipo; repite: Repite;
+  org_nombre?: string | null; org_tipo?: TipoOrganizacion | null;
 };
 const ZONA_HORARIA = 'America/Bogota';
 const MAX_MENSAJE = 500;
@@ -49,9 +52,10 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?:
   if (!lugar) return null;
   const filas = await db.query<FilaPlan>(
     `select p.id, p.autor_id, split_part(c.nombre, ' ', 1) as autor, p.titulo, p.descripcion, p.cuando, p.lugar_publico, p.ciudad, p.barrio, p.celda,
-            p.alcance, p.cupo, p.tipo, p.repite
-     from planes p join cuentas c on c.id = p.autor_id
+            p.alcance, p.cupo, p.tipo, p.repite, o.nombre as org_nombre, o.tipo as org_tipo
+     from planes p join cuentas c on c.id = p.autor_id left join organizaciones o on o.id = p.organizacion_id
      where p.ciudad = $1 and p.cancelado_en is null and (p.repite is not null or p.cuando > $2)
+       and c.suspendida_en is null and (p.organizacion_id is null or o.activa)
        and not exists (select 1 from bloqueos b where (b.de = $3 and b.a = p.autor_id) or (b.de = p.autor_id and b.a = $3))`, [lugar.ciudad, ahora, cuenta]);
   const planes: Plan[] = [];
   for (const p of filas) {
@@ -67,7 +71,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?:
     planes.push({
       id: p.id, titulo: p.titulo, descripcion: p.descripcion, cuando: proxima.toISOString(), lugarPublico: p.lugar_publico,
       zona: nombreDeZona(p.ciudad, p.barrio), franja: franja(distancia), alcance: p.alcance as Plan['alcance'], tipo: p.tipo,
-      repite: p.repite, diaRepite: p.repite ? enPlural(dia(proxima)) : null, autor: mio ? 'Tú' : p.autor, autorRef: mio || !refs ? undefined : refs.ref(cuenta, p.autor_id), mio, voy,
+      repite: p.repite, diaRepite: p.repite ? enPlural(dia(proxima)) : null, autor: p.org_nombre ?? (mio ? 'Tú' : p.autor), organizacion: p.org_nombre && p.org_tipo ? { nombre: p.org_nombre, tipo: p.org_tipo } : undefined, autorRef: mio || !refs ? undefined : refs.ref(cuenta, p.autor_id), mio, voy,
       lleno: p.cupo !== null && van.length >= p.cupo,
       // Quién va: solo lo ve quien propuso el plan, y solo los primeros nombres (sin contadores, regla 5).
       asistentes: mio ? van.map(v => v.nombre) : undefined,
@@ -181,12 +185,15 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   app.post('/api/planes', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     if (await enPausa(db, id, ahora())) return reply.code(403).send({ error: mensajePausa, pausa: true });
-    const resultado = validarPlan((request.body ?? {}) as Partial<EntradaPlan>, ahora());
+    // Convocatoria: solo quien es responsable de una entidad activa puede publicar a su nombre.
+    const organizacion = (request.body as { organizacion?: string | null } | undefined)?.organizacion ?? null;
+    if (organizacion && !(await organizacionesDe(db, id)).some(o => o.id === organizacion)) return reply.code(403).send({ error: 'No puedes publicar a nombre de esa entidad.' });
+    const resultado = validarPlan((request.body ?? {}) as Partial<EntradaPlan>, ahora(), { maxCupo: organizacion ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN });
     if (!resultado.ok) return reply.code(400).send({ errores: resultado.errores });
     const p = resultado.plan;
     await db.query(
-      `insert into planes (autor_id, titulo, descripcion, cuando, lugar_publico, ciudad, barrio, celda, alcance, cupo, tipo, repite) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-      [id, p.titulo, p.descripcion, p.cuando, p.lugarPublico, p.ciudad, p.barrio, p.celda, p.alcance, p.cupo, p.tipo, p.repite]);
+      `insert into planes (autor_id, titulo, descripcion, cuando, lugar_publico, ciudad, barrio, celda, alcance, cupo, tipo, repite, organizacion_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [id, p.titulo, p.descripcion, p.cuando, p.lugarPublico, p.ciudad, p.barrio, p.celda, p.alcance, p.cupo, p.tipo, p.repite, organizacion]);
     return listaDePlanes(id);
   });
 

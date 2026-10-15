@@ -164,6 +164,21 @@ create table if not exists reportes (
   creado_en timestamptz not null default now(),
   revisado_en timestamptz
 );
+alter table reportes add column if not exists decision text;
+alter table cuentas add column if not exists suspendida_en timestamptz;
+create table if not exists organizaciones (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  tipo text not null check (tipo in ('publica', 'privada', 'comunitaria')),
+  activa boolean not null default true,
+  creada_en timestamptz not null default now()
+);
+create table if not exists organizacion_responsables (
+  organizacion_id uuid not null references organizaciones(id) on delete cascade,
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  primary key (organizacion_id, cuenta_id)
+);
+alter table planes add column if not exists organizacion_id uuid references organizaciones(id) on delete cascade;
 `;
 
 export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {

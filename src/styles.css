@@ -680,3 +680,21 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .personas li > strong { flex: 1 1 140px; font-size: 19px; }
 .personas li > form, .personas li > .diario-aviso { flex-basis: 100%; }
 .reportar { margin-top: 8px; }
+
+/* Convocatorias de entidades: una luz cálida, distinta de los planes entre vecinos. */
+.pin-ciudad { --pin: #ffb27a; }
+.mapa-leyenda .luz-ciudad { background: #ffb27a; }
+.plan-autor.convoca { color: #ffcfa8; font-weight: 600; }
+
+/* Equipo de MOAI: casos de reportes y entidades. */
+.diario-contenido > .modo { align-self: flex-start; margin: 0 0 8px; }
+.caso-estado { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.reportes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.reportes li { padding: 10px 14px; border-left: 3px solid #ffb27a; background: color-mix(in oklab, var(--bosque) 60%, transparent); border-radius: 8px; }
+.reportes li.revisado { border-left-color: color-mix(in oklab, var(--niebla) 30%, transparent); opacity: .75; }
+.reportes p { margin: 0; }
+.reporte-detalle { margin-top: 4px !important; font-style: italic; }
+.lugares li.pausada { opacity: .7; }
+
+/* En modo lista el encabezado queda pegado arriba: necesita fondo para no superponerse al contenido al desplazar. */
+.comunidad:not(.en-mapa) .comunidad-cabecera { background: color-mix(in oklab, oklch(.15 .025 172) 94%, transparent); backdrop-filter: blur(14px); max-width: none; }

@@ -28,9 +28,9 @@ async function encuentrosPendientes(db: Db, cuenta: string, ahora: Date): Promis
      select m.plan_id, m.ocurrencia, p.titulo, x.persona, split_part(c.nombre, ' ', 1) as nombre
      from mias m
      join planes p on p.id = m.plan_id
-     join lateral (select p.autor_id as persona union select a.cuenta_id from asistencias a where a.plan_id = m.plan_id and a.ocurrencia = m.ocurrencia) x on true
+     join lateral (select p.autor_id as persona where p.organizacion_id is null union select a.cuenta_id from asistencias a where a.plan_id = m.plan_id and a.ocurrencia = m.ocurrencia) x on true
      join cuentas c on c.id = x.persona
-     where m.ocurrencia <= $2 and m.ocurrencia > $2::timestamptz - make_interval(days => $3)
+     where m.ocurrencia <= $2 and c.suspendida_en is null and m.ocurrencia > $2::timestamptz - make_interval(days => $3)
        and (p.cancelado_en is null or p.cancelado_en > m.ocurrencia)
        and x.persona <> $1
        and not exists (select 1 from nos_vimos n where n.de = $1 and n.a = x.persona and n.plan_id = m.plan_id and n.ocurrencia = m.ocurrencia)

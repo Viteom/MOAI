@@ -29,7 +29,7 @@ export function CapaLuces({ luces, porId, elegido, onElegir }: { luces: Proyecta
     {luces.map(l => {
       const plan = porId.get(l.id);
       if (!plan) return null;
-      const pin = plan.voy || plan.mio ? 'mia' : plan.repite ? 'semanal' : 'semana';
+      const pin = plan.voy || plan.mio ? 'mia' : plan.organizacion ? 'ciudad' : plan.repite ? 'semanal' : 'semana';
       return <button key={l.id} type="button" className={`mapa-luz maqueta-pin pin-${pin}`} style={{ left: l.x, top: l.y }} aria-pressed={elegido === l.id}
         aria-label={`${plan.titulo} · ${cuandoCorto(plan)} · ${plan.lugarPublico} · ${plan.franja}`} onClick={() => onElegir(elegido === l.id ? null : l.id)}/>;
     })}

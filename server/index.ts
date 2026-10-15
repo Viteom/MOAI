@@ -16,6 +16,7 @@ const app = await crearApp({
   vias,
   secreto: process.env.CODIGO_SECRETO ?? randomBytes(32).toString('hex'),
   produccion,
+  equipo: (process.env.EQUIPO_CORREOS ?? '').split(','),
 });
 const port = Number(process.env.PORT ?? 8787);
 await app.listen({ port, host: produccion ? '0.0.0.0' : '127.0.0.1' });

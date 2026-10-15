@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { alcances, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
 import type { Api, Carta, Lugar, Mapa, Mensaje, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
 import { ChevronDown, Menu as Menu2, Pencil } from 'lucide-react';
-import { TarjetaMapa } from './mapa';
+import { quienPropone, TarjetaMapa } from './mapa';
+import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, nombreTipoOrganizacion } from '@/lib/organizaciones';
 import { BarrioIlustrado } from './barrio';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { OrbeBrisa } from './bosque';
@@ -32,7 +33,7 @@ function DatosPlan({ plan }: { plan: Plan }) {
     <p className="plan-cuando">{cuandoPlan(plan)}</p>
     {plan.descripcion && <p>{plan.descripcion}</p>}
     <p className="plan-donde">{plan.lugarPublico} · {plan.zona} · {plan.franja}</p>
-    <p className="plan-autor">{plan.mio ? 'Lo propusiste tú' : `Lo propone ${plan.autor}`}</p>
+    <p className={`plan-autor${plan.organizacion ? ' convoca' : ''}`}>{quienPropone(plan)}</p>
     {plan.mio && plan.asistentes && <p className="plan-autor">{plan.asistentes.length ? `Van: ${plan.asistentes.join(', ')}` : 'Si alguien se suma, te lo contaré aquí.'}</p>}
   </>;
 }
@@ -82,7 +83,7 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
   </div>;
 }
 
-function Menu({ ir, onSalir }: { ir: Ir; onSalir: () => void }) {
+function Menu({ ir, onSalir, equipo }: { ir: Ir; onSalir: () => void; equipo?: boolean }) {
   const [abierto, setAbierto] = useState(false);
   return <div className="selector-lugar-caja">
     <button type="button" className="menu-boton" aria-expanded={abierto} aria-label="Más opciones" onClick={() => setAbierto(a => !a)}><Menu2 aria-hidden="true"/></button>
@@ -91,6 +92,7 @@ function Menu({ ir, onSalir }: { ir: Ir; onSalir: () => void }) {
       <li><button type="button" onClick={() => ir('/lugares')}>Mis lugares</button></li>
       <li><button type="button" onClick={() => ir('/avisos')}>Avisos</button></li>
       <li><button type="button" onClick={() => ir('/ciudad')}>Mi ciudad</button></li>
+      {equipo && <li><button type="button" onClick={() => ir('/equipo')}>Equipo de MOAI</button></li>}
       <li><button type="button" onClick={onSalir}>Cerrar sesión</button></li>
     </ul>}
   </div>;
@@ -135,7 +137,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
         <button type="button" aria-pressed={modo === 'mapa'} onClick={() => setModo('mapa')}>Mapa</button>
         <button type="button" aria-pressed={modo === 'lista'} onClick={() => setModo('lista')}>Lista</button>
       </div>}
-      <Menu ir={ir} onSalir={onSalir}/>
+      <Menu ir={ir} onSalir={onSalir} equipo={perfil.equipo}/>
     </header>
 
     {perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>
@@ -148,6 +150,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
       {!planElegido && <div className="mapa-controles" data-reserva>
         <ul className="mapa-leyenda" aria-label="Qué significa cada luz">
           <li><span className="luz-semana"/>Esta semana</li><li><span className="luz-semanal"/>Cada semana</li><li><span className="luz-mia"/>Ya me sumé</li>
+          {planes?.some(p => p.organizacion) && <li><span className="luz-ciudad"/>Convocatorias</li>}
           {fueraDelMapa.length > 0 && <li><button type="button" className="mapa-mas" onClick={() => setModo('lista')}>Más en tu ciudad · Ver lista</button></li>}
         </ul>
         <Button className="diario-boton principal mapa-contar" onClick={() => ir('/planes/nuevo')}><Pencil aria-hidden="true"/>Contar qué voy a hacer</Button>
@@ -289,7 +292,9 @@ export function MisLugares({ api, ir, onSalir, onCambio }: { api: Api; ir: Ir; o
 // Contar qué voy a hacer: plantillas de tres toques y la opción de repetirlo cada semana.
 export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void }) {
   const ciudadInicial = perfil.lugar?.ciudad ?? '';
-  const [plan, setPlan] = useState({ titulo: '', descripcion: '', dia: '', hora: '', lugarPublico: '', ciudad: ciudadInicial, barrio: '', alcance: 'cerca' as Alcance, cupo: '', tipo: 'otro' as Tipo, semanal: false });
+  const [plan, setPlan] = useState({ titulo: '', descripcion: '', dia: '', hora: '', lugarPublico: '', ciudad: ciudadInicial, barrio: '', alcance: 'cerca' as Alcance, cupo: '', tipo: 'otro' as Tipo, semanal: false, organizacion: '' });
+  const organizaciones = perfil.organizaciones ?? [];
+  const convoca = organizaciones.find(o => o.id === plan.organizacion);
   const [sugerenciaLugar, setSugerenciaLugar] = useState('Por ejemplo, Parque de los Deseos');
   const [errores, setErrores] = useState<ErroresPlan>({});
   const [error, setError] = useState('');
@@ -300,21 +305,26 @@ export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: A
     e.preventDefault();
     if (enviando) return;
     const cuando = plan.dia && plan.hora ? new Date(`${plan.dia}T${plan.hora}`).toISOString() : '';
-    const entrada: EntradaPlan = { titulo: plan.titulo, descripcion: plan.descripcion, cuando, lugarPublico: plan.lugarPublico, ciudad: plan.ciudad, barrio: plan.barrio || null,
-      alcance: conBarrios ? plan.alcance : 'ciudad', cupo: plan.cupo ? Number(plan.cupo) : null, tipo: plan.tipo, repite: plan.semanal ? 'semanal' : null };
+    const entrada: EntradaPlan & { organizacion: string | null } = { titulo: plan.titulo, descripcion: plan.descripcion, cuando, lugarPublico: plan.lugarPublico, ciudad: plan.ciudad, barrio: plan.barrio || null,
+      alcance: conBarrios ? plan.alcance : 'ciudad', cupo: plan.cupo ? Number(plan.cupo) : null, tipo: plan.tipo, repite: plan.semanal ? 'semanal' : null, organizacion: convoca?.id ?? null };
     setEnviando(true);
     const r = await api.crearPlan(entrada);
     setEnviando(false);
     if (r.ok) ir('/comunidad'); else { setErrores((r.errores ?? {}) as ErroresPlan); setError(r.errores ? '' : r.error); }
   }
-  return <Diario titulo="Contar qué voy a hacer" bajada="Algo que harías de todas formas, cerca y sin mucha logística. Si alguien se suma, mejor; si no, igual lo disfrutas." ir={ir} actual="/planes/nuevo" onSalir={onSalir}>
+  return <Diario titulo={convoca ? `Convocar a nombre de ${convoca.nombre}` : 'Contar qué voy a hacer'} bajada={convoca ? 'Cuenta qué necesitan y cuántas personas buscan. Se verá con el nombre de la entidad.' : 'Algo que harías de todas formas, cerca y sin mucha logística. Si alguien se suma, mejor; si no, igual lo disfrutas.'} ir={ir} actual="/planes/nuevo" onSalir={onSalir}>
     <form className="cuenta-form diario-form" onSubmit={enviar} noValidate>
+      {organizaciones.length > 0 && <fieldset className="campo">
+        <legend>Publicar como</legend>
+        <label className="alcance"><input type="radio" name="publicar-como" checked={!convoca} onChange={() => cambiar({ organizacion: '' })}/><span><strong>Yo, {perfil.nombre.split(' ')[0]}</strong> · un plan entre vecinos</span></label>
+        {organizaciones.map(o => <label key={o.id} className="alcance"><input type="radio" name="publicar-como" checked={plan.organizacion === o.id} onChange={() => cambiar({ organizacion: o.id })}/><span><strong>{o.nombre}</strong> · {nombreTipoOrganizacion(o.tipo)}</span></label>)}
+      </fieldset>}
       <fieldset className="campo">
         <legend>Elige uno para empezar</legend>
         <div className="sugerencias">{plantillas.map(p => <button key={p.tipo} type="button" aria-pressed={plan.tipo === p.tipo}
           onClick={() => { cambiar({ tipo: p.tipo, titulo: p.titulo }); setSugerenciaLugar(`Por ejemplo, ${p.lugar.toLocaleLowerCase('es')}`); }}>{p.nombre}</button>)}</div>
       </fieldset>
-      <Campo etiqueta="¿Qué vas a hacer?" error={errores.titulo}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={80} placeholder="Por ejemplo, voy a caminar, ¿alguien viene?" value={plan.titulo} onChange={e => cambiar({ titulo: e.target.value })}/>}</Campo>
+      <Campo etiqueta={convoca ? '¿Qué necesitan?' : '¿Qué vas a hacer?'} error={errores.titulo}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={80} placeholder={convoca ? 'Por ejemplo, buscamos 5 personas para sembrar árboles' : 'Por ejemplo, voy a caminar, ¿alguien viene?'} value={plan.titulo} onChange={e => cambiar({ titulo: e.target.value })}/>}</Campo>
       <Campo etiqueta="Cuéntalo un poco más (opcional)" error={errores.descripcion}>{(id, d) => <textarea id={id} aria-describedby={d} className="cuenta-campo diario-textarea" maxLength={400} value={plan.descripcion} onChange={e => cambiar({ descripcion: e.target.value })}/>}</Campo>
       <div className="telefono">
         <Campo etiqueta="Día" error={errores.cuando}>{(id, d) => <input id={id} aria-describedby={d} type="date" className="cuenta-campo" value={plan.dia} onChange={e => cambiar({ dia: e.target.value })}/>}</Campo>
@@ -333,7 +343,7 @@ export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: A
         {!conBarrios && <p className="campo-ayuda">En esta ciudad, por ahora, los planes llegan a toda la ciudad.</p>}
         {errores.alcance && <p className="campo-error" role="alert">{errores.alcance}</p>}
       </fieldset>
-      <Campo etiqueta="Cupo (opcional)" error={errores.cupo} ayuda="Si lo dejas vacío, puede ir quien quiera.">{(id, d) => <input id={id} aria-describedby={d} type="number" min={2} max={30} inputMode="numeric" className="cuenta-campo diario-corto" value={plan.cupo} onChange={e => cambiar({ cupo: e.target.value })}/>}</Campo>
+      <Campo etiqueta="Cupo (opcional)" error={errores.cupo} ayuda={convoca ? `Cuántas personas buscan, hasta ${MAX_CUPO_CONVOCATORIA}. Si lo dejas vacío, puede ir quien quiera.` : 'Si lo dejas vacío, puede ir quien quiera.'}>{(id, d) => <input id={id} aria-describedby={d} type="number" min={2} max={convoca ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN} inputMode="numeric" className="cuenta-campo diario-corto" value={plan.cupo} onChange={e => cambiar({ cupo: e.target.value })}/>}</Campo>
       {error && <p className="campo-error" role="alert">{error}</p>}
       <div className="diario-acciones">
         <Button type="submit" className="diario-boton principal" disabled={enviando}>{enviando ? 'Publicando…' : 'Publicar'}</Button>

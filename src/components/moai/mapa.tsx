@@ -5,6 +5,12 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, MapPin, Navigation, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Mapa, Plan } from '@/lib/api';
+import { nombreTipoOrganizacion } from '@/lib/organizaciones';
+
+// Quién está detrás de un plan: una persona o, en las convocatorias, una entidad verificada por el equipo.
+export const quienPropone = (plan: Plan) => plan.organizacion
+  ? (plan.mio ? `Lo publicaste a nombre de ${plan.organizacion.nombre}` : `Convoca ${plan.organizacion.nombre} · ${nombreTipoOrganizacion(plan.organizacion.tipo)}`)
+  : plan.mio ? 'Lo propusiste tú' : `Lo propone ${plan.autor}`;
 
 type Disponible = Extract<Mapa, { disponible: true }>;
 const MARGEN = 260; // metros alrededor del tablero
@@ -115,7 +121,7 @@ export function TarjetaMapa({ plan, onCerrar, onIr, onNoIr, onAbrir }: { plan: P
     <p><CalendarDays aria-hidden="true"/>{cuandoCorto(plan)}</p>
     <p><MapPin aria-hidden="true"/>Lugar público: {plan.lugarPublico}</p>
     <p><Navigation aria-hidden="true"/>{plan.franja}</p>
-    <p className="mapa-tarjeta-autor">{plan.mio ? 'Lo propusiste tú' : `Lo propone ${plan.autor}`}</p>
+    <p className="mapa-tarjeta-autor">{quienPropone(plan)}</p>
     {plan.mio ? <Button className="diario-boton principal mapa-tarjeta-boton" onClick={onAbrir}>Ver mi plan</Button>
       : plan.voy ? <div className="plan-acciones"><span className="plan-voy">Vas a ir</span><Button className="diario-boton" onClick={onNoIr}>Ya no voy</Button></div>
       : plan.lleno ? <p className="plan-voy">Completo</p>
