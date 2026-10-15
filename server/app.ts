@@ -7,6 +7,8 @@ import { codigoValido, enmascarar, normalizarDestino, validarNacimiento, validar
 import type { Paso, Perfil } from '../src/lib/api';
 import { MINUTOS_VIGENCIA, type Proposito, type Vias } from './envios';
 import { aLugar, registrarComunidad } from './comunidad';
+import { registrarMoais } from './moais';
+import { crearRefs } from './personas';
 import { validarLugar } from '../src/lib/lugares';
 import type { Db } from './db';
 
@@ -181,7 +183,9 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     return perfilDe(id);
   });
 
-  registrarComunidad(app, db, cuentaDeSesion, ahora);
+  const refs = crearRefs(secreto);
+  registrarComunidad(app, db, cuentaDeSesion, ahora, refs);
+  registrarMoais(app, db, cuentaDeSesion, ahora, refs);
 
   app.post('/api/salir', async (request, reply) => {
     const token = request.cookies[COOKIE_SESION];

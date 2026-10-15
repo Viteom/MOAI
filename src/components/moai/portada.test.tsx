@@ -56,6 +56,17 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     preferencias: vi.fn(async () => ({ ok: true as const, datos: { sugerencias: false, gustos: [], resumenSemanal: false } })),
     guardarPreferencias: vi.fn(async (p) => ({ ok: true as const, datos: p })),
     mapa: vi.fn(async () => ({ ok: true as const, datos: { disponible: false as const } })),
+    gente: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    nosVimos: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    proponerMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    invitarAMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    responderInvitacion: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    renombrarMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    salirDeMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    mensajesMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    enviarMensajeMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    bloquear: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    reportar: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
   };
 }
 

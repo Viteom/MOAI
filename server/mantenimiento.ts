@@ -4,6 +4,7 @@
 import type { Db } from './db';
 import type { Correo, Recordar } from './envios';
 import { cuandoLegible, planesVisibles } from './comunidad';
+import { DIAS_MENSAJES_MOAI } from '../src/lib/moai';
 
 export const DIAS_PARA_VERIFICAR = 20;
 const HORAS_ENTRE_RECORDATORIOS = 84; // 3,5 días
@@ -59,9 +60,11 @@ export async function resumenSemanal(db: Db, correo: Correo, ahora: Date, urlApp
 }
 
 // Las conversaciones de los planes se borran 30 días después del plan (o de cancelarse).
+// La de cada Moai guarda solo los últimos 90 días.
 export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<void> {
   await db.query(
     `delete from plan_mensajes m using planes p where m.plan_id = p.id
        and ((p.repite is null and p.cuando < $1::timestamptz - interval '30 days')
          or (p.cancelado_en is not null and p.cancelado_en < $1::timestamptz - interval '30 days'))`, [ahora]);
+  await db.query(`delete from moai_mensajes where creado_en < $1::timestamptz - make_interval(days => $2)`, [ahora, DIAS_MENSAJES_MOAI]);
 }

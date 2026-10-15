@@ -673,3 +673,10 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .texto-legal p { margin: 0 0 8px; }
 .texto-legal ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
 .bosque-panel:has(.texto-legal) { width: min(720px, 100%); }
+
+/* Mi gente: personas, encuentros y Moais. */
+.personas { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.personas li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 18px; border-radius: 18px; background: color-mix(in oklab, var(--bosque-alto) 92%, transparent); border: 1px solid color-mix(in oklab, var(--niebla) 14%, transparent); }
+.personas li > strong { flex: 1 1 140px; font-size: 19px; }
+.personas li > form, .personas li > .diario-aviso { flex-basis: 100%; }
+.reportar { margin-top: 8px; }

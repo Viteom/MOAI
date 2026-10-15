@@ -37,6 +37,8 @@ Decidido por Mateo: la plataforma es web y horizontal primero, y el registro es 
 - **Planes de barrio (12 de octubre):** plantillas de tres toques («Voy a caminar, ¿alguien viene?»), planes semanales (sumarse vale para la próxima vez), conversación del plan solo para quienes van (Brisa no la lee; se borra a los 30 días), cartas de Brisa («fuiste por tu cuenta», sin culpas y sin inventar asistentes) y recomendaciones apagadas por defecto que solo usan los tipos de plan que la persona eligió en «Avisos», siempre con «¿Por qué veo esto?». Correo semanal opcional, máximo uno por semana y solo si hay planes. Brisa nunca deduce rutinas: solo recomienda planes que alguien publicó.
 - **Barrios de Medellín:** 349 barrios y veredas en `src/lib/colombia/barrios-medellin.json`, generados desde la capa de GeoMedellín con `node scripts/barrios-medellin.mjs archivo.geojson`. Confirmar la licencia de uso de la capa.
 - **Dirección para el primer día (Mateo):** nada de cuestionario. Brisa conversa como quien conoce a alguien: cómo va tu día, qué hiciste, y al otro día qué harías en tal caso. Los datos se llenan a medida que pasa la conversación, a lo largo de varios días.
+- **Mi gente y Moais (14 de octubre, decisión de Mateo):** después de cada plan se pregunta «¿Te viste con…?»; si las dos personas confirman, pueden formar un Moai (de 2 a 5), sin necesidad de un plan grande. Crece por invitación y entran solo si todos los miembros aceptan; nadie ve quién votó qué. Conversación del Moai: últimos 90 días. Código en `server/moais.ts`, `src/components/moai/gente.tsx` y reglas en `src/lib/moai.ts`. A otras personas se las nombra con referencias por cuenta (`server/personas.ts`), nunca con su identificador.
+- **Bloquear y reportar (14 de octubre):** nada de calificaciones visibles (regla 5). Bloquear oculta planes en las dos direcciones sin avisar. Reportar es privado; si dos personas distintas reportan a alguien en 90 días, su cuenta queda en pausa (no propone, no escribe, no invita) hasta una revisión humana. **Pendiente:** no hay todavía herramienta ni equipo para revisar reportes (`reportes.revisado_en`).
 - **Textos legales (14 de octubre):** borradores del equipo en `src/lib/legal.ts` (Términos y Política de tratamiento de datos, Ley 1581), escritos a partir del código. Faltan razón social, NIT y correo de contacto. Pasan al equipo jurídico antes de producción. Si cambia qué se guarda o cuánto dura, se actualizan y se sube `VERSION_TEXTOS`.
 
 ## Reglas que no se negocian
@@ -74,7 +76,7 @@ Antes de escribir código que toque datos de personas, lee `docs/` (en especial 
 
 **Modelo del grafo**
 - Anillos: RAIZ (familia y ancestros), TRONCO (la gente más cercana) y RAMA (conocidos queridos).
-- Un Moai es un grupo elegido por las personas (de tres a cinco). Una persona puede estar en varios Moais, y los grupos pueden solaparse.
+- Un Moai es un grupo elegido por las personas, de dos a cinco (decisión de Mateo, 14 de octubre de 2026: puede empezar entre dos y crecer). Una persona puede estar en varios Moais, y los grupos pueden solaparse.
 - La fuerza de un vínculo engrosa con las interacciones y se marchita solo en lo visual: se calcula al leer, nunca se borra (pasa a DORMIDO). RAIZ no se marchita.
 - La Polinización crea una RAMA con confianza inicial de 0,25. Subir a TRONCO exige la confirmación de ambas personas.
 - Louvain solo propone grupos; nunca asigna Moais.

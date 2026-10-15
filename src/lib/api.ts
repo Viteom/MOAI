@@ -2,6 +2,7 @@
 // (src/test/privacy.test.ts lo comprueba). Nada se guarda en el navegador: la sesión es una cookie httpOnly.
 import type { Canal, EntradaRegistro, Errores } from './registro';
 import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo } from './lugares';
+import type { MotivoReporte } from './moai';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
@@ -12,14 +13,28 @@ export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: 
 // Un plan visto por alguien: la distancia va por franjas («A menos de 2 km»), nunca exacta.
 export type Plan = {
   id: string; titulo: string; descripcion: string; cuando: string; lugarPublico: string; zona: string; franja: string; alcance: Alcance;
-  tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
+  tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; autorRef?: string; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
 };
 // `cuando` es la próxima ocurrencia (en los planes semanales, la de esta semana o la siguiente).
 export type Mensaje = { id: string; autor: string; mio: boolean; texto: string; creado: string };
 // Lo que Brisa le cuenta a la persona: «fuiste por tu cuenta» o una recomendación que ella pidió (regla 9).
 export type Carta =
   | { clave: string; tipo: 'solo'; planId: string; texto: string; repetir: boolean }
-  | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan };
+  | { clave: string; tipo: 'sugerencia'; planId: string; texto: string; motivo: string; plan: Plan }
+  | { clave: string; tipo: 'gente'; texto: string; motivo?: string };
+// Otra persona, vista por ti: `ref` es una referencia que solo sirve en tu cuenta (nunca su identificador).
+export type Persona = { ref: string; nombre: string };
+// «¿Te viste con…?» después de un plan al que fuiste o que propusiste.
+export type Encuentro = { planId: string; titulo: string; ocurrencia: string; personas: Persona[] };
+// Personas con las que las dos confirmaron «Ya nos vimos».
+export type Conocido = Persona & { moaiComun: boolean; propuesta: boolean };
+export type MoaiResumen = { id: string; nombre: string; miembros: (Persona & { yo: boolean })[]; esperando: string[] };
+export type Invitacion =
+  | { id: string; tipo: 'nuevo'; de: string; nombre: string }
+  | { id: string; tipo: 'entrar'; de: string; nombre: string; miembros: string[] }
+  | { id: string; tipo: 'aprobar'; de: string; nombre: string; persona: string };
+export type Gente = { encuentros: Encuentro[]; conocidos: Conocido[]; moais: MoaiResumen[]; invitaciones: Invitacion[]; pausa: boolean };
+export type Reporte = { ref: string; motivo: MotivoReporte; detalle?: string; bloquear?: boolean };
 export type Preferencias = { sugerencias: boolean; gustos: Tipo[]; resumenSemanal: boolean };
 // El mapa de la comunidad: hexágonos a dos anillos de tu zona y las luces de los planes, en metros relativos a tu zona.
 export type Mapa = { disponible: false } | { disponible: true; celdas: { id?: string; x: number; y: number; anillo: number; puntos: [number, number][] }[]; planes: { id: string; x: number; y: number }[] };
@@ -70,6 +85,17 @@ export const api = {
   mapa: () => llamar<Mapa>('mapa'),
   preferencias: () => llamar<Preferencias>('preferencias'),
   guardarPreferencias: (p: Preferencias) => llamar<Preferencias>('preferencias', p),
+  gente: () => llamar<Gente>('gente'),
+  nosVimos: (e: { planId: string; ocurrencia: string; ref: string; si: boolean }) => llamar<Gente>('gente/encuentro', e),
+  proponerMoai: (ref: string, nombre: string) => llamar<Gente>('moais', { ref, nombre }),
+  invitarAMoai: (id: string, ref: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/invitar`, { ref }),
+  responderInvitacion: (id: string, acepta: boolean) => llamar<Gente>(`invitaciones/${encodeURIComponent(id)}`, { acepta }),
+  renombrarMoai: (id: string, nombre: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/nombre`, { nombre }),
+  salirDeMoai: (id: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/salir`, {}),
+  mensajesMoai: (id: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`),
+  enviarMensajeMoai: (id: string, texto: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`, { texto }),
+  bloquear: (ref: string) => llamar<Gente>('personas/bloquear', { ref }),
+  reportar: (reporte: Reporte) => llamar<Gente>('personas/reportar', reporte),
   salir: () => llamar<{ ok: true }>('salir', {}),
 };
 export type Api = typeof api;

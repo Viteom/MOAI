@@ -8,6 +8,9 @@ import {
 } from '../src/lib/lugares';
 import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api';
 import type { Db } from './db';
+import { enPausa, type Refs } from './personas';
+import { cartasDeGente } from './moais';
+import { mensajePausa } from '../src/lib/moai';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
 type FilaPlan = {
@@ -40,14 +43,16 @@ const dia = (fecha: Date) =>new Intl.DateTimeFormat('es-CO', { weekday: 'long', 
 export const cuandoLegible = (fecha: Date) => new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: ZONA_HORARIA }).format(fecha);
 
 // Planes que ve una persona desde su lugar activo, con la próxima ocurrencia de cada uno.
-export async function planesVisibles(db: Db, cuenta: string, ahora: Date): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
+// Con `refs`, cada plan ajeno lleva una referencia a su autor para poder reportarlo o bloquearlo.
+export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?: Refs): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
   const [lugar] = await db.query<FilaLugar>('select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [cuenta]);
   if (!lugar) return null;
   const filas = await db.query<FilaPlan>(
     `select p.id, p.autor_id, split_part(c.nombre, ' ', 1) as autor, p.titulo, p.descripcion, p.cuando, p.lugar_publico, p.ciudad, p.barrio, p.celda,
             p.alcance, p.cupo, p.tipo, p.repite
      from planes p join cuentas c on c.id = p.autor_id
-     where p.ciudad = $1 and p.cancelado_en is null and (p.repite is not null or p.cuando > $2)`, [lugar.ciudad, ahora]);
+     where p.ciudad = $1 and p.cancelado_en is null and (p.repite is not null or p.cuando > $2)
+       and not exists (select 1 from bloqueos b where (b.de = $3 and b.a = p.autor_id) or (b.de = p.autor_id and b.a = $3))`, [lugar.ciudad, ahora, cuenta]);
   const planes: Plan[] = [];
   for (const p of filas) {
     const proxima = proximaOcurrencia(new Date(p.cuando), p.repite, ahora);
@@ -62,7 +67,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date): Promi
     planes.push({
       id: p.id, titulo: p.titulo, descripcion: p.descripcion, cuando: proxima.toISOString(), lugarPublico: p.lugar_publico,
       zona: nombreDeZona(p.ciudad, p.barrio), franja: franja(distancia), alcance: p.alcance as Plan['alcance'], tipo: p.tipo,
-      repite: p.repite, diaRepite: p.repite ? enPlural(dia(proxima)) : null, autor: mio ? 'Tú' : p.autor, mio, voy,
+      repite: p.repite, diaRepite: p.repite ? enPlural(dia(proxima)) : null, autor: mio ? 'Tú' : p.autor, autorRef: mio || !refs ? undefined : refs.ref(cuenta, p.autor_id), mio, voy,
       lleno: p.cupo !== null && van.length >= p.cupo,
       // Quién va: solo lo ve quien propuso el plan, y solo los primeros nombres (sin contadores, regla 5).
       asistentes: mio ? van.map(v => v.nombre) : undefined,
@@ -74,7 +79,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date): Promi
 
 // Lo que Brisa le cuenta a la persona en Mi comunidad. Nunca inventa asistentes ni deduce rutinas:
 // solo habla de planes que alguien publicó y de lo que la persona eligió (regla 9).
-export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date): Promise<Carta[]> {
+export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date, refs?: Refs): Promise<Carta[]> {
   const vistos = new Set((await db.query<{ clave: string }>('select clave from avisos_vistos where cuenta_id = $1', [cuenta])).map(v => v.clave));
   const cartas: Carta[] = [];
 
@@ -110,10 +115,12 @@ export async function cartasDeBrisa(db: Db, cuenta: string, ahora: Date): Promis
       });
     }
   }
+  // 3. Mi gente: encuentros por confirmar, invitaciones y, si la persona activó sugerencias, proponer un Moai.
+  if (refs) cartas.push(...await cartasDeGente(db, cuenta, ahora, refs, vistos, !!pref?.sugerencias));
   return cartas;
 }
 
-export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date) {
+export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, refs: Refs) {
   const conSesion = async (request: FastifyRequest, reply: FastifyReply) => {
     const id = await cuentaDeSesion(request);
     if (!id) void reply.code(401).send({ error: 'Sin sesión.' });
@@ -121,7 +128,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   };
   const lugaresDe = async (cuenta: string) => (await db.query<FilaLugar>(
     'select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 order by creado_en', [cuenta])).map(aLugar);
-  const listaDePlanes = async (cuenta: string) => (await planesVisibles(db, cuenta, ahora()))?.planes ?? [];
+  const listaDePlanes = async (cuenta: string) => (await planesVisibles(db, cuenta, ahora(), refs))?.planes ?? [];
 
   // ---- Lugares ----
   app.get('/api/lugares', async (request, reply) => {
@@ -160,7 +167,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   // ---- Planes ----
   app.get('/api/planes', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const visibles = await planesVisibles(db, id, ahora());
+    const visibles = await planesVisibles(db, id, ahora(), refs);
     if (!visibles) return reply.code(409).send({ error: 'Primero elige un lugar para ver planes cerca de ti.', sinLugar: true });
     return visibles.planes;
   });
@@ -173,6 +180,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
 
   app.post('/api/planes', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
+    if (await enPausa(db, id, ahora())) return reply.code(403).send({ error: mensajePausa, pausa: true });
     const resultado = validarPlan((request.body ?? {}) as Partial<EntradaPlan>, ahora());
     if (!resultado.ok) return reply.code(400).send({ errores: resultado.errores });
     const p = resultado.plan;
@@ -234,6 +242,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   app.post<{ Params: { plan: string } }>('/api/planes/:plan/mensajes', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     if (!(await puedeConversar(id, request.params.plan))) return reply.code(403).send({ error: 'Cuando te sumes al plan, podrás hablar con quienes van.' });
+    if (await enPausa(db, id, ahora())) return reply.code(403).send({ error: mensajePausa, pausa: true });
     const texto = String((request.body as { texto?: string } | undefined)?.texto ?? '').trim();
     if (!texto) return reply.code(400).send({ error: 'Escribe algo antes de enviar.' });
     if (texto.length > MAX_MENSAJE) return reply.code(400).send({ error: 'Ese mensaje es muy largo. Escríbelo en dos partes.' });
@@ -273,14 +282,14 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   // ---- Brisa y avisos ----
   app.get('/api/brisa', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    return cartasDeBrisa(db, id, ahora());
+    return cartasDeBrisa(db, id, ahora(), refs);
   });
 
   app.post('/api/brisa/visto', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     const clave = String((request.body as { clave?: string } | undefined)?.clave ?? '').slice(0, 200);
     if (clave) await db.query('insert into avisos_vistos (cuenta_id, clave) values ($1, $2) on conflict do nothing', [id, clave]);
-    return cartasDeBrisa(db, id, ahora());
+    return cartasDeBrisa(db, id, ahora(), refs);
   });
 
   const preferenciasDe = async (cuenta: string): Promise<Preferencias> => {

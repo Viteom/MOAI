@@ -107,6 +107,63 @@ create table if not exists sesiones (
   vence_en timestamptz not null,
   creada_en timestamptz not null default now()
 );
+create table if not exists nos_vimos (
+  de uuid not null references cuentas(id) on delete cascade,
+  a uuid not null references cuentas(id) on delete cascade,
+  plan_id uuid not null references planes(id) on delete cascade,
+  ocurrencia timestamptz not null,
+  si boolean not null,
+  creado_en timestamptz not null default now(),
+  primary key (de, a, plan_id, ocurrencia)
+);
+create table if not exists moais (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null,
+  creado_en timestamptz not null default now()
+);
+create table if not exists moai_miembros (
+  moai_id uuid not null references moais(id) on delete cascade,
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  unido_en timestamptz not null default now(),
+  primary key (moai_id, cuenta_id)
+);
+create table if not exists moai_invitaciones (
+  id uuid primary key default gen_random_uuid(),
+  moai_id uuid references moais(id) on delete cascade,
+  de uuid not null references cuentas(id) on delete cascade,
+  a uuid not null references cuentas(id) on delete cascade,
+  nombre text,
+  estado text not null default 'abierta' check (estado in ('abierta', 'aceptada', 'cerrada')),
+  creada_en timestamptz not null default now()
+);
+create table if not exists moai_votos (
+  invitacion_id uuid not null references moai_invitaciones(id) on delete cascade,
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  acepta boolean not null,
+  primary key (invitacion_id, cuenta_id)
+);
+create table if not exists moai_mensajes (
+  id bigserial primary key,
+  moai_id uuid not null references moais(id) on delete cascade,
+  autor_id uuid not null references cuentas(id) on delete cascade,
+  texto text not null,
+  creado_en timestamptz not null default now()
+);
+create table if not exists bloqueos (
+  de uuid not null references cuentas(id) on delete cascade,
+  a uuid not null references cuentas(id) on delete cascade,
+  creado_en timestamptz not null default now(),
+  primary key (de, a)
+);
+create table if not exists reportes (
+  id bigserial primary key,
+  de uuid not null references cuentas(id) on delete cascade,
+  a uuid not null references cuentas(id) on delete cascade,
+  motivo text not null,
+  detalle text not null default '',
+  creado_en timestamptz not null default now(),
+  revisado_en timestamptz
+);
 `;
 
 export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {

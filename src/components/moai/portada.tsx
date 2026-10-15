@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { api as apiReal, type Api, type Contacto, type Envio, type Perfil, type Respuesta } from '@/lib/api';
-import { resolverRuta, rutaDePlan, useRuta, type Sesion } from '@/lib/rutas';
+import { resolverRuta, rutaDeMoai, rutaDePlan, useRuta, type Sesion } from '@/lib/rutas';
 import type { EntradaRegistro } from '@/lib/registro';
 import { MoaiApp } from './app';
 import { Acceso, Codigo, Menor, PasoComunidad, PasoNacimiento, Registro, TextoLegal, registroVacio } from './cuenta';
 import { Bienvenida } from './bienvenida';
 import { Avisos, MiComunidad, MisLugares, NuevoPlan, PlanDetalle } from './comunidad';
+import { MiGente, MoaiDetalle } from './gente';
 import { Marco } from './marco';
 
 // P01 · Portada pública (horizontal): una ciudad de fondo y texto mínimo.
@@ -101,6 +102,9 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
     if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;
+    if (ruta === '/gente') return <MiGente api={api} ir={ir} onSalir={salir}/>;
+    const moaiId = rutaDeMoai.exec(ruta)?.[1];
+    if (moaiId) return <MoaiDetalle key={moaiId} id={moaiId} api={api} ir={ir} onSalir={salir}/>;
     const planId = rutaDePlan.exec(ruta)?.[1];
     if (planId) return <PlanDetalle key={planId} id={planId} api={api} ir={ir} onSalir={salir}/>;
     // «Mi ciudad»: la ciudad del prototipo (árbol, calle, carta de Brisa), que convive con Mi comunidad.

@@ -34,6 +34,9 @@ export const privacidad: Texto = {
       'Tus lugares guardados (hasta cinco), como zonas aproximadas de cerca de 1 km. Nunca guardamos tu dirección ni tus coordenadas, ni un historial de dónde has estado.',
       'Los planes que propones (qué, cuándo y en qué lugar público), los planes a los que te sumas y los mensajes que escribes en la conversación de cada plan.',
       'Tus preferencias: si quieres recomendaciones, los tipos de plan que te interesan y si quieres el correo semanal.',
+      'Con quién confirmaste que te viste después de un plan («Sí, nos vimos» o «No coincidimos»).',
+      'Los Moais de los que haces parte, su nombre, las invitaciones y tus respuestas a ellas, y los mensajes que escribes en la conversación de cada Moai.',
+      'A quién bloqueaste y los reportes que haces: a quién, el motivo y lo que quieras contar.',
       'La prueba de que aceptaste estos textos: fecha y versión.',
       'Datos técnicos mínimos para tu sesión: una cookie de sesión y los códigos de acceso, que guardamos cifrados (no en claro).',
     ] },
@@ -48,6 +51,8 @@ export const privacidad: Texto = {
       'Crear tu cuenta, confirmar que el correo es tuyo y permitirte entrar.',
       'Mostrarte planes de personas cercanas y mostrar los tuyos a quienes están cerca, según el alcance que elijas.',
       'Que las personas que van a un plan puedan conversar entre ellas.',
+      'Que puedas formar un Moai con personas con las que ya te viste, y conversar con tu Moai.',
+      'Cuidar la convivencia: si dos personas distintas reportan a alguien en 90 días, su cuenta queda en pausa (no puede proponer planes, escribir ni invitar) hasta que una persona del equipo revise el caso.',
       'Enviarte recordatorios para confirmar tu cuenta y, solo si lo activas, un correo semanal con planes cercanos (máximo uno por semana).',
       'Recomendarte planes, solo si lo activas y solo con los tipos de plan que elegiste. Siempre puedes ver por qué te recomendamos algo.',
       'Cuidar la seguridad del servicio y cumplir obligaciones legales.',
@@ -58,6 +63,9 @@ export const privacidad: Texto = {
       'Tu correo, tu fecha de nacimiento y tus lugares guardados: solo tú.',
       'Tus planes: las personas cuya zona entra en el alcance que elegiste. Ven tu primer nombre, el plan, el lugar público, la fecha y una distancia aproximada por franjas, nunca exacta.',
       'La conversación de un plan: solo quienes van a ese plan. Brisa no la lee.',
+      'Tus respuestas a «¿Te viste con…?»: nadie más. Solo cuando las dos personas dicen que sí, cada una ve a la otra en «Mi gente».',
+      'Tu Moai: sus miembros ven tu primer nombre y la conversación del Moai. Brisa no la lee. Cuando votas para sumar a alguien, nadie sabe qué votaste.',
+      'Tus bloqueos y reportes: la persona no sabe que la bloqueaste ni quién la reportó. Los reportes los lee solo el equipo que revisa los casos.',
     ] },
     { titulo: '6. Brisa', parrafos: [
       'Brisa es una inteligencia artificial, no una persona. Hoy sus mensajes se generan dentro de MOAI a partir de tus planes y preferencias, sin enviar tus datos a proveedores externos de inteligencia artificial. Si eso cambia, te lo diremos antes y te pediremos autorización.',
@@ -67,6 +75,8 @@ export const privacidad: Texto = {
       'Si no confirmas tu cuenta, la borramos a los 20 días.',
       'Si la fecha de nacimiento muestra que eres menor de 18 años, borramos la cuenta de inmediato.',
       'Las conversaciones de los planes se borran 30 días después del plan o de su cancelación.',
+      'La conversación de cada Moai guarda solo los mensajes de los últimos 90 días. Si sales de un Moai, dejas de verla; si nadie queda, el Moai se borra.',
+      'Los reportes se guardan mientras exista tu cuenta o la de la persona reportada, para poder revisar casos repetidos.',
       'Las sesiones vencen a los 30 días.',
       'Si pides borrar tu cuenta, borramos tus datos, salvo lo que la ley nos obligue a conservar.',
     ] },
@@ -136,20 +146,27 @@ export const terminos: Texto = {
       'No compartas tu dirección ni datos bancarios.',
       'Si algo te incomoda, vete. No le debes explicaciones a nadie.',
     ] },
-    { titulo: '7. Brisa', parrafos: [
+    { titulo: '7. Moais, bloqueos y reportes', lista: [
+      'Un Moai es un grupo de 2 a 5 personas que ya se vieron en persona. Para sumar a alguien, todos los miembros deben estar de acuerdo. Puedes salir cuando quieras, sin explicaciones.',
+      'Puedes bloquear a cualquier persona: dejarás de ver sus planes, no verá los tuyos y no podrá invitarte a un Moai. No le avisamos.',
+      'Puedes reportar una indelicadeza. La persona nunca sabrá quién la reportó.',
+      'Si dos personas distintas reportan a alguien en 90 días, su cuenta queda en pausa hasta que una persona del equipo revise el caso: puede ver planes y sumarse, pero no proponer, escribir ni invitar. Un solo reporte no pausa a nadie.',
+      'Reportar a alguien a sabiendas de que no hizo nada también incumple estas reglas.',
+    ] },
+    { titulo: '8. Brisa', parrafos: [
       'Brisa es una inteligencia artificial que te acompaña en MOAI. Puede equivocarse, no reemplaza a una persona y nunca da consejos médicos, legales ni financieros.',
     ] },
-    { titulo: '8. Lo que publicas', parrafos: [
+    { titulo: '9. Lo que publicas', parrafos: [
       'Lo que escribes en tus planes y conversaciones es tuyo. Nos das permiso para mostrarlo a las personas que corresponda dentro de MOAI, y solo para eso. Si cancelas un plan, deja de mostrarse, y su conversación se borra 30 días después.',
     ] },
-    { titulo: '9. Si algo sale mal', parrafos: [
+    { titulo: '10. Si algo sale mal', parrafos: [
       'Podemos ocultar planes o suspender cuentas que incumplan estas reglas, y te contaremos por qué. Si crees que nos equivocamos, escríbenos.',
       'MOAI se ofrece tal como está. Hacemos lo posible para que funcione bien, pero no respondemos por lo que ocurra entre personas en los encuentros, más allá de lo que la ley colombiana establezca.',
     ] },
-    { titulo: '10. Tu cuenta', parrafos: [
+    { titulo: '11. Tu cuenta', parrafos: [
       `Puedes dejar de usar MOAI cuando quieras y pedir que borremos tu cuenta escribiendo a ${RESPONSABLE.correo}. Lo que pasa con tus datos está en la Política de tratamiento de datos.`,
     ] },
-    { titulo: '11. Cambios y ley aplicable', parrafos: [
+    { titulo: '12. Cambios y ley aplicable', parrafos: [
       'Si cambiamos estos términos, te lo contaremos antes y te pediremos aceptarlos de nuevo.',
       'Estos términos se rigen por las leyes de Colombia.',
     ] },

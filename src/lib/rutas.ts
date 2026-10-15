@@ -5,14 +5,16 @@ import type { Perfil } from './api';
 
 export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar', '/terminos', '/privacidad'] as const;
 export const rutasPasos = ['/configuracion/nacimiento', '/configuracion/comunidad'] as const;
-export const rutasPrivadas = ['/comunidad', '/lugares', '/planes/nuevo', '/avisos', '/ciudad'] as const;
+export const rutasPrivadas = ['/comunidad', '/gente', '/lugares', '/planes/nuevo', '/avisos', '/ciudad'] as const;
 // El detalle de cada plan: /planes/<uuid>.
 export const rutaDePlan = /^\/planes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
+// Cada Moai: /moais/<uuid>.
+export const rutaDeMoai = /^\/moais\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 export const DESTINO_INICIAL = '/comunidad';
 // Se pueden ver con o sin sesión (los textos legales se abren desde el registro).
 const rutasAbiertas = ['/terminos', '/privacidad'];
 
-const incluye = (lista: readonly string[], ruta: string) => lista.includes(ruta) || (lista === rutasPrivadas && rutaDePlan.test(ruta));
+const incluye = (lista: readonly string[], ruta: string) => lista.includes(ruta) || (lista === rutasPrivadas && (rutaDePlan.test(ruta) || rutaDeMoai.test(ruta)));
 
 // Solo rutas internas conocidas: nunca se redirige a una URL que venga de afuera.
 export function destinoSeguro(valor: string | null): string | null {

@@ -217,13 +217,13 @@ describe('Brisa: «fuiste por tu cuenta»', () => {
     expect(await rosa.json('POST', '/api/brisa/visto', { clave: carta.clave })).toEqual([]);
   });
 
-  it('si alguien se sumó, no hay carta', async () => {
+  it('si alguien se sumó, no hay «fuiste por tu cuenta»: Brisa pregunta si se vieron', async () => {
     const { rosa, plan } = await planQuePaso(null);
     const luis = await persona('Luis');
     await luis.pedir('POST', '/api/lugares', { nombre: 'Casa', ciudad: '05001' });
     await luis.pedir('POST', `/api/planes/${plan.id}/ir`);
     reloj = despuesDe(manana, 2 * hora);
-    expect(await rosa.json('GET', '/api/brisa')).toEqual([]);
+    expect(await rosa.json('GET', '/api/brisa')).toEqual([expect.objectContaining({ tipo: 'gente', texto: expect.stringMatching(/¿Te viste con Luis/) })]);
   });
 
   it('en un plan semanal recuerda que sigue la próxima semana', async () => {

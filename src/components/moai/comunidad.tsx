@@ -10,26 +10,8 @@ import { TarjetaMapa } from './mapa';
 import { BarrioIlustrado } from './barrio';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { OrbeBrisa } from './bosque';
-
-type Ir = (ruta: string) => void;
-
-function Diario({ titulo, bajada, ir, actual, onSalir, children }: { titulo: string; bajada?: ReactNode; ir: Ir; actual: string; onSalir: () => void; children: ReactNode }) {
-  const enlaces: [string, string][] = [['/comunidad', 'Mi comunidad'], ['/lugares', 'Mis lugares'], ['/avisos', 'Avisos'], ['/ciudad', 'Mi ciudad']];
-  return <div className="diario">
-    <header className="diario-cabecera">
-      <span className="diario-marca">MOAI</span>
-      <nav aria-label="Secciones">
-        {enlaces.map(([ruta, nombre]) => <button key={ruta} type="button" aria-current={actual === ruta ? 'page' : undefined} onClick={() => ir(ruta)}>{nombre}</button>)}
-        <button type="button" onClick={onSalir}>Cerrar sesión</button>
-      </nav>
-    </header>
-    <main className="diario-contenido">
-      <h1 tabIndex={-1}>{titulo}</h1>
-      {bajada && <p className="diario-bajada">{bajada}</p>}
-      {children}
-    </main>
-  </div>;
-}
+import { Diario, type Ir } from './diario';
+import { ReportarPersona } from './gente';
 
 const capital = (texto: string) => texto.charAt(0).toLocaleUpperCase('es') + texto.slice(1);
 const fecha = (iso: string) => capital(new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }).format(new Date(iso)));
@@ -65,16 +47,18 @@ function TarjetaPlan({ plan, ir, acciones }: { plan: Plan; ir: Ir; acciones: { o
 }
 
 // Lo que Brisa cuenta: «fuiste por tu cuenta» (sin culpas) o una recomendación que la persona pidió, con su motivo.
-function CartaBrisa({ carta, onListo, onRepetir, onSumarme }: { carta: Carta; onListo: () => void; onRepetir: () => void; onSumarme: () => void }) {
+function CartaBrisa({ carta, onListo, onRepetir, onSumarme, onGente }: { carta: Carta; onListo: () => void; onRepetir: () => void; onSumarme: () => void; onGente: () => void }) {
   const [porque, setPorque] = useState(false);
+  const motivo = carta.tipo === 'sugerencia' || carta.tipo === 'gente' ? carta.motivo : undefined;
   return <div className="carta-brisa" role="status">
     <p>{carta.texto}</p>
-    {carta.tipo === 'sugerencia' && porque && <p className="carta-motivo">{carta.motivo}</p>}
+    {motivo && porque && <p className="carta-motivo">{motivo}</p>}
     <div className="plan-acciones">
       {carta.tipo === 'solo' && carta.repetir && <Button className="diario-boton principal" onClick={onRepetir}>Sí, cada semana</Button>}
       {carta.tipo === 'sugerencia' && <Button className="diario-boton principal" onClick={onSumarme}>Me sumo</Button>}
-      <Button className="diario-boton" onClick={onListo}>{carta.tipo === 'solo' ? (carta.repetir ? 'No, así está bien' : 'Entendido') : 'No, gracias'}</Button>
-      {carta.tipo === 'sugerencia' && <button type="button" className="brisa-enlace" aria-expanded={porque} onClick={() => setPorque(p => !p)}>¿Por qué veo esto?</button>}
+      {carta.tipo === 'gente' && <Button className="diario-boton principal" onClick={onGente}>Ir a Mi gente</Button>}
+      <Button className="diario-boton" onClick={onListo}>{carta.tipo === 'solo' ? (carta.repetir ? 'No, así está bien' : 'Entendido') : carta.tipo === 'gente' ? 'Ahora no' : 'No, gracias'}</Button>
+      {motivo && <button type="button" className="brisa-enlace" aria-expanded={porque} onClick={() => setPorque(p => !p)}>¿Por qué veo esto?</button>}
     </div>
   </div>;
 }
@@ -103,6 +87,7 @@ function Menu({ ir, onSalir }: { ir: Ir; onSalir: () => void }) {
   return <div className="selector-lugar-caja">
     <button type="button" className="menu-boton" aria-expanded={abierto} aria-label="Más opciones" onClick={() => setAbierto(a => !a)}><Menu2 aria-hidden="true"/></button>
     {abierto && <ul className="selector-lugar-lista menu-lista">
+      <li><button type="button" onClick={() => ir('/gente')}>Mi gente</button></li>
       <li><button type="button" onClick={() => ir('/lugares')}>Mis lugares</button></li>
       <li><button type="button" onClick={() => ir('/avisos')}>Avisos</button></li>
       <li><button type="button" onClick={() => ir('/ciudad')}>Mi ciudad</button></li>
@@ -178,13 +163,14 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
         <div className="brisa-tarjeta-cuerpo">
           {cartas.length === 0 && <>
             <p><strong>Estoy aquí para orientarte.</strong> Soy Brisa, una inteligencia artificial.</p>
-            {ayuda && <p>Aquí no hace falta pedir nada: cuentas qué vas a hacer (caminar, un tinto, la huerta) y quien quiera se suma. Si coincides varias veces con las mismas personas, les preguntaré si quieren formar un Moai.</p>}
+            {ayuda && <p>Aquí no hace falta pedir nada: cuentas qué vas a hacer (caminar, un tinto, la huerta) y quien quiera se suma. Después de cada plan te preguntaré con quién te viste: con esas personas puedes formar un Moai, aunque sean solo dos.</p>}
             <button type="button" className="brisa-enlace" aria-expanded={ayuda} onClick={() => setAyuda(a => !a)}>{ayuda ? 'Entendido' : 'Ver cómo empezar'}</button>
           </>}
           {cartas.map(c => <CartaBrisa key={c.clave} carta={c}
             onListo={() => void api.cartaVista(c.clave).then(usarCartas)}
-            onRepetir={() => void api.repetirPlan(c.planId).then(r => { usar(r); void api.cartaVista(c.clave).then(usarCartas); })}
-            onSumarme={() => void api.irAPlan(c.planId).then(r => { usar(r); void api.cartaVista(c.clave).then(usarCartas); })}/>)}
+            onRepetir={() => c.tipo === 'solo' && void api.repetirPlan(c.planId).then(r => { usar(r); void api.cartaVista(c.clave).then(usarCartas); })}
+            onSumarme={() => c.tipo === 'sugerencia' && void api.irAPlan(c.planId).then(r => { usar(r); void api.cartaVista(c.clave).then(usarCartas); })}
+            onGente={() => void api.cartaVista(c.clave).then(() => ir('/gente'))}/>)}
         </div>
       </section>
 
@@ -211,6 +197,7 @@ export function PlanDetalle({ id, api, ir, onSalir }: { id: string; api: Api; ir
   const [mensajes, setMensajes] = useState<Mensaje[] | null>(null);
   const [texto, setTexto] = useState('');
   const [errorMensaje, setErrorMensaje] = useState('');
+  const [reportar, setReportar] = useState(false);
   const final = useRef<HTMLDivElement>(null);
   const cargar = useCallback(() => void api.plan(id).then(r => r.ok ? setPlan(r.datos) : setError(r.error)), [api, id]);
   useEffect(cargar, [cargar]);
@@ -235,6 +222,8 @@ export function PlanDetalle({ id, api, ir, onSalir }: { id: string; api: Api; ir
     {plan && <>
       <article className="plan"><DatosPlan plan={plan}/>
         <AccionesPlan plan={plan} onIr={() => void api.irAPlan(id).then(despues)} onNoIr={() => void api.noIrAPlan(id).then(despues)} onCancelar={() => void api.cancelarPlan(id).then(() => ir('/comunidad'))}/>
+        {plan.autorRef && <button type="button" className="brisa-enlace" aria-expanded={reportar} onClick={() => setReportar(r => !r)}>Reportar o bloquear a {plan.autor}</button>}
+        {plan.autorRef && reportar && <ReportarPersona referencia={plan.autorRef} nombre={plan.autor} api={api} onListo={g => { if (!g) setReportar(false); }}/>}
       </article>
       <section className="conversacion" aria-labelledby="conversacion-titulo">
         <h2 id="conversacion-titulo">Conversación del plan</h2>
