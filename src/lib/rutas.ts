@@ -5,7 +5,7 @@ import type { Perfil } from './api';
 
 export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar', '/terminos', '/privacidad'] as const;
 export const rutasPasos = ['/configuracion/nacimiento', '/configuracion/comunidad'] as const;
-export const rutasPrivadas = ['/inicio', '/comunidad', '/gente', '/zona', '/lugares', '/planes/nuevo', '/avisos', '/ciudad', '/equipo'] as const;
+export const rutasPrivadas = ['/inicio', '/comunidad', '/gente', '/zona', '/lazos', '/lugares', '/planes/nuevo', '/avisos', '/ciudad', '/equipo'] as const;
 // El detalle de cada plan: /planes/<uuid>.
 export const rutaDePlan = /^\/planes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 // Cada Moai: /moais/<uuid>.

@@ -11,6 +11,7 @@ import { MiGente, MoaiDetalle } from './gente';
 import { Equipo } from './equipo';
 import { InicioBrisa } from './brisa';
 import { MiZona } from './zona';
+import { MisLazos } from './lazos';
 import { Marco } from './marco';
 
 // P01 · Portada pública (horizontal): una ciudad de fondo y texto mínimo.
@@ -108,6 +109,7 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/gente') return <MiGente api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/zona') return <MiZona api={api} ir={ir} onSalir={salir}/>;
+    if (ruta === '/lazos') return <MisLazos perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
     if (ruta === '/equipo') return <Equipo api={api} ir={ir} onSalir={salir} permitido={!!perfil.equipo}/>;
     const moaiId = rutaDeMoai.exec(ruta)?.[1];
     if (moaiId) return <MoaiDetalle key={moaiId} id={moaiId} api={api} ir={ir} onSalir={salir}/>;

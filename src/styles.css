@@ -805,3 +805,70 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 /* Mientras carga el video del bosque (o si no carga), la escena sigue siendo un bosque oscuro, nunca transparente. */
 .escena { background: radial-gradient(ellipse at 50% 40%, #24402f, #0d1f18 70%); }
 @media (max-width: 520px) { .escena-rotulo { margin-top: 74px; } .escena-salir { top: 14px; right: 14px; } }
+
+/* ==== Mis lazos (referente de Mateo): red oscura, hilos de colores y panel de vidrio ==== */
+.lazos { min-height: 100svh; color: var(--niebla); background: radial-gradient(ellipse at 20% 50%, oklch(.26 .04 165), oklch(.12 .02 175) 70%); }
+.lazos .inicio-cabecera nav button[aria-current="page"] { background: color-mix(in oklab, var(--lima) 22%, transparent); }
+.lazos-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) min(400px, 34vw); gap: 20px; padding: 100px 20px 20px; min-height: 100svh; }
+.lazos-red { position: relative; min-width: 0; }
+.red { position: relative; }
+.red-hilos { position: absolute; inset: 0; overflow: visible; }
+.red-hilos path { fill: none; transition: opacity .3s, stroke-width .3s; }
+.hilo-centro { stroke: rgb(232 239 226 / .35); stroke-width: 1.2; }
+.hilo { stroke-linecap: round; }
+.hilo.estado-vivo { stroke: var(--lima); stroke-width: 2.4; }
+.hilo.estado-tibio { stroke: #ffb27a; stroke-width: 1.5; }
+.hilo.estado-dormido { stroke: rgb(232 239 226 / .32); stroke-width: .9; stroke-dasharray: 3 5; }
+.hilo.raiz { stroke-width: 2.4; stroke-dasharray: none; }
+.hilo.elegido { stroke-width: 3.4; }
+.red-hilos .apagado { opacity: .18; }
+.red-centro { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.red-orbe { width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at 42% 38%, #f6ffd8 0 6%, var(--lima) 22%, oklch(.55 .12 160 / .7) 48%, transparent 70%); box-shadow: 0 0 0 18px rgb(206 250 99 / .06), 0 0 0 46px rgb(206 250 99 / .03), 0 0 60px rgb(206 250 99 / .35); }
+.red-centro strong { font-size: 18px; }
+.red-grupo { position: absolute; transform: translateY(-50%); width: 190px; min-height: 60px; padding: 8px 14px; display: flex; flex-direction: column; align-items: flex-start; text-align: left; font-size: 16px; font-weight: 600; cursor: pointer; border-radius: 16px; }
+.red-grupo span, .red-rama-titulo span { font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: rgb(232 239 226 / .7); }
+.red-grupo[aria-pressed="true"] { border-color: var(--lima); box-shadow: 0 0 24px rgb(206 250 99 / .3); }
+.red-grupo.tipo-raiz { border-color: #ffd9a0; }
+.red-persona { position: absolute; transform: translateY(-50%); display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 4px; border: 0; border-radius: 999px; background: rgb(10 26 20 / .6); color: var(--niebla); font-size: 15px; cursor: pointer; white-space: nowrap; }
+.red-persona:hover, .red-persona[aria-pressed="true"] { background: rgb(255 255 255 / .12); }
+.red-persona .punto { width: 14px; height: 14px; margin-left: 8px; border-radius: 50%; }
+.estado-vivo .punto, .lazo-leyenda .estado-vivo, .lazo-estado.estado-vivo span { background: var(--lima); box-shadow: 0 0 10px var(--lima); }
+.estado-tibio .punto, .lazo-leyenda .estado-tibio, .lazo-estado.estado-tibio span { background: #ffb27a; }
+.estado-dormido .punto, .lazo-leyenda .estado-dormido, .lazo-estado.estado-dormido span { background: rgb(232 239 226 / .35); }
+.con-puerta .punto, .lazo-leyenda .puerta { outline: 2px solid #ffb27a; outline-offset: 3px; }
+.panel-lazo { position: sticky; top: 100px; align-self: start; padding: 22px; }
+.lazo-detalle { display: flex; flex-direction: column; gap: 10px; }
+.lazo-detalle h2 { margin: 0; font: 700 26px/1.2 var(--font-sans); }
+.lazo-detalle p { margin: 0; line-height: 1.5; }
+.lazo-rango { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: rgb(232 239 226 / .7); }
+.lazo-estado { display: flex; align-items: center; gap: 10px; font-size: 17px; }
+.lazo-estado span { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.lazo-leyenda { list-style: none; margin: 4px 0; padding: 0; display: grid; gap: 8px; }
+.lazo-leyenda li { display: flex; align-items: center; gap: 10px; }
+.lazo-leyenda span { width: 14px; height: 14px; border-radius: 50%; }
+.lazo-leyenda .puerta { background: transparent; }
+.enlace-boton { display: inline-flex; align-items: center; text-decoration: none; }
+.lazo-vacio { max-width: 520px; margin: 40px auto; padding: 26px; }
+.lazo-vacio h2 { margin: 0 0 8px; }
+.raiz { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgb(255 217 160 / .18); color: #ffd9a0; border: 1px solid rgb(255 217 160 / .5); }
+.red-lista { display: flex; flex-direction: column; gap: 14px; }
+.red-centro.lista { position: static; transform: none; margin-bottom: 6px; }
+.red-centro.lista .red-orbe { width: 84px; height: 84px; }
+.red-rama { padding: 12px 14px; border-left: 3px solid var(--lima); border-radius: 0 18px 18px 0; }
+.red-rama.tipo-raiz { border-left-color: #ffd9a0; }
+.red-rama.tipo-rama { border-left-color: rgb(232 239 226 / .4); }
+.red-rama-titulo { display: flex; flex-direction: column; align-items: flex-start; border: 0; background: none; color: var(--niebla); font-size: 17px; font-weight: 600; cursor: pointer; padding: 4px 0 8px; }
+.red-rama ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.red-persona.lista { position: static; transform: none; width: 100%; background: transparent; }
+.red-persona.lista small { margin-left: auto; color: rgb(232 239 226 / .65); font-size: 13px; }
+@media (max-width: 900px) {
+  .lazos-cuerpo { grid-template-columns: 1fr; padding-top: 90px; }
+  .panel-lazo { position: static; }
+}
+.lazos { overflow-x: hidden; }
+.lazos-cuerpo > * { min-width: 0; }
+.red-persona.lista { white-space: normal; text-align: left; }
+.red-persona.lista small { text-align: right; }
+/* La raíz no se marchita: su hilo es siempre cálido y firme; solo el punto cuenta cómo va. */
+.hilo.raiz { stroke: #ffd9a0; stroke-width: 2.2; stroke-dasharray: none; opacity: .9; }
+.lazo-detalle .diario-boton { white-space: normal; text-align: center; }

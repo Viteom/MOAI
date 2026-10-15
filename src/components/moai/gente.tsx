@@ -64,7 +64,7 @@ const fechaCorta = (iso: string) => new Intl.DateTimeFormat('es-CO', { weekday: 
 // Mi Moai interno: quién te nutre, aunque no use MOAI. Solo tú lo ves; se guarda cifrado.
 function MoaiInterno({ api }: { api: Api }) {
   const [lista, setLista] = useState<PersonaInterna[] | null>(null);
-  const [nueva, setNueva] = useState({ nombre: '', relacion: '' });
+  const [nueva, setNueva] = useState({ nombre: '', relacion: '', familia: false });
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [porQuitar, setPorQuitar] = useState<string | null>(null);
@@ -75,15 +75,16 @@ function MoaiInterno({ api }: { api: Api }) {
   useEffect(() => { void api.interno().then(r => usar(r)); }, [api]);
   async function agregar(e: FormEvent) {
     e.preventDefault();
-    usar(await api.agregarInterno(nueva), () => setNueva({ nombre: '', relacion: '' }));
+    usar(await api.agregarInterno(nueva), () => setNueva({ nombre: '', relacion: '', familia: false }));
   }
   return <section className="interno" aria-labelledby="interno-titulo">
     <h2 id="interno-titulo">Mi Moai interno</h2>
-    <p className="campo-ayuda">Las personas que te nutren y te recargan, aunque no usen MOAI. Solo tú las ves. Brisa te recordará, como mucho una vez por semana, alimentar esos vínculos.</p>
+    <p className="campo-ayuda">Las personas que te nutren y te recargan, incluida tu familia, aunque no vivan cerca ni usen MOAI. Solo tú las ves. Brisa te recordará, como mucho una vez por semana, alimentar esos vínculos.</p>
     {error && <p className="campo-error" role="alert">{error}</p>}
     <ul className="personas">
       {lista?.map(p => <li key={p.id}>
         <strong>{p.nombre}{p.relacion && <span className="plan-donde"> · {p.relacion}</span>}</strong>
+        {p.familia && <span className="raiz">Familia</span>}
         {p.pendiente && <span className="plan-voy">Hace un tiempo no hablan</span>}
         <div className="plan-acciones">
           <Button className="diario-boton" onClick={() => void api.hablamos(p.id).then(r => usar(r))}>Ya hablamos</Button>
@@ -98,6 +99,8 @@ function MoaiInterno({ api }: { api: Api }) {
         <Campo etiqueta="¿Quién te nutre?" error={errores.nombre}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={40} placeholder="Por ejemplo, Laura" value={nueva.nombre} onChange={e => setNueva(n => ({ ...n, nombre: e.target.value }))}/>}</Campo>
         <Campo etiqueta="¿Quién es para ti? (opcional)" error={errores.relacion}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={40} placeholder="Mi amiga del colegio" value={nueva.relacion} onChange={e => setNueva(n => ({ ...n, relacion: e.target.value }))}/>}</Campo>
       </div>
+      <label className="alcance"><input type="checkbox" checked={nueva.familia} onChange={e => setNueva(n => ({ ...n, familia: e.target.checked }))}/>
+        <span><strong>Es de mi familia</strong> · tu raíz: no hace falta que viva cerca ni que use MOAI</span></label>
       <Button type="submit" className="diario-boton principal">Agregar</Button>
     </form>}
   </section>;

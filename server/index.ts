@@ -1,5 +1,6 @@
 // Arranque del servidor. Variables en .env (ver .env.example).
 import { randomBytes } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { abrirDb } from './db';
 import { crearCifrador } from './cifrado';
 import { viasDesdeEntorno } from './envios';
@@ -10,7 +11,17 @@ const produccion = process.env.NODE_ENV === 'production';
 if (produccion && !process.env.CODIGO_SECRETO) throw new Error('Falta CODIGO_SECRETO en producción.');
 if (produccion && !process.env.DATABASE_URL) throw new Error('Falta DATABASE_URL en producción.');
 
-const secreto = process.env.CODIGO_SECRETO ?? randomBytes(32).toString('hex');
+// Sin CODIGO_SECRETO (solo en desarrollo), el secreto se guarda en .data/ para que sobreviva a los reinicios:
+// con él se cifran el Moai interno, el invierno y el test de cuidado, y si cambia ya no se pueden leer.
+function secretoLocal() {
+  const archivo = '.data/secreto-local';
+  if (existsSync(archivo)) return readFileSync(archivo, 'utf8').trim();
+  const nuevo = randomBytes(32).toString('hex');
+  mkdirSync('.data', { recursive: true });
+  writeFileSync(archivo, nuevo, { mode: 0o600 });
+  return nuevo;
+}
+const secreto = process.env.CODIGO_SECRETO ?? secretoLocal();
 const cifrador = crearCifrador(secreto);
 const db = await abrirDb({ url: process.env.DATABASE_URL, carpeta: process.env.DATABASE_URL ? undefined : '.data/pglite' });
 const { vias, recordar, correo } = viasDesdeEntorno(process.env);

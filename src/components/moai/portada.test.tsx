@@ -65,6 +65,7 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     salirDeMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
     mensajesMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
     casos: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    lazos: vi.fn(async () => ({ ok: true as const, datos: { grupos: [], personas: [] } })),
     perfilPublico: vi.fn(async () => ({ ok: true as const, datos: { frase: '', gustos: [], comparte: '', aprender: '', visible: false } })),
     guardarPerfilPublico: vi.fn(async p => ({ ok: true as const, datos: p })),
     zona: vi.fn(async () => ({ ok: true as const, datos: [] })),

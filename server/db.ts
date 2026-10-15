@@ -221,6 +221,7 @@ create table if not exists moai_interno (
   ultimo_contacto timestamptz,
   creado_en timestamptz not null
 );
+alter table moai_interno add column if not exists familia boolean not null default false;
 `;
 
 export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {

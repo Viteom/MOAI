@@ -67,7 +67,7 @@ describe('¿Cómo cuidas y cómo te cuidas?', () => {
 });
 
 describe('Moai interno', () => {
-  it('hasta 5 personas, cifradas y solo para ti', async () => {
+  it('hasta 8 personas (con la familia), cifradas y solo para ti', async () => {
     const rosa = await persona('Rosa'), luis = await persona('Luis');
     const lista = await rosa.json('POST', '/api/interno', { nombre: 'Laura', relacion: 'Mi amiga del colegio' });
     expect(lista).toEqual([expect.objectContaining({ nombre: 'Laura', relacion: 'Mi amiga del colegio', pendiente: false })]);
@@ -75,7 +75,7 @@ describe('Moai interno', () => {
     expect(fila.nombre).not.toContain('Laura');
     expect(await luis.json('GET', '/api/interno')).toEqual([]);
     expect((await luis.pedir('POST', `/api/interno/${lista[0].id}/hablamos`)).statusCode).toBe(404);
-    for (const n of ['Mamá', 'Pedro', 'Sofía', 'Tía Gloria']) await rosa.pedir('POST', '/api/interno', { nombre: n, relacion: '' });
+    for (const n of ['Mamá', 'Pedro', 'Sofía', 'Tía Gloria', 'Papá', 'Abuela', 'Hermano']) await rosa.pedir('POST', '/api/interno', { nombre: n, relacion: '', familia: true });
     expect((await rosa.pedir('POST', '/api/interno', { nombre: 'Otra', relacion: '' })).statusCode).toBe(400);
   });
 

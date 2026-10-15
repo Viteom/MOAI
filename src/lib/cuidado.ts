@@ -33,15 +33,16 @@ export function resultadoCuidado(respuestas: unknown): Letra[] | null {
 export const DIAS_REPETIR_CUIDADO = 90;
 
 // Moai interno: quién te nutre, aunque no use MOAI. Privado; Brisa recuerda como mucho una vez por semana.
-export const MAX_INTERNO = 5;
+// Hasta 8, para que quepa la familia (la raíz), aunque no viva cerca ni use MOAI.
+export const MAX_INTERNO = 8;
 export const DIAS_SIN_HABLAR = 14;
 
-export function validarPersonaInterna(entrada: { nombre?: unknown; relacion?: unknown }): { ok: true; nombre: string; relacion: string } | { ok: false; errores: Record<string, string> } {
+export function validarPersonaInterna(entrada: { nombre?: unknown; relacion?: unknown; familia?: unknown }): { ok: true; nombre: string; relacion: string; familia: boolean } | { ok: false; errores: Record<string, string> } {
   const nombre = String(entrada.nombre ?? '').trim().replace(/\s+/g, ' ');
   const relacion = String(entrada.relacion ?? '').trim().replace(/\s+/g, ' ');
   const errores: Record<string, string> = {};
   if (nombre.length < 2) errores.nombre = 'Escribe cómo le dices.';
   else if (nombre.length > 40) errores.nombre = 'Usa un nombre más corto.';
   if (relacion.length > 40) errores.relacion = 'Usa menos palabras.';
-  return Object.keys(errores).length ? { ok: false, errores } : { ok: true, nombre, relacion };
+  return Object.keys(errores).length ? { ok: false, errores } : { ok: true, nombre, relacion, familia: entrada.familia === true };
 }

@@ -7,14 +7,14 @@ import type { Carta, Cuidado, PersonaInterna } from '../src/lib/api';
 import type { Cifrador } from './cifrado';
 import type { Db } from './db';
 
-type FilaInterna = { id: string; nombre: string; relacion: string; ultimo_contacto: string | null; creado_en: string };
+type FilaInterna = { id: string; nombre: string; relacion: string; familia: boolean; ultimo_contacto: string | null; creado_en: string };
 
 const pendiente = (f: FilaInterna, ahora: Date) =>
   ahora.getTime() - new Date(f.ultimo_contacto ?? f.creado_en).getTime() > DIAS_SIN_HABLAR * 864e5;
 
 export async function internoDe(db: Db, cifrador: Cifrador, cuenta: string, ahora: Date): Promise<PersonaInterna[]> {
-  const filas = await db.query<FilaInterna>('select id, nombre, relacion, ultimo_contacto, creado_en from moai_interno where cuenta_id = $1 order by creado_en', [cuenta]);
-  return filas.map(f => ({ id: f.id, nombre: cifrador.descifrar(f.nombre) ?? '', relacion: cifrador.descifrar(f.relacion) ?? '', pendiente: pendiente(f, ahora) }));
+  const filas = await db.query<FilaInterna>('select id, nombre, relacion, familia, ultimo_contacto, creado_en from moai_interno where cuenta_id = $1 order by creado_en', [cuenta]);
+  return filas.map(f => ({ id: f.id, nombre: cifrador.descifrar(f.nombre) ?? '', relacion: cifrador.descifrar(f.relacion) ?? '', familia: f.familia, pendiente: pendiente(f, ahora) }));
 }
 
 export async function cuidadoDe(db: Db, cifrador: Cifrador, cuenta: string): Promise<Cuidado> {
@@ -101,8 +101,8 @@ export function registrarCuidado(app: FastifyInstance, db: Db, cuentaDeSesion: (
     const r = validarPersonaInterna((request.body ?? {}) as Record<string, unknown>);
     if (!r.ok) return reply.code(400).send({ errores: r.errores });
     const [{ total }] = await db.query<{ total: number }>('select count(*)::int as total from moai_interno where cuenta_id = $1', [id]);
-    if (total >= MAX_INTERNO) return reply.code(400).send({ error: `Tu Moai interno es de hasta ${MAX_INTERNO} personas: las más cercanas.` });
-    await db.query('insert into moai_interno (cuenta_id, nombre, relacion, creado_en) values ($1, $2, $3, $4)', [id, cifrador.cifrar(r.nombre), cifrador.cifrar(r.relacion), ahora()]);
+    if (total >= MAX_INTERNO) return reply.code(400).send({ error: `Tu Moai interno es de hasta ${MAX_INTERNO} personas: quienes más te sostienen.` });
+    await db.query('insert into moai_interno (cuenta_id, nombre, relacion, familia, creado_en) values ($1, $2, $3, $4, $5)', [id, cifrador.cifrar(r.nombre), cifrador.cifrar(r.relacion), r.familia, ahora()]);
     return lista(id);
   });
 

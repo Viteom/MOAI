@@ -421,7 +421,7 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
       <span className="diario-marca">MOAI</span>
       <nav aria-label="Secciones">
         <button type="button" onClick={() => ir('/comunidad')}>Mapa</button>
-        <button type="button" onClick={() => ir('/gente')}>Mi gente</button>
+        <button type="button" onClick={() => ir('/lazos')}>Lazos</button>
         <button type="button" onClick={() => ir('/zona')}>Mi zona</button>
       </nav>
       <MenuMas ir={ir} onSalir={onSalir} equipo={perfil.equipo} organizaciones={!!perfil.organizaciones?.length}/>
