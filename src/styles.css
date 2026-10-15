@@ -643,3 +643,26 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
   .comunidad-mapa:has(.maqueta) .mapa-tarjeta { bottom: 0; }
   .maqueta-creditos { bottom: 150px; left: 14px; right: auto; }
 }
+
+/* Barrio ilustrado de MOAI: controles reales sobre una escena independiente. */
+.barrio-ilustrado { background: #16312e; }
+.barrio-ilustrado::after { display: none; }
+.barrio-arrastre { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
+.barrio-arrastre:active { cursor: grabbing; }
+.barrio-imagen { position: absolute; left: 50%; top: 50%; max-width: none; user-select: none; pointer-events: none; }
+.barrio-ilustrado .mapa-tu-zona { padding: 8px 15px; border-radius: 999px; background: #15312ed9; border: 1px solid #d7e7ce55; font-size: 18px; }
+.barrio-nota { position: absolute; left: 24px; bottom: 100px; z-index: 6; padding: 6px 10px; border-radius: 8px; background: #15312ed9; color: #e8eee5; font-size: 12px; pointer-events: none; }
+.barrio-ilustrado .maqueta-burbuja { background: #15312ee8; border-color: #d5e7d080; font-size: 18px; box-shadow: 0 8px 24px #071c2266; }
+.comunidad.en-mapa .comunidad-cabecera { background: #102c27df; backdrop-filter: blur(18px); }
+.comunidad.en-mapa .selector-lugar, .comunidad.en-mapa .modo button { min-height: 48px; }
+.comunidad.en-mapa .menu-boton, .maqueta-zoom button { width: 48px; height: 48px; }
+@media (max-width: 760px) {
+  .barrio-nota { bottom: 158px; left: 12px; font-size: 11px; max-width: calc(100% - 80px); }
+  .barrio-ilustrado .maqueta-zoom { bottom: 190px; }
+  .comunidad-mapa .mapa-brisa { top: 140px; }
+}
+.barrio-ilustrado .maqueta-pin { width: 48px; height: 48px; }
+.barrio-ilustrado .maqueta-pin::after { animation-duration: 4s; }
+@media (prefers-reduced-motion: reduce) {
+  .barrio-ilustrado .maqueta-pin::after { animation: none; }
+}

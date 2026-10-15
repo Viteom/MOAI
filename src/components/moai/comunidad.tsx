@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { alcances, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
 import type { Api, Carta, Lugar, Mapa, Mensaje, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
 import { ChevronDown, Menu as Menu2, Pencil } from 'lucide-react';
-import { MapaComunidad, TarjetaMapa } from './mapa';
-import { Maqueta, soportaWebGL } from './maqueta';
+import { TarjetaMapa } from './mapa';
+import { BarrioIlustrado } from './barrio';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { OrbeBrisa } from './bosque';
 
@@ -116,7 +116,6 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
   const [cartas, setCartas] = useState<Carta[]>([]);
   const [mapa, setMapa] = useState<Mapa | null>(null);
   const [modo, setModo] = useState<'mapa' | 'lista'>('mapa');
-  const [conWebGL] = useState(soportaWebGL);
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [ayuda, setAyuda] = useState(false);
@@ -156,9 +155,8 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
 
     {perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>
     : verMapa ? <div className="comunidad-mapa">
-      {/* La maqueta 3D cuando el navegador puede; si no (o con Modo Ahorro más adelante), el tablero plano. */}
-      {conWebGL ? <Maqueta mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
-        : <MapaComunidad mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>}
+      {/* Escenario ilustrado, con planes reales en una capa independiente. */}
+      <BarrioIlustrado mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
       <button type="button" className="mapa-brisa" data-reserva onClick={() => cartas.length ? setModo('lista') : planes?.[0] && setElegido(mapa.planes[0]?.id ?? null)}>
         <OrbeBrisa/><span className="mapa-brisa-globo">{mensajeBrisa}</span>
       </button>

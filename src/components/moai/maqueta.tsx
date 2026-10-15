@@ -260,7 +260,7 @@ function reservas(caja: HTMLElement): Rect[] {
 }
 
 // Capa 2: luces interactivas, ancladas a la escena (se recalculan con cada movimiento de cámara).
-function CapaLuces({ luces, porId, elegido, onElegir }: { luces: Proyectado[]; porId: Map<string, Plan>; elegido: string | null; onElegir: (id: string | null) => void }) {
+export function CapaLuces({ luces, porId, elegido, onElegir }: { luces: Proyectado[]; porId: Map<string, Plan>; elegido: string | null; onElegir: (id: string | null) => void }) {
   return <div className="capa capa-luces">
     {luces.map(l => {
       const plan = porId.get(l.id);
@@ -274,8 +274,8 @@ function CapaLuces({ luces, porId, elegido, onElegir }: { luces: Proyectado[]; p
 
 // Capa 3: burbujas de invitación. Las más cercanas al centro, sin repetir autor, sin chocar entre sí
 // ni con la interfaz. Si una burbuja no cabe, queda solo su luz.
-function CapaBurbujas({ luces, porId, ancho, alto, ocupado, onElegir }: { luces: Proyectado[]; porId: Map<string, Plan>; ancho: number; alto: number; ocupado: Rect[]; onElegir: (id: string) => void }) {
-  const ANCHO_B = 250, ALTO_B = 72;
+export function CapaBurbujas({ luces, porId, ancho, alto, ocupado, onElegir }: { luces: Proyectado[]; porId: Map<string, Plan>; ancho: number; alto: number; ocupado: Rect[]; onElegir: (id: string) => void }) {
+  const ANCHO_B = 250, ALTO_B = 100;
   const puestas: { l: Proyectado; abajo: boolean; izquierda: number; rect: Rect }[] = [];
   const centro = { x: ancho / 2, y: alto / 2 };
   for (const l of [...luces].sort((a, b) => Math.hypot(a.x - centro.x, a.y - centro.y) - Math.hypot(b.x - centro.x, b.y - centro.y))) {
