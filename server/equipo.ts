@@ -22,9 +22,9 @@ export function registrarEquipo(app: FastifyInstance, db: Db, cuentaDeSesion: (r
 
   // Casos: una persona reportada con sus reportes. Primero los que tienen reportes sin revisar.
   const casos = async (): Promise<CasoReporte[]> => {
-    const filas = await db.query<{ id: number; a: string; nombre_a: string; correo_a: string; suspendida_en: string | null; nombre_de: string; motivo: string; detalle: string; creado_en: string; revisado_en: string | null; decision: string | null }>(
+    const filas = await db.query<{ id: number; a: string; nombre_a: string; correo_a: string; suspendida_en: string | null; nombre_de: string; motivo: string; detalle: string; mensaje: string | null; creado_en: string; revisado_en: string | null; decision: string | null }>(
       `select r.id, r.a, ca.nombre as nombre_a, ca.destino as correo_a, ca.suspendida_en, split_part(cd.nombre, ' ', 1) as nombre_de,
-              r.motivo, r.detalle, r.creado_en, r.revisado_en, r.decision
+              r.motivo, r.detalle, r.mensaje, r.creado_en, r.revisado_en, r.decision
        from reportes r join cuentas ca on ca.id = r.a join cuentas cd on cd.id = r.de
        where r.revisado_en is null or r.revisado_en > $1::timestamptz - interval '30 days'
        order by r.creado_en desc`, [ahora()]);
@@ -33,7 +33,7 @@ export function registrarEquipo(app: FastifyInstance, db: Db, cuentaDeSesion: (r
       let caso = porPersona.get(f.a);
       if (!caso) porPersona.set(f.a, caso = { cuenta: f.a, nombre: f.nombre_a, correo: f.correo_a, suspendida: !!f.suspendida_en, pausa: false, pendientes: 0, reportes: [] });
       if (!f.revisado_en) caso.pendientes++;
-      caso.reportes.push({ id: String(f.id), de: f.nombre_de, motivo: f.motivo, detalle: f.detalle, fecha: new Date(f.creado_en).toISOString(), revisado: !!f.revisado_en, decision: f.decision });
+      caso.reportes.push({ id: String(f.id), de: f.nombre_de, motivo: f.motivo, detalle: f.detalle, mensaje: f.mensaje, fecha: new Date(f.creado_en).toISOString(), revisado: !!f.revisado_en, decision: f.decision });
     }
     for (const caso of porPersona.values()) caso.pausa = await enPausa(db, caso.cuenta, ahora());
     return [...porPersona.values()].sort((a, b) => b.pendientes - a.pendientes);

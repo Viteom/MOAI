@@ -1,4 +1,5 @@
-// Mi zona: vecinos que aprobaron mostrar su tarjeta, sin foto ni ubicación, y el saludo de lejos (decisión de Mateo, 15 de octubre).
+// Vecinos (pestaña de Mi barrio; antes «Mi zona»): quienes aprobaron mostrar su tarjeta, sin foto ni ubicación,
+// y el saludo de lejos (decisión de Mateo, 15 de octubre).
 // El saludo usa frases ya escritas: no abre un chat ni compromete a nada. Si es mutuo, Brisa sugiere coincidir en algo.
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import type { Api, Respuesta, Vecino } from '@/lib/api';
 import type { EntradaPerfil, Saludo } from '@/lib/perfil';
 import { textoSaludo } from '@/lib/perfil';
 import { plantillas } from '@/lib/lugares';
-import { Diario, type Ir } from './diario';
+import type { Ir } from './diario';
 import { ReportarPersona } from './gente';
 
 const nombreGusto = (g: string) => plantillas.find(p => p.tipo === g)?.nombre.toLowerCase() ?? g;
@@ -37,7 +38,7 @@ function TarjetaVecino({ vecino, api }: { vecino: Vecino; api: Api }) {
   </li>;
 }
 
-export function MiZona({ api, ir, onSalir }: { api: Api; ir: Ir; onSalir: () => void }) {
+export function Vecinos({ api, ir }: { api: Api; ir: Ir }) {
   const [vecinos, setVecinos] = useState<Vecino[] | null>(null);
   const [mio, setMio] = useState<EntradaPerfil | null>(null);
   const [error, setError] = useState('');
@@ -45,7 +46,9 @@ export function MiZona({ api, ir, onSalir }: { api: Api; ir: Ir; onSalir: () => 
     void api.zona().then((r: Respuesta<Vecino[]>) => r.ok ? setVecinos(r.datos) : setError(r.error));
     void api.perfilPublico().then(r => r.ok && setMio(r.datos));
   }, [api]);
-  return <Diario titulo="Mi zona" bajada="Vecinos de tu zona que quisieron mostrarse. Nadie ve dónde vive nadie: solo si está cerca o en tu zona." ir={ir} actual="/zona" onSalir={onSalir}>
+  return <section className="vecinos-seccion" aria-labelledby="vecinos-titulo">
+    <h2 id="vecinos-titulo">Vecinos</h2>
+    <p className="diario-bajada">Vecinos de tu zona que quisieron mostrarse. Nadie ve dónde vive nadie: solo si está cerca o en tu zona.</p>
     {mio && !mio.visible && <div className="diario-aviso">
       <p>Tu tarjeta no se muestra todavía. Cuéntale a Brisa un poco de ti y decide si quieres que tus vecinos te vean.</p>
       <Button className="diario-boton principal" onClick={() => ir('/inicio?perfil=1')}>Contarle a Brisa</Button>
@@ -54,5 +57,5 @@ export function MiZona({ api, ir, onSalir }: { api: Api; ir: Ir; onSalir: () => 
     {vecinos === null && !error && <p role="status">Buscando vecinos…</p>}
     {vecinos?.length === 0 && <p>Todavía nadie de tu zona ha mostrado su tarjeta. Cuando alguien lo haga, aparecerá aquí.</p>}
     <ul className="vecinos">{vecinos?.map(v => <TarjetaVecino key={v.ref} vecino={v} api={api}/>)}</ul>
-  </Diario>;
+  </section>;
 }

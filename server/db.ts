@@ -168,6 +168,7 @@ create table if not exists reportes (
   revisado_en timestamptz
 );
 alter table reportes add column if not exists decision text;
+alter table reportes add column if not exists mensaje text;
 alter table cuentas add column if not exists suspendida_en timestamptz;
 create table if not exists organizaciones (
   id uuid primary key default gen_random_uuid(),

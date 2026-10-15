@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { Avisos, MiComunidad, MisLugares, NuevoPlan, PlanDetalle } from './comunidad';
+import { Permisos } from './diario';
 import type { Api, Carta, Lugar, Perfil, Plan } from '@/lib/api';
 
 const casa: Lugar = { id: 'l1', nombre: 'Casa', ciudad: '05001', barrio: null, zona: 'Medellín', activo: true };
@@ -8,17 +9,38 @@ const perfil: Perfil = { nombre: 'Rosa Prueba', nacimientoPendiente: false, comu
 const caminata: Plan = { id: 'p1', titulo: 'Caminata por el parque', descripcion: '', cuando: '2026-10-13T15:00:00.000Z', lugarPublico: 'Parque de los Deseos',
   zona: 'Medellín', franja: 'En tu ciudad', alcance: 'ciudad', tipo: 'caminar', repite: null, diaRepite: null, autor: 'Luis', mio: false, voy: false, lleno: false };
 const ok = <T,>(datos: T) => vi.fn(async () => ({ ok: true as const, datos }));
-const api = (extra: Partial<Api> = {}) => ({ planes: ok([caminata]), irAPlan: ok([{ ...caminata, voy: true }]), lugares: ok([casa]), cartas: ok([]), cartaVista: ok([]), mapa: ok({ disponible: false }), ...extra }) as unknown as Api;
+const api = (extra: Partial<Api> = {}) => ({ planes: ok([caminata]), irAPlan: ok([{ ...caminata, voy: true }]), lugares: ok([casa]), cartas: ok([]), cartaVista: ok([]), mapa: ok({ disponible: false }), zona: ok([]), perfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: false }), ...extra }) as unknown as Api;
 
-describe('Mi comunidad', () => {
+describe('Mi barrio', () => {
   it('saluda, dice dónde está la persona y muestra los planes cercanos con distancia por franjas', async () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
-    expect(screen.getByRole('heading', { level: 1, name: 'Mi comunidad' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Mi barrio' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Estás en/ })).toHaveTextContent('Estás en: Casa · Medellín');
-    expect(await screen.findByText(/Hola, Rosa. Puedes sumarte/)).toBeInTheDocument();
+    expect(await screen.findByText(/Hola, Rosa. Esto pasa cerca de ti/)).toBeInTheDocument();
     expect(await screen.findByText('Caminata por el parque')).toBeInTheDocument();
     expect(screen.getByText('Parque de los Deseos · Medellín · En tu ciudad')).toBeInTheDocument();
-    expect(screen.getByText(/inteligencia artificial/)).toBeInTheDocument();
+  });
+
+  it('una sola barra: Brisa, Mi barrio y Mi gente, y lo demás en «Más»', async () => {
+    const ir = vi.fn();
+    const salir = vi.fn();
+    render(<Permisos.Provider value={{ equipo: false, organizaciones: true }}><MiComunidad perfil={perfil} api={api()} ir={ir} onSalir={salir}/></Permisos.Provider>);
+    const lugares = screen.getByRole('navigation', { name: 'Lugares' });
+    expect(within(lugares).getByRole('button', { name: 'Mi barrio' })).toHaveAttribute('aria-current', 'page');
+    fireEvent.click(within(lugares).getByRole('button', { name: 'Mi gente' }));
+    expect(ir).toHaveBeenCalledWith('/gente');
+    fireEvent.click(within(lugares).getByRole('button', { name: 'Más' }));
+    expect(screen.getByRole('button', { name: 'Convocar como entidad' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Equipo de MOAI' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+    expect(salir).toHaveBeenCalled();
+  });
+
+  it('los vecinos son una pestaña de Mi barrio', async () => {
+    render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(screen.getByRole('button', { name: 'Vecinos' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Vecinos' })).toBeInTheDocument();
+    expect(await screen.findByText(/Todavía nadie de tu zona ha mostrado su tarjeta/)).toBeInTheDocument();
   });
 
   it('«Me sumo» se refleja con lo que responde el servidor', async () => {
@@ -31,7 +53,7 @@ describe('Mi comunidad', () => {
 
   it('sin planes invita a proponer el primero, sin inventar nada', async () => {
     render(<MiComunidad perfil={perfil} api={api({ planes: ok([]) })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    expect(await screen.findByText('Aún no hay planes cerca. ¿Y si cuentas qué vas a hacer esta semana?')).toBeInTheDocument();
+    expect(await screen.findByText('Aún no hay planes cerca. ¿Y si le cuentas a Brisa qué tienes ganas de hacer?')).toBeInTheDocument();
   });
 
   it('sin lugar pide elegir uno', () => {
@@ -110,7 +132,19 @@ describe('Conversación del plan', () => {
     fireEvent.change(screen.getByLabelText('Escribe un mensaje'), { target: { value: 'Llego 5 minutos tarde' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
     expect(await screen.findByText('Llego 5 minutos tarde')).toBeInTheDocument();
-    expect(enviarMensaje).toHaveBeenCalledWith('p1', 'Llego 5 minutos tarde');
+    expect(enviarMensaje).toHaveBeenCalledWith('p1', 'Llego 5 minutos tarde', false);
+  });
+
+  it('ante un aviso, quien escribe decide: cambiarlo o enviarlo igual', async () => {
+    const enviarMensaje = vi.fn(async (_id: string, _t: string, confirmado?: boolean) => confirmado
+      ? { ok: true as const, datos: [{ id: '1', autor: 'Tú', mio: true, texto: 'Mi Nequi es…', creado: '2026-10-12T12:00:00Z' }] }
+      : { ok: false as const, error: 'En MOAI no se pide ni se maneja dinero.', status: 409 });
+    render(<PlanDetalle id="p1" api={api({ plan: ok({ ...caminata, voy: true }), mensajes: ok([]), enviarMensaje } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.change(await screen.findByLabelText('Escribe un mensaje'), { target: { value: 'Mi Nequi es…' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    expect(await screen.findByText('En MOAI no se pide ni se maneja dinero.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar de todos modos' }));
+    await vi.waitFor(() => expect(enviarMensaje).toHaveBeenLastCalledWith('p1', 'Mi Nequi es…', true));
   });
 
   it('quien no se ha sumado no ve la conversación', async () => {

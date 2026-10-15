@@ -24,6 +24,7 @@ function Caso({ caso, onDecidir }: { caso: CasoReporte; onDecidir: (d: Decision)
     <ul className="reportes">
       {caso.reportes.map(r => <li key={r.id} className={r.revisado ? 'revisado' : undefined}>
         <p><strong>{motivo(r.motivo)}</strong> · reportó {r.de} · {fecha(r.fecha)}{r.decision ? ` · ${decisiones[r.decision] ?? r.decision}` : ''}</p>
+        {r.mensaje && <p className="reporte-mensaje">Mensaje reportado: «{r.mensaje}»</p>}
         {r.detalle && <p className="reporte-detalle">«{r.detalle}»</p>}
       </li>)}
     </ul>
@@ -97,7 +98,7 @@ function Entidades({ api }: { api: Api }) {
 
 export function Equipo({ api, ir, onSalir, permitido }: { api: Api; ir: Ir; onSalir: () => void; permitido: boolean }) {
   const [vista, setVista] = useState<'reportes' | 'entidades'>('reportes');
-  return <Diario titulo="Equipo de MOAI" bajada="Revisar reportes y dar de alta entidades. Lo que ves aquí es confidencial." ir={ir} actual="/equipo" onSalir={onSalir}>
+  return <Diario titulo="Equipo de MOAI" bajada="Revisar reportes y dar de alta entidades. Lo que ves aquí es confidencial." ir={ir} onSalir={onSalir}>
     {!permitido ? <p>Esta sección es solo para el equipo de MOAI.</p> : <>
       <div className="modo" role="group" aria-label="Sección">
         <button type="button" aria-pressed={vista === 'reportes'} onClick={() => setVista('reportes')}>Reportes</button>

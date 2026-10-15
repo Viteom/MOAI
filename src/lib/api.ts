@@ -22,7 +22,7 @@ export type Plan = {
   tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; autorRef?: string; organizacion?: { nombre: string; tipo: TipoOrganizacion }; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
 };
 // `cuando` es la próxima ocurrencia (en los planes semanales, la de esta semana o la siguiente).
-export type Mensaje = { id: string; autor: string; mio: boolean; texto: string; creado: string };
+export type Mensaje = { id: string; autor: string; autorRef?: string; mio: boolean; texto: string; creado: string };
 // Lo que Brisa le cuenta a la persona: «fuiste por tu cuenta» o una recomendación que ella pidió (regla 9).
 export type Carta =
   | { clave: string; tipo: 'solo'; planId: string; texto: string; repetir: boolean }
@@ -56,11 +56,11 @@ export type Invitacion =
   | { id: string; tipo: 'entrar'; de: string; nombre: string; miembros: string[] }
   | { id: string; tipo: 'aprobar'; de: string; nombre: string; persona: string };
 export type Gente = { encuentros: Encuentro[]; conocidos: Conocido[]; moais: MoaiResumen[]; invitaciones: Invitacion[]; pausa: boolean };
-export type Reporte = { ref: string; motivo: MotivoReporte; detalle?: string; bloquear?: boolean };
+export type Reporte = { ref: string; motivo: MotivoReporte; detalle?: string; bloquear?: boolean; mensaje?: { tipo: 'plan' | 'moai'; id: string } };
 // Solo para el equipo: una persona reportada y sus reportes.
 export type CasoReporte = {
   cuenta: string; nombre: string; correo: string; suspendida: boolean; pausa: boolean; pendientes: number;
-  reportes: { id: string; de: string; motivo: string; detalle: string; fecha: string; revisado: boolean; decision: string | null }[];
+  reportes: { id: string; de: string; motivo: string; detalle: string; mensaje: string | null; fecha: string; revisado: boolean; decision: string | null }[];
 };
 export type Decision = 'sin_medidas' | 'suspender' | 'reactivar';
 export type OrganizacionEquipo = { id: string; nombre: string; tipo: TipoOrganizacion; activa: boolean; responsables: string[] };
@@ -109,7 +109,7 @@ export const api = {
   plan: (id: string) => llamar<Plan>(`planes/${encodeURIComponent(id)}`),
   repetirPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/repetir`, {}),
   mensajes: (id: string) => llamar<Mensaje[]>(`planes/${encodeURIComponent(id)}/mensajes`),
-  enviarMensaje: (id: string, texto: string) => llamar<Mensaje[]>(`planes/${encodeURIComponent(id)}/mensajes`, { texto }),
+  enviarMensaje: (id: string, texto: string, confirmado = false) => llamar<Mensaje[]>(`planes/${encodeURIComponent(id)}/mensajes`, { texto, confirmado }),
   cartas: () => llamar<Carta[]>('brisa'),
   cartaVista: (clave: string) => llamar<Carta[]>('brisa/visto', { clave }),
   mapa: () => llamar<Mapa>('mapa'),
@@ -123,7 +123,7 @@ export const api = {
   renombrarMoai: (id: string, nombre: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/nombre`, { nombre }),
   salirDeMoai: (id: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/salir`, {}),
   mensajesMoai: (id: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`),
-  enviarMensajeMoai: (id: string, texto: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`, { texto }),
+  enviarMensajeMoai: (id: string, texto: string, confirmado = false) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`, { texto, confirmado }),
   bloquear: (ref: string) => llamar<Gente>('personas/bloquear', { ref }),
   reportar: (reporte: Reporte) => llamar<Gente>('personas/reportar', reporte),
   casos: () => llamar<CasoReporte[]>('equipo/casos'),

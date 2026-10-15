@@ -13,6 +13,7 @@ import type { Db } from './db';
 import { enPausa, type Refs } from './personas';
 import { cartasDeGente } from './moais';
 import { mensajePausa } from '../src/lib/moai';
+import { revisarMensaje } from '../src/lib/moderacion';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
 import { organizacionesDe } from './equipo';
 import { cartaInterna, cartaRepetirCuidado } from './cuidado';
@@ -267,7 +268,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   };
   const mensajesDe = async (cuenta: string, plan: string): Promise<Mensaje[]> => (await db.query<{ id: string; autor_id: string; autor: string; texto: string; creado_en: string }>(
     `select m.id::text, m.autor_id, split_part(c.nombre, ' ', 1) as autor, m.texto, m.creado_en from plan_mensajes m join cuentas c on c.id = m.autor_id
-     where m.plan_id = $1 order by m.creado_en, m.id`, [plan])).map(m => ({ id: m.id, autor: m.autor_id === cuenta ? 'Tú' : m.autor, mio: m.autor_id === cuenta, texto: m.texto, creado: new Date(m.creado_en).toISOString() }));
+     where m.plan_id = $1 order by m.creado_en, m.id`, [plan])).map(m => ({ id: m.id, autor: m.autor_id === cuenta ? 'Tú' : m.autor, autorRef: m.autor_id === cuenta ? undefined : refs.ref(cuenta, m.autor_id), mio: m.autor_id === cuenta, texto: m.texto, creado: new Date(m.creado_en).toISOString() }));
 
   app.get<{ Params: { plan: string } }>('/api/planes/:plan/mensajes', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
@@ -282,6 +283,10 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     const texto = String((request.body as { texto?: string } | undefined)?.texto ?? '').trim();
     if (!texto) return reply.code(400).send({ error: 'Escribe algo antes de enviar.' });
     if (texto.length > MAX_MENSAJE) return reply.code(400).send({ error: 'Ese mensaje es muy largo. Escríbelo en dos partes.' });
+    // Revisión antes de enviar (sin IA, nada se guarda): lo grave no se envía; lo riesgoso se avisa y se puede confirmar.
+    const revision = revisarMensaje(texto);
+    if (revision.nivel === 'bloqueo') return reply.code(422).send({ error: revision.motivo });
+    if (revision.nivel === 'aviso' && (request.body as { confirmado?: boolean } | undefined)?.confirmado !== true) return reply.code(409).send({ error: revision.motivo, aviso: true });
     await db.query('insert into plan_mensajes (plan_id, autor_id, texto) values ($1, $2, $3)', [request.params.plan, id, texto]);
     return mensajesDe(id, request.params.plan);
   });

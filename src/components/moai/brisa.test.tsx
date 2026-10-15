@@ -8,6 +8,8 @@ const perfil: Perfil = { nombre: 'Rosa Pérez', nacimientoPendiente: false, comu
 const ok = <T,>(datos: T) => vi.fn(async () => ({ ok: true as const, datos }));
 const api = (extra: Partial<Api> = {}) => ({ cartas: ok([]), cartaVista: ok([]), planes: ok([]), cuidado: ok({ letras: null, guardado: false }), crearPlan: ok([]), responderCuidado: ok({ letras: ['A'], guardado: true }), estado: ok({ invierno: false, puertaAbierta: false, contadoA: [] }), invierno: ok({ invierno: true, puertaAbierta: false, contadoA: [] }), interno: ok([{ id: 'p1', nombre: 'Laura', relacion: '', pendiente: false }]), gente: ok({ encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false }), perfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: false }), guardarPerfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: true }), ...extra }) as unknown as Api;
 const elegir = (texto: string) => fireEvent.click(screen.getByRole('button', { name: texto }));
+// Las opciones llegan cuando Brisa termina de hablar: se esperan.
+const elegirCuandoAparezca = async (texto: string) => fireEvent.click(await screen.findByRole('button', { name: texto }));
 
 describe('Brisa entiende', () => {
   it('días, horas y planes dichos con palabras', () => {
@@ -33,6 +35,17 @@ describe('Inicio con Brisa', () => {
     expect(screen.getByText('IA')).toBeInTheDocument();
     expect(screen.getByText('No soy una persona: soy una inteligencia artificial.')).toBeInTheDocument();
     expect(a.cartaVista).toHaveBeenCalledWith('brisa:presentada');
+    // Pocas opciones a la vez: la primera vez, lo primero es contar de ti.
+    expect(await screen.findByRole('button', { name: 'Cuéntame de ti' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /./ }).filter(b => b.closest('.brisa-opciones'))).toHaveLength(4);
+  });
+
+  it('las cartas pendientes llegan de a una, y después la pregunta', async () => {
+    const carta = { clave: 'c1', tipo: 'gente' as const, texto: 'Alguien te invitó a su Moai' };
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ cartas: ok([carta, { ...carta, clave: 'c2', texto: 'Tienes un saludo' }]) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText('Antes, algo que quería contarte:')).toBeInTheDocument();
+    expect(screen.queryByText('Y otra cosa:')).toBeNull();
+    expect(screen.queryByText('¿Qué te provoca hoy?')).toBeNull();
   });
 
   it('arma un plan conversando y lo publica', async () => {
@@ -53,7 +66,8 @@ describe('Inicio con Brisa', () => {
   it('el test de cuidado: seis preguntas, resultado en palabras y se guarda solo si la persona quiere', async () => {
     const responderCuidado = ok({ letras: ['A' as const], guardado: true });
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ responderCuidado })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    elegir('Cómo estoy');
+    await elegirCuandoAparezca('Cómo estoy');
+    await elegirCuandoAparezca('Más o menos');
     elegir(await screen.findByRole('button', { name: 'Quiero cuidarme' }).then(b => b.textContent!));
     elegir(await screen.findByRole('button', { name: '¿Cómo cuido y cómo me cuido?' }).then(b => b.textContent!));
     elegir('Empezar');
@@ -76,8 +90,10 @@ describe('Brisa acompaña', () => {
   it('arma la tarjeta conversando y la muestra solo si la persona quiere', async () => {
     const guardarPerfilPublico = vi.fn(async (p: object) => ({ ok: true as const, datos: p })) as unknown as Api['guardarPerfilPublico'];
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ guardarPerfilPublico })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    await elegirCuandoAparezca('Otra cosa');
     elegir('Cuéntame de ti');
     elegir(await screen.findByRole('button', { name: 'La huerta' }).then(b => b.textContent!));
+    elegir('Ver más');
     elegir('Tejer');
     elegir('Eso es todo');
     fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'Enseño a tejer' } });
@@ -93,7 +109,7 @@ describe('Brisa acompaña', () => {
   it('en invierno baja el ritmo y ofrece escribirle a alguien del Moai interno, sin enviar nada por su cuenta', async () => {
     const invierno = vi.fn(async () => ({ ok: true as const, datos: { invierno: true, puertaAbierta: false, contadoA: [] } }));
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ invierno })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    elegir('Cómo estoy');
+    await elegirCuandoAparezca('Cómo estoy');
     elegir(await screen.findByRole('button', { name: 'En invierno' }).then(b => b.textContent!));
     expect(invierno).toHaveBeenCalledWith(true);
     elegir(await screen.findByRole('button', { name: 'Escribirle a Laura' }).then(b => b.textContent!));

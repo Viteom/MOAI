@@ -141,3 +141,32 @@ describe('Test de cuidado', () => {
     expect((await rosa.json('GET', '/api/cuidado')).letras).toEqual(['A']);
   });
 });
+
+describe('Mensajes: revisión antes de enviar y reportar uno concreto (decisión de Mateo)', () => {
+  it('lo grave no se envía; lo riesgoso se avisa y se puede confirmar', async () => {
+    const juan = await persona('Juan');
+    const p = await crearPlan(juan, 'Tinto');
+    const bloqueado = await juan.pedir('POST', `/api/planes/${p.id}/mensajes`, { texto: 'Te voy a matar' });
+    expect(bloqueado.statusCode).toBe(422);
+    const aviso = await juan.pedir('POST', `/api/planes/${p.id}/mensajes`, { texto: 'Mi Nequi es 300 555 0101' });
+    expect(aviso.statusCode).toBe(409);
+    expect(aviso.json()).toMatchObject({ aviso: true });
+    expect(await db.query('select 1 from plan_mensajes')).toEqual([]);
+    expect((await juan.pedir('POST', `/api/planes/${p.id}/mensajes`, { texto: 'Mi Nequi es 300 555 0101', confirmado: true })).statusCode).toBe(200);
+  });
+
+  it('al reportar un mensaje, el equipo ve el texto real; no se puede reportar uno de una conversación ajena', async () => {
+    const juan = await persona('Juan'), ana = await persona('Ana'), luis = await persona('Luis');
+    const p = await crearPlan(juan, 'Caminata');
+    await ana.pedir('POST', `/api/planes/${p.id}/ir`);
+    await juan.pedir('POST', `/api/planes/${p.id}/mensajes`, { texto: 'No seas idiota, llega puntual', confirmado: true });
+    const [m] = await ana.json('GET', `/api/planes/${p.id}/mensajes`);
+    expect(m.autorRef).toEqual(expect.any(String));
+    expect((await ana.pedir('POST', '/api/personas/reportar', { ref: m.autorRef, motivo: 'trato', mensaje: { tipo: 'plan', id: m.id } })).statusCode).toBe(200);
+    const [r] = await db.query<{ mensaje: string }>('select mensaje from reportes');
+    expect(r.mensaje).toBe('No seas idiota, llega puntual');
+    // Luis no está en ese plan: aunque conozca el autor por el plan público, no puede reportar ese mensaje.
+    const ref = (await luis.json('GET', '/api/planes'))[0].autorRef;
+    expect((await luis.pedir('POST', '/api/personas/reportar', { ref, motivo: 'trato', mensaje: { tipo: 'plan', id: m.id } })).statusCode).toBe(404);
+  });
+});

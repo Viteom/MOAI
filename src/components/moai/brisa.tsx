@@ -8,13 +8,20 @@ import { Button } from '@/components/ui/button';
 import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
-import { avisoCuidado, preguntasCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
+import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
 import { OrbeBrisa } from './bosque';
-import { MenuMas, type Ir } from './diario';
+import { Barra, type Ir } from './diario';
 import { EscenaCuidado } from './escena';
 
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
-type Opcion = { texto: string; hacer: () => void };
+// `silencioso`: opciones como «Otra cosa» que solo muestran más opciones, sin aparecer como respuesta de la persona.
+type Opcion = { texto: string; hacer: () => void; silencioso?: boolean };
+// Ritmo (pedido de Mateo, 15 de octubre): Brisa escribe un mensaje a la vez, con una pausa en la que se ve
+// «Brisa está escribiendo…», y las opciones aparecen cuando termina. En las pruebas, sin pausas.
+const CON_PAUSAS = import.meta.env.MODE !== 'test';
+const pausaPara = (m: { contenido: ReactNode; nota?: boolean }) =>
+  m.nota ? 250 : Math.min(1500, 500 + (typeof m.contenido === 'string' ? m.contenido.length : 80) * 10);
+const esperar = (ms: number) => new Promise(r => setTimeout(r, ms));
 type Borrador = { titulo: string; tipo: Tipo; dia?: Date; hora?: string; lugar?: string; semanal: boolean };
 type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'perfil-gustos' | 'perfil-comparte' | 'perfil-aprender' | 'perfil-frase';
 
@@ -98,7 +105,13 @@ function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
 export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado' }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
-  const [opciones, setOpciones] = useState<Opcion[]>([]);
+  const [opciones, setOpcionesVisibles] = useState<Opcion[]>([]);
+  const [escribiendo, setEscribiendo] = useState(false);
+  const cola = useRef<Mensaje[]>([]);
+  const opcionesPendientes = useRef<Opcion[] | null>(null);
+  const procesando = useRef(false);
+  const vivo = useRef(true);
+  useEffect(() => { vivo.current = true; return () => { vivo.current = false; }; }, []); // en desarrollo React monta dos veces
   const [texto, setTexto] = useState('');
   const paso = useRef<Paso>('libre');
   const borrador = useRef<Borrador | null>(null);
@@ -109,36 +122,73 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   const final = useRef<HTMLDivElement>(null);
   const iniciado = useRef(false);
 
-  const decir = useCallback((...contenidos: ReactNode[]) => setMensajes(m => [...m, ...contenidos.map(c => ({ id: siguiente.current++, de: 'brisa' as const, contenido: c }))]), []);
-  const nota = useCallback((c: ReactNode) => setMensajes(m => [...m, { id: siguiente.current++, de: 'brisa', contenido: c, nota: true }]), []);
-  const yo = useCallback((t: string) => setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]), []);
+  // Los mensajes de Brisa entran en fila: uno a la vez, con su pausa. Las opciones esperan a que termine.
+  const procesar = useCallback(async () => {
+    if (procesando.current) return;
+    procesando.current = true;
+    try {
+      while (cola.current.length) {
+        const m = cola.current.shift()!;
+        setEscribiendo(!m.nota);
+        await esperar(pausaPara(m));
+        if (!vivo.current) return;
+        setEscribiendo(false);
+        setMensajes(ms => [...ms, m]);
+        await esperar(150);
+      }
+    } finally { procesando.current = false; }
+    if (opcionesPendientes.current && vivo.current) { setOpcionesVisibles(opcionesPendientes.current); opcionesPendientes.current = null; }
+  }, []);
+  const encolar = useCallback((nuevos: Mensaje[]) => {
+    if (!CON_PAUSAS) { setMensajes(m => [...m, ...nuevos]); return; }
+    cola.current.push(...nuevos);
+    void procesar();
+  }, [procesar]);
+  const setOpciones = useCallback((ops: Opcion[]) => {
+    if (!CON_PAUSAS || !ops.length || (!procesando.current && !cola.current.length)) { opcionesPendientes.current = null; setOpcionesVisibles(ops); return; }
+    opcionesPendientes.current = ops;
+    setOpcionesVisibles([]);
+  }, []);
+  // Como mucho tres opciones a la vista; el resto, detrás de «Otra cosa».
+  const pocas = (ops: Opcion[], n = 3, mas = 'Otra cosa', despues: Opcion[] = []): Opcion[] => ops.length <= n + 1 ? [...ops, ...despues] : [
+    ...ops.slice(0, n),
+    { texto: mas, silencioso: true, hacer: () => setOpciones([...ops.slice(n), { texto: 'Volver', silencioso: true, hacer: () => setOpciones(pocas(ops, n, mas, despues)) }, ...despues]) },
+    ...despues,
+  ];
+  const decir = useCallback((...contenidos: ReactNode[]) => encolar(contenidos.map(c => ({ id: siguiente.current++, de: 'brisa' as const, contenido: c }))), [encolar]);
+  const nota = useCallback((c: ReactNode) => encolar([{ id: siguiente.current++, de: 'brisa', contenido: c, nota: true }]), [encolar]);
+  const hablo = useRef(false); // si la persona ya tomó la palabra, el saludo no la interrumpe con más cartas
+  const yo = useCallback((t: string) => { hablo.current = true; setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]); }, []);
   useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes]);
 
   // ---- Menú principal ----
-  const menu = useCallback((): Opcion[] => [
-    { texto: 'Conocer vecinos', hacer: () => conocer() },
-    { texto: 'Qué pasa cerca', hacer: () => void cerca() },
-    { texto: 'Tengo ganas de…', hacer: () => iniciarPlan() },
-    { texto: 'Cómo estoy', hacer: () => void comoEstoy() },
-    { texto: 'Cuéntame de ti', hacer: () => void iniciarPerfil() },
-    { texto: 'Cómo funciona', hacer: () => comoFunciona() },
-  ], []); // eslint-disable-line react-hooks/exhaustive-deps
+  // La primera vez, lo primero es contar de ti; después, lo de todos los días. El resto, detrás de «Otra cosa».
+  const primeraVez = !perfil.presentada;
+  const menu = useCallback((): Opcion[] => {
+    const cuentame = { texto: 'Cuéntame de ti', hacer: () => void iniciarPerfil() };
+    const cerca_ = { texto: 'Qué pasa cerca', hacer: () => void cerca() };
+    const ganas = { texto: 'Tengo ganas de…', hacer: () => iniciarPlan() };
+    const estoy = { texto: 'Cómo estoy', hacer: () => void comoEstoy() };
+    const vecinos = { texto: 'Conocer vecinos', hacer: () => conocer() };
+    const funciona = { texto: 'Cómo funciona', hacer: () => comoFunciona() };
+    return pocas(primeraVez ? [cuentame, cerca_, ganas, estoy, vecinos, funciona] : [cerca_, ganas, estoy, vecinos, cuentame, funciona]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const volver = (pregunta = '¿Qué más te provoca?') => { paso.current = 'libre'; decir(pregunta); setOpciones(menu()); };
-  const elegir = (o: Opcion) => { yo(o.texto); setOpciones([]); o.hacer(); };
+  const elegir = (o: Opcion) => { if (!o.silencioso) yo(o.texto); setOpciones([]); o.hacer(); };
 
   function conocer() {
     decir('Aquí la gente se conoce haciendo cosas sencillas juntas: una caminata, un tinto, una partida en el parque.',
       'Después de cada plan te pregunto con quién te viste. Con esas personas puedes formar un Moai, aunque sean solo dos.');
-    setOpciones([{ texto: 'Ver vecinos de mi zona', hacer: () => ir('/zona') }, { texto: 'Qué pasa cerca', hacer: () => void cerca() }, { texto: 'Ir a Mi gente', hacer: () => ir('/gente') }]);
+    setOpciones([{ texto: 'Ver vecinos', hacer: () => ir('/zona') }, { texto: 'Qué pasa cerca', hacer: () => void cerca() }, { texto: 'Ir a Mi gente', hacer: () => ir('/gente') }]);
   }
   async function cerca() {
     if (!perfil.lugar) { decir('Primero cuéntame dónde vives, así te muestro lo que pasa cerca.'); setOpciones([{ texto: 'Elegir mi lugar', hacer: () => ir('/lugares') }]); return; }
     const r = await api.planes();
     const planes = r.ok ? r.datos.filter(p => !p.mio).slice(0, 3) : [];
     if (!r.ok) { decir(r.error); volver(); return; }
-    if (!planes.length) { decir('Todavía no hay planes cerca de ti. ¿Y si propones uno? Casi siempre alguien se anima.'); setOpciones([{ texto: 'Tengo ganas de…', hacer: () => iniciarPlan() }, ...menu().slice(3)]); return; }
+    if (!planes.length) { decir('Todavía no hay planes cerca de ti. ¿Y si propones uno? Casi siempre alguien se anima.'); setOpciones([{ texto: 'Tengo ganas de…', hacer: () => iniciarPlan() }, { texto: 'Volver', silencioso: true, hacer: () => volver() }]); return; }
     decir(planes.length === 1 ? 'Esto pasa cerca de ti:' : 'Esto pasa cerca de ti estos días:', ...planes.map(p => <MiniPlan key={p.id} plan={p} api={api} ir={ir}/>));
-    setOpciones([{ texto: 'Ver el mapa', hacer: () => ir('/comunidad') }, { texto: 'Tengo ganas de…', hacer: () => iniciarPlan() }, { texto: 'Volver', hacer: () => volver() }]);
+    setOpciones([{ texto: 'Ver Mi barrio', hacer: () => ir('/comunidad') }, { texto: 'Tengo ganas de…', hacer: () => iniciarPlan() }, { texto: 'Volver', hacer: () => volver() }]);
   }
   function comoFunciona() {
     decir('MOAI es para encontrarte con gente cerca de casa, sin presión.',
@@ -153,7 +203,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     if (semilla) { borrador.current = { ...semilla, semanal: false }; preguntarDia(); return; }
     paso.current = 'plan-que';
     decir('¡Qué bien! ¿Qué tienes ganas de hacer? Elige una idea o escríbemelo con tus palabras.');
-    setOpciones(plantillas.map(p => ({ texto: p.nombre, hacer: () => { borrador.current = { titulo: p.titulo, tipo: p.tipo, semanal: false }; preguntarDia(); } })));
+    setOpciones(pocas(plantillas.map(p => ({ texto: p.nombre, hacer: () => { borrador.current = { titulo: p.titulo, tipo: p.tipo, semanal: false }; preguntarDia(); } }))));
   }
   function preguntarDia() {
     paso.current = 'plan-dia';
@@ -246,10 +296,9 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   function preguntarGustos() {
     paso.current = 'perfil-gustos';
     const elegidos = borradorPerfil.current.gustos;
-    setOpciones([
-      ...plantillas.filter(p => !elegidos.includes(p.tipo)).map(p => ({ texto: p.nombre, hacer: () => { borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, p.tipo]; preguntarGustos(); } })),
-      { texto: elegidos.length ? 'Eso es todo' : 'Prefiero no decir', hacer: () => preguntarComparte() },
-    ]);
+    setOpciones(pocas(
+      plantillas.filter(p => !elegidos.includes(p.tipo)).map(p => ({ texto: p.nombre, hacer: () => { borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, p.tipo]; preguntarGustos(); } })),
+      3, 'Ver más', [{ texto: elegidos.length ? 'Eso es todo' : 'Prefiero no decir', hacer: () => preguntarComparte() }]));
   }
   function preguntarComparte() {
     paso.current = 'perfil-comparte';
@@ -271,10 +320,10 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     const p = { ...borradorPerfil.current };
     if (!p.frase && !p.comparte && !p.gustos.length) { decir('Está bien, no hace falta contar nada ahora. Cuando quieras, aquí estoy.'); volver(); return; }
     decir('Así te verían tus vecinos:', <TarjetaPerfil key={`perfil-${siguiente.current}`} nombre={nombre} perfil={p}/>,
-      '¿La muestro en Mi zona? Solo la verían vecinos de tu zona, nunca tu dirección. Puedes cambiarlo cuando quieras.');
+      '¿La muestro a tus vecinos? La verían en Mi barrio, en «Vecinos», nunca con tu dirección. Puedes cambiarlo cuando quieras.');
     const guardar = (visible: boolean) => void api.guardarPerfilPublico({ ...p, visible }).then(r => {
-      decir(!r.ok ? r.error : visible ? 'Listo, tu tarjeta ya se ve en Mi zona. Cuando alguien te salude, te cuento.' : 'Guardado. No se muestra a nadie por ahora.');
-      setOpciones([{ texto: 'Ver Mi zona', hacer: () => ir('/zona') }, { texto: 'Volver', hacer: () => volver() }]);
+      decir(!r.ok ? r.error : visible ? 'Listo, tus vecinos ya pueden ver tu tarjeta. Cuando alguien te salude, te cuento.' : 'Guardado. No se muestra a nadie por ahora.');
+      setOpciones([{ texto: 'Ver vecinos', hacer: () => ir('/zona') }, { texto: 'Volver', hacer: () => volver() }]);
     });
     setOpciones([{ texto: 'Sí, mostrarla', hacer: () => guardar(true) }, { texto: 'Guardarla sin mostrar', hacer: () => guardar(false) }, { texto: 'Empezar de nuevo', hacer: () => void iniciarPerfil() }]);
   }
@@ -291,12 +340,12 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       return;
     }
     decir('¿Cómo estás estos días?');
+    // Cuatro respuestas a la vista; «Quiero cuidarme» aparece después de «Más o menos» o «Me siento sola o solo».
     setOpciones([
       { texto: 'Bien', hacer: () => volver('¡Qué bueno! ¿Qué te provoca hoy?') },
       { texto: 'Más o menos', hacer: () => ofrecerPuerta() },
       { texto: 'Me siento sola o solo', hacer: () => ofrecerPuerta() },
       { texto: 'En invierno', hacer: () => void api.invierno(true).then(() => { decir('Gracias por contármelo. Voy a bajar el ritmo: mientras dure, no te sugiero planes ni te llegan correos de planes.'); void acompanarInvierno(); }) },
-      { texto: 'Quiero cuidarme', hacer: () => void cuidarme() },
     ]);
   }
   function ofrecerPuerta() {
@@ -378,19 +427,35 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   useEffect(() => {
     if (iniciado.current) return;
     iniciado.current = true;
-    decir(`Soy Brisa, tu compañera en MOAI. Estoy aquí para ayudarte a encontrar a tu gente, cerca de casa.`);
-    if (!perfil.presentada) { nota('No soy una persona: soy una inteligencia artificial.'); void api.cartaVista('brisa:presentada'); }
+    // La primera vez se presenta; después, un saludo corto. Una cosa a la vez: primero lo pendiente, después la pregunta.
+    if (primeraVez) {
+      decir('Soy Brisa, tu compañera en MOAI.');
+      nota('No soy una persona: soy una inteligencia artificial.');
+      void api.cartaVista('brisa:presentada');
+      decir('Estoy aquí para ayudarte a encontrar a tu gente, cerca de casa.');
+    } else decir('Qué bueno verte otra vez.');
     if (empezar === 'plan') { iniciarPlan(); return; }
     if (empezar === 'perfil') { void iniciarPerfil(); return; }
     if (empezar === 'estado') { void comoEstoy(); return; }
-    decir('Aquí puedes conocer a tus vecinos, sumarte a lo que pasa en tu zona y, con el tiempo, formar tu Moai. ¿Qué te provoca hoy?');
     if (!perfil.lugar) {
       decir('Para mostrarte lo que pasa cerca, primero cuéntame dónde vives. Solo guardo una zona aproximada, nunca tu dirección.');
-      setOpciones([{ texto: 'Elegir dónde vivo', hacer: () => ir('/lugares') }, ...menu()]);
-    } else setOpciones(menu());
+      setOpciones([{ texto: 'Elegir dónde vivo', hacer: () => ir('/lugares') }, { texto: 'Otra cosa', silencioso: true, hacer: () => setOpciones(menu()) }]);
+      return;
+    }
+    // Las cartas pendientes (invitaciones, saludos, recordatorios), de a una: la siguiente cuando se atiende la anterior.
     void api.cartas().then(r => {
-      if (!r.ok || !r.datos.length) return;
-      decir('Antes, algo que quería contarte:', ...r.datos.map(c => <CartaEnChat key={c.clave} carta={c} api={api} ir={ir} alTerminar={() => {}} alCuidado={() => setEscena(true)}/>));
+      const cartas = r.ok ? r.datos : [];
+      const mostrar = (i: number) => {
+        if (hablo.current) return;
+        if (i >= cartas.length) {
+          decir(i ? '¿Qué más te provoca?' : primeraVez ? '¿Por dónde quieres empezar?' : '¿Qué te provoca hoy?');
+          setOpciones(menu());
+          return;
+        }
+        decir(i ? 'Y otra cosa:' : 'Antes, algo que quería contarte:',
+          <CartaEnChat key={cartas[i].clave} carta={cartas[i]} api={api} ir={ir} alTerminar={() => mostrar(i + 1)} alCuidado={() => setEscena(true)}/>);
+      };
+      mostrar(0);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -399,6 +464,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
 </div>
     <div className="brisa-mensajes" aria-live="polite">
       {mensajes.map(m => <div key={m.id} className={`burbuja de-${m.de}${m.nota ? ' nota' : ''}`}>{m.contenido}</div>)}
+      {escribiendo && <div className="burbuja de-brisa escribiendo" role="status" aria-label="Brisa está escribiendo"><span/><span/><span/></div>}
       <div ref={final}/>
     </div>
     {opciones.length > 0 && <div className="brisa-opciones" role="group" aria-label="Respuestas sugeridas">
@@ -417,15 +483,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
 export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
   return <div className="inicio-ciudad">
     <img className="inicio-fondo" src="/backgrounds/comunidad-ilustrada.webp" alt="" aria-hidden="true"/>
-    <header className="inicio-cabecera vidrio">
-      <span className="diario-marca">MOAI</span>
-      <nav aria-label="Secciones">
-        <button type="button" onClick={() => ir('/comunidad')}>Mapa</button>
-        <button type="button" onClick={() => ir('/lazos')}>Lazos</button>
-        <button type="button" onClick={() => ir('/zona')}>Mi zona</button>
-      </nav>
-      <MenuMas ir={ir} onSalir={onSalir} equipo={perfil.equipo} organizaciones={!!perfil.organizaciones?.length}/>
-    </header>
+    <Barra ir={ir} onSalir={onSalir} actual="brisa"/>
     <aside className="panel-brisa vidrio" aria-labelledby="inicio-titulo">
       <h1 id="inicio-titulo" tabIndex={-1}>Hola, {perfil.nombre.split(' ')[0]}</h1>
       <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar}/>

@@ -8,6 +8,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
   DIAS_ENCUENTRO, DIAS_MENSAJES_MOAI, ENCUENTROS_PARA_SUGERIR, MAX_DETALLE_REPORTE, MAX_MOAI, mensajePausa, motivosReporte, validarNombreMoai,
 } from '../src/lib/moai';
+import { revisarMensaje } from '../src/lib/moderacion';
 import type { Carta, Conocido, Encuentro, Gente, Invitacion, Mensaje, MoaiResumen } from '../src/lib/api';
 import type { Db } from './db';
 import { enPausa, hayBloqueo, type Refs } from './personas';
@@ -250,11 +251,11 @@ export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r:
     return gente(id);
   });
 
-  // Conversación del Moai: solo sus miembros. Brisa no la lee. Se guardan los últimos 90 días.
+  // Conversación del Moai: solo sus miembros. Brisa no la lee; antes de guardar se revisa (src/lib/moderacion.ts). Se guardan los últimos 90 días.
   const mensajesDe = async (cuenta: string, moai: string): Promise<Mensaje[]> => (await db.query<{ id: string; autor_id: string; autor: string; texto: string; creado_en: string }>(
     `select m.id::text, m.autor_id, split_part(c.nombre, ' ', 1) as autor, m.texto, m.creado_en from moai_mensajes m join cuentas c on c.id = m.autor_id
      where m.moai_id = $1 and m.creado_en > $2::timestamptz - make_interval(days => $3) order by m.creado_en, m.id`, [moai, ahora(), DIAS_MENSAJES_MOAI]))
-    .map(m => ({ id: m.id, autor: m.autor_id === cuenta ? 'Tú' : m.autor, mio: m.autor_id === cuenta, texto: m.texto, creado: new Date(m.creado_en).toISOString() }));
+    .map(m => ({ id: m.id, autor: m.autor_id === cuenta ? 'Tú' : m.autor, autorRef: m.autor_id === cuenta ? undefined : refs.ref(cuenta, m.autor_id), mio: m.autor_id === cuenta, texto: m.texto, creado: new Date(m.creado_en).toISOString() }));
 
   app.get<{ Params: { moai: string } }>('/api/moais/:moai/mensajes', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
@@ -269,6 +270,10 @@ export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r:
     const texto = String(cuerpo<{ texto: string }>(request).texto ?? '').trim();
     if (!texto) return reply.code(400).send({ error: 'Escribe algo antes de enviar.' });
     if (texto.length > MAX_MENSAJE) return reply.code(400).send({ error: 'Ese mensaje es muy largo. Escríbelo en dos partes.' });
+    // Revisión antes de enviar (sin IA, nada se guarda): lo grave no se envía; lo riesgoso se avisa y se puede confirmar.
+    const revision = revisarMensaje(texto);
+    if (revision.nivel === 'bloqueo') return reply.code(422).send({ error: revision.motivo });
+    if (revision.nivel === 'aviso' && (request.body as { confirmado?: boolean } | undefined)?.confirmado !== true) return reply.code(409).send({ error: revision.motivo, aviso: true });
     await db.query('insert into moai_mensajes (moai_id, autor_id, texto, creado_en) values ($1, $2, $3, $4)', [request.params.moai, id, texto, ahora()]);
     return mensajesDe(id, request.params.moai);
   });
@@ -289,13 +294,25 @@ export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r:
 
   app.post('/api/personas/reportar', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const b = cuerpo<{ ref: string; motivo: string; detalle: string; bloquear: boolean }>(request);
+    const b = cuerpo<{ ref: string; motivo: string; detalle: string; bloquear: boolean; mensaje: { tipo: 'plan' | 'moai'; id: string } }>(request);
     if (!motivosReporte.some(m => m.id === b.motivo)) return reply.code(400).send({ errores: { motivo: 'Elige qué pasó.' } });
     const detalle = String(b.detalle ?? '').trim();
     if (detalle.length > MAX_DETALLE_REPORTE) return reply.code(400).send({ errores: { detalle: 'Cuéntalo en menos palabras.' } });
     const otro = await refs.resolver(db, id, String(b.ref ?? ''));
     if (!otro) return reply.code(404).send({ error: 'No encontramos a esa persona.' });
-    await db.query('insert into reportes (de, a, motivo, detalle, creado_en) values ($1, $2, $3, $4, $5)', [id, otro, b.motivo, detalle, ahora()]);
+    // Si se reporta un mensaje concreto, se guarda su texto para el equipo, copiado del servidor y solo si quien
+    // reporta participa en esa conversación y el mensaje es de la persona reportada.
+    let mensaje: string | null = null;
+    if (b.mensaje && /^\d+$/.test(String(b.mensaje.id))) {
+      const [m] = b.mensaje.tipo === 'moai'
+        ? await db.query<{ texto: string }>(`select m.texto from moai_mensajes m where m.id = $1 and m.autor_id = $2
+            and exists (select 1 from moai_miembros x where x.moai_id = m.moai_id and x.cuenta_id = $3)`, [b.mensaje.id, otro, id])
+        : await db.query<{ texto: string }>(`select m.texto from plan_mensajes m join planes p on p.id = m.plan_id where m.id = $1 and m.autor_id = $2
+            and (p.autor_id = $3 or exists (select 1 from asistencias a where a.plan_id = p.id and a.cuenta_id = $3))`, [b.mensaje.id, otro, id]);
+      if (!m) return reply.code(404).send({ error: 'No encontramos ese mensaje.' });
+      mensaje = m.texto;
+    }
+    await db.query('insert into reportes (de, a, motivo, detalle, mensaje, creado_en) values ($1, $2, $3, $4, $5, $6)', [id, otro, b.motivo, detalle, mensaje, ahora()]);
     if (b.bloquear === true) await bloquear(id, otro);
     return gente(id);
   });
