@@ -12,6 +12,13 @@ Primero guarda los cambios locales actuales en tu rama. Después trae la rama `c
 
 Revisa a 1440×900, 768×1024 y 390×844: cargar imagen, abrir una luz, Me sumo, cerrar tarjeta, alternar Mapa/Lista, acercar/alejar y arrastrar. Comprueba que invitaciones largas no tapen las otras acciones. No se fusiona ni publica automáticamente.
 
-## Validación y pendiente
+## Validación (14 de octubre, Claude Code)
 
-Compilación y las 134 pruebas existentes pasan. La revisión visual con Chromium no se completó: la descarga del navegador falló en este entorno. Está pendiente la inspección en el navegador del usuario y las capturas de estas tres medidas. La ilustración es un fondo 2D: no permite explorar edificios en 3D ni demuestra precisión cartográfica. En móvil los planes fuera del encuadre se consultan en Lista o moviendo el escenario.
+Unido a `fase-1/cuentas-y-comunidad` con estos ajustes:
+
+- Las luces, burbujas y zonas reservadas pasaron a `capas.tsx`, sin three.js: «Mi comunidad» ya no carga el motor 3D. `maqueta.tsx` queda guardado para cuando haya datos reales (tarea 05, en pausa).
+- Se recuperó acercar con la rueda del mouse y con dos dedos, dejando quieto el punto bajo el cursor o entre los dedos.
+- Ninguna burbuja tapa «Tu zona». Con un plan abierto, la nota del escenario se aparta.
+- 134 pruebas, compilación revisión en las tres medidas (1440×900, 768×1024 y 390×844); en `docs/capturas/barrio-ilustrado/` quedan escritorio y teléfono.
+
+Pendiente: la ilustración es un fondo 2D; no demuestra precisión cartográfica. En teléfono, si una burbuja no cabe junto a «Tu zona», queda solo su luz.

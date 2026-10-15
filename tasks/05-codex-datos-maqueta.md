@@ -1,5 +1,7 @@
 # Tarea 05 · Datos del barrio para la maqueta 3D (para Codex)
 
+> **En pausa (14 de octubre).** Mateo eligió el barrio ilustrado para el piloto (`docs/10-barrio-ilustrado.md`). No empezar esta tarea hasta que se retome la maqueta con datos reales.
+
 Lee primero `AGENTS.md` y `CLAUDE.md`: las reglas que no se negocian mandan sobre esta tarea.
 
 ## Contexto
