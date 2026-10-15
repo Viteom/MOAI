@@ -29,6 +29,7 @@ async function persona(nombre: string) {
   const r = await app.inject({ method: 'POST', url: '/api/verificar', payload: { canal: 'correo', destino, codigo: codigos[destino] } });
   const cookie = `${COOKIE_SESION}=${r.cookies.find(x => x.name === COOKIE_SESION)!.value}`;
   const pedir = (method: 'GET' | 'POST' | 'DELETE', url: string, payload?: object) => app.inject({ method, url, payload, headers: { cookie } });
+  await pedir('POST', '/api/perfil/nacimiento', { fechaNacimiento: '1960-05-02' }); // cuenta adulta validada (regla 8)
   return { pedir, json: async (method: 'GET' | 'POST' | 'DELETE', url: string, payload?: object) => (await pedir(method, url, payload)).json() };
 }
 

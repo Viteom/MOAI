@@ -68,7 +68,8 @@ export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<v
   await db.query(
     `delete from plan_mensajes m using planes p where m.plan_id = p.id
        and ((p.repite is null and p.cuando < $1::timestamptz - interval '30 days')
-         or (p.cancelado_en is not null and p.cancelado_en < $1::timestamptz - interval '30 days'))`, [ahora]);
+         or (p.cancelado_en is not null and p.cancelado_en < $1::timestamptz - interval '30 days')
+         or (p.repite is not null and m.creado_en < $1::timestamptz - interval '30 days'))`, [ahora]); // en los semanales, cada mensaje a sus 30 días
   await db.query(`delete from moai_mensajes where creado_en < $1::timestamptz - make_interval(days => $2)`, [ahora, DIAS_MENSAJES_MOAI]);
   await db.query(`delete from saludos where creado_en < $1::timestamptz - interval '30 days'`, [ahora]); // los saludos de lejos duran 30 días
 }

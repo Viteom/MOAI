@@ -5,8 +5,11 @@ import { mkdirSync } from 'node:fs';
 import pg from 'pg';
 import { PGlite } from '@electric-sql/pglite';
 
-export type Db = {
-  query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]>;
+export type Consulta = { query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]> };
+// `transaccion`: para lo que debe ocurrir todo o nada y sin carreras entre solicitudes simultáneas
+// (límites de códigos, cupos de planes). Dentro se puede usar pg_advisory_xact_lock.
+export type Db = Consulta & {
+  transaccion<T>(fn: (tx: Consulta) => Promise<T>): Promise<T>;
   close(): Promise<void>;
 };
 
@@ -228,11 +231,32 @@ export async function abrirDb(opciones: { url?: string; carpeta?: string } = {})
   let db: Db;
   if (opciones.url) {
     const pool = new pg.Pool({ connectionString: opciones.url });
-    db = { query: async (sql, params) => (await pool.query(sql, params)).rows, close: () => pool.end() };
+    db = {
+      query: async (sql, params) => (await pool.query(sql, params)).rows,
+      async transaccion(fn) {
+        const cliente = await pool.connect();
+        try {
+          await cliente.query('begin');
+          const r = await fn({ query: async <T>(sql: string, params?: unknown[]) => (await cliente.query(sql, params)).rows as T[] });
+          await cliente.query('commit');
+          return r;
+        } catch (error) {
+          await cliente.query('rollback');
+          throw error;
+        } finally {
+          cliente.release();
+        }
+      },
+      close: () => pool.end(),
+    };
   } else {
     if (opciones.carpeta) mkdirSync(opciones.carpeta, { recursive: true });
     const lite = new PGlite(opciones.carpeta);
-    db = { query: async <T>(sql: string, params?: unknown[]) => (await lite.query<T>(sql, params)).rows, close: () => lite.close() };
+    db = {
+      query: async <T>(sql: string, params?: unknown[]) => (await lite.query<T>(sql, params)).rows,
+      transaccion: fn => lite.transaction(tx => fn({ query: async <T>(sql: string, params?: unknown[]) => (await tx.query<T>(sql, params)).rows })),
+      close: () => lite.close(),
+    };
   }
   for (const sentencia of esquema.split(';').map(s => s.trim()).filter(Boolean)) await db.query(sentencia);
   return db;

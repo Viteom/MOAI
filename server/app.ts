@@ -46,39 +46,54 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   const correosEquipo = new Set(equipo.map(c => c.trim().toLowerCase()).filter(Boolean));
   const esEquipo = (destino: string) => correosEquipo.has(destino.toLowerCase());
 
-  async function enviarCodigo(canal: Canal, destino: string, proposito: Proposito) {
-    const [{ total }] = await db.query<{ total: number }>(
-      `select count(*)::int as total from verificaciones where destino = $1 and creada_en > now() - interval '1 hour'`, [destino]);
-    if (total >= ENVIOS_POR_HORA) throw new Limite();
+  // Revisión de Codex (15 de octubre): el límite por hora se reserva de forma atómica (un candado por destino), y
+  // también cuenta cuando no hay cuenta, para que el límite no revele quién está registrado. Sin cuenta no se envía
+  // nada: la fila queda usada desde el principio y nunca sirve para entrar. Si el proveedor falla, la fila se borra.
+  async function enviarCodigo(canal: Canal, destino: string, proposito: Proposito | null) {
     const via = vias[canal]!;
-    const codigo = via.tipo === 'propio' ? String(randomInt(0, 1_000_000)).padStart(6, '0') : null;
-    await db.query(
-      `insert into verificaciones (destino, proposito, codigo_hash, vence_en) values ($1, $2, $3, now() + make_interval(mins => $4))`,
-      [destino, proposito, codigo && hmac(codigo), MINUTOS_VIGENCIA]);
-    if (via.tipo === 'propio') await via.enviar(destino, codigo!, proposito);
-    else await via.iniciar(destino);
+    const codigo = proposito && via.tipo === 'propio' ? String(randomInt(0, 1_000_000)).padStart(6, '0') : null;
+    const fila = await db.transaccion(async tx => {
+      await tx.query('select pg_advisory_xact_lock(hashtext($1))', [destino]);
+      const [{ total }] = await tx.query<{ total: number }>(
+        `select count(*)::int as total from verificaciones where destino = $1 and creada_en > now() - interval '1 hour'`, [destino]);
+      if (total >= ENVIOS_POR_HORA) throw new Limite();
+      const [nueva] = await tx.query<{ id: number }>(
+        `insert into verificaciones (destino, proposito, codigo_hash, vence_en, usada_en) values ($1, $2, $3, now() + make_interval(mins => $4), $5) returning id`,
+        [destino, proposito ?? 'acceso', codigo && hmac(codigo), MINUTOS_VIGENCIA, proposito ? null : new Date()]);
+      return nueva;
+    });
+    if (!proposito) return;
+    try {
+      if (via.tipo === 'propio') await via.enviar(destino, codigo!, proposito);
+      else await via.iniciar(destino);
+    } catch (error) {
+      await db.query('delete from verificaciones where id = $1', [fila.id]);
+      throw error;
+    }
   }
 
-  async function comprobarCodigo(canal: Canal, destino: string, codigo: string): Promise<'ok' | 'invalido' | 'bloqueado'> {
-    const [fila] = await db.query<{ id: number; codigo_hash: string | null; intentos: number }>(
-      `select id, codigo_hash, intentos from verificaciones
+  // Cada intento se reserva con una actualización condicional (no se pueden colar intentos en paralelo) y el código
+  // se marca como usado una sola vez. `propositos`: una cuenta pendiente solo se activa con el código del registro.
+  async function comprobarCodigo(canal: Canal, destino: string, codigo: string, propositos: Proposito[]): Promise<'ok' | 'invalido' | 'bloqueado'> {
+    const [fila] = await db.query<{ id: number; codigo_hash: string | null; proposito: Proposito }>(
+      `select id, codigo_hash, proposito from verificaciones
        where destino = $1 and usada_en is null and vence_en > now() order by creada_en desc limit 1`, [destino]);
-    if (!fila) return 'invalido';
-    if (fila.intentos >= INTENTOS_POR_CODIGO) return 'bloqueado';
-    await db.query('update verificaciones set intentos = intentos + 1 where id = $1', [fila.id]);
+    if (!fila || !propositos.includes(fila.proposito)) return 'invalido';
+    const [intento] = await db.query('update verificaciones set intentos = intentos + 1 where id = $1 and intentos < $2 and usada_en is null returning id', [fila.id, INTENTOS_POR_CODIGO]);
+    if (!intento) return 'bloqueado';
     const via = vias[canal]!;
     const ok = via.tipo === 'propio'
       ? !!fila.codigo_hash && timingSafeEqual(Buffer.from(hmac(codigo)), Buffer.from(fila.codigo_hash))
       : await via.comprobar(destino, codigo);
     if (!ok) return 'invalido';
-    await db.query('update verificaciones set usada_en = now() where id = $1', [fila.id]);
-    return 'ok';
+    const [usada] = await db.query('update verificaciones set usada_en = now() where id = $1 and usada_en is null returning id', [fila.id]);
+    return usada ? 'ok' : 'invalido';
   }
 
   // Responde igual exista o no la cuenta, para no revelar quién está registrado.
   async function responderEnvio(reply: { code(n: number): { send(b: unknown): unknown } }, canal: Canal, destino: string, proposito: Proposito | null) {
     try {
-      if (proposito) await enviarCodigo(canal, destino, proposito);
+      await enviarCodigo(canal, destino, proposito);
     } catch (error) {
       if (error instanceof Limite) return reply.code(429).send({ error: mensajes.limite });
       app.log.error({ canal }, 'falló el envío del código');
@@ -131,7 +146,8 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     const destino = normalizarDestino(canal, body.destino ?? '', body.pais);
     if (!destino) return reply.code(400).send({ error: mensajes.destino });
     const cuenta = await cuentaPorDestino(destino);
-    return responderEnvio(reply, canal, destino, cuenta ? 'acceso' : null);
+    // Solo las cuentas ya verificadas reciben un código de acceso; una pendiente debe completar el registro.
+    return responderEnvio(reply, canal, destino, cuenta?.verificada_en ? 'acceso' : null);
   });
 
   app.post('/api/verificar', async (request, reply) => {
@@ -144,7 +160,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     const cuenta = await cuentaPorDestino(destino);
     if (!cuenta) return reply.code(400).send({ error: mensajes.codigo });
     if (cuenta.suspendida_en) return reply.code(403).send({ error: mensajes.suspendida, suspendida: true });
-    const resultado = await comprobarCodigo(canal, destino, codigo);
+    const resultado = await comprobarCodigo(canal, destino, codigo, cuenta.verificada_en ? ['acceso', 'registro'] : ['registro']);
     if (resultado === 'bloqueado') return reply.code(429).send({ error: mensajes.bloqueado });
     if (resultado === 'invalido') return reply.code(400).send({ error: mensajes.codigo });
     await db.query('update cuentas set verificada_en = coalesce(verificada_en, now()) where id = $1', [cuenta.id]);
@@ -199,12 +215,20 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
 
   const refs = crearRefs(secreto);
   const cifrador = crearCifrador(secreto);
-  registrarComunidad(app, db, cuentaDeSesion, ahora, refs, cifrador);
-  registrarCuidado(app, db, cuentaDeSesion, ahora, cifrador);
-  registrarCercania(app, db, cuentaDeSesion, ahora, refs, cifrador);
-  registrarLazos(app, db, cuentaDeSesion, ahora, refs, cifrador);
-  registrarMoais(app, db, cuentaDeSesion, ahora, refs);
-  registrarEquipo(app, db, cuentaDeSesion, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
+  // Regla 8 (revisión de Codex): la comunidad exige una cuenta adulta ya validada. Con sesión pero sin fecha de
+  // nacimiento declarada, nada de lugares, planes, mensajes ni Moais: primero el paso de la edad.
+  const cuentaAdulta = async (request: FastifyRequest) => {
+    const id = await cuentaDeSesion(request);
+    if (!id) return null;
+    const [c] = await db.query('select 1 from cuentas where id = $1 and fecha_nacimiento is not null', [id]);
+    return c ? id : null;
+  };
+  registrarComunidad(app, db, cuentaAdulta, ahora, refs, cifrador);
+  registrarCuidado(app, db, cuentaAdulta, ahora, cifrador);
+  registrarCercania(app, db, cuentaAdulta, ahora, refs, cifrador);
+  registrarLazos(app, db, cuentaAdulta, ahora, refs, cifrador);
+  registrarMoais(app, db, cuentaAdulta, ahora, refs);
+  registrarEquipo(app, db, cuentaAdulta, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
 
   app.post('/api/salir', async (request, reply) => {
     const token = request.cookies[COOKIE_SESION];

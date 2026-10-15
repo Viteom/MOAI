@@ -1,6 +1,8 @@
 // Lugares guardados, planes de barrio, conversación del plan y cartas de Brisa (docs/09, apartado 9).
 // REVISIÓN HUMANA: ubicación aproximada guardada (celdas de ~1 km), lugares de familiares y mensajes entre vecinos.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cellToBoundary, cellToLatLng, gridDisk, gridDistance } from 'h3-js';
 import {
   alcances, franja, MAX_LUGARES, nombreDeZona, nombreTipo, proximaOcurrencia, tipos, ultimaOcurrencia, validarLugar, validarPlan,
@@ -50,19 +52,26 @@ export const cuandoLegible = (fecha: Date) => new Intl.DateTimeFormat('es-CO', {
 
 // Planes que ve una persona desde su lugar activo, con la próxima ocurrencia de cada uno.
 // Con `refs`, cada plan ajeno lleva una referencia a su autor para poder reportarlo o bloquearlo.
-export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?: Refs): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
+// `participando` (revisión de Codex): incluye los planes que ya empezaron o pasaron (hasta 30 días) para quien los
+// propuso o se sumó, para que no pierdan el plan ni su conversación justo cuando se encuentran. No sirve para descubrir planes.
+export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?: Refs, { participando = false } = {}): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
   const [lugar] = await db.query<FilaLugar>('select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [cuenta]);
   if (!lugar) return null;
   const filas = await db.query<FilaPlan>(
     `select p.id, p.autor_id, split_part(c.nombre, ' ', 1) as autor, p.titulo, p.descripcion, p.cuando, p.lugar_publico, p.ciudad, p.barrio, p.celda,
             p.alcance, p.cupo, p.tipo, p.repite, o.nombre as org_nombre, o.tipo as org_tipo
      from planes p join cuentas c on c.id = p.autor_id left join organizaciones o on o.id = p.organizacion_id
-     where p.ciudad = $1 and p.cancelado_en is null and (p.repite is not null or p.cuando > $2)
+     where p.ciudad = $1 and p.cancelado_en is null
+       and (p.repite is not null or p.cuando > $2 or ($4 and p.cuando > $2::timestamptz - interval '30 days'
+            and (p.autor_id = $3 or exists (select 1 from asistencias x where x.plan_id = p.id and x.cuenta_id = $3))))
        and c.suspendida_en is null and (p.organizacion_id is null or o.activa)
-       and not exists (select 1 from bloqueos b where (b.de = $3 and b.a = p.autor_id) or (b.de = p.autor_id and b.a = $3))`, [lugar.ciudad, ahora, cuenta]);
+       and not exists (select 1 from bloqueos b where (b.de = $3 and b.a = p.autor_id) or (b.de = p.autor_id and b.a = $3))`, [lugar.ciudad, ahora, cuenta, participando]);
   const planes: Plan[] = [];
   for (const p of filas) {
-    const proxima = proximaOcurrencia(new Date(p.cuando), p.repite, ahora);
+    // La ocurrencia vigente: la próxima o, para quien participa, la que acaba de empezar (6 horas) o ya pasó (planes de una vez).
+    const ultima = participando ? ultimaOcurrencia(new Date(p.cuando), p.repite, ahora) : null;
+    const enCurso = ultima && (p.repite === null || ahora.getTime() - ultima.getTime() < 6 * 3600e3);
+    const proxima = enCurso ? ultima : proximaOcurrencia(new Date(p.cuando), p.repite, ahora);
     if (!proxima) continue;
     const mio = p.autor_id === cuenta;
     const van = await db.query<{ cuenta_id: string; nombre: string }>(
@@ -71,6 +80,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?:
     const voy = van.some(v => v.cuenta_id === cuenta);
     const { ve, distancia } = alcanzaA(p, lugar);
     if (!ve && !mio && !voy) continue;
+    if (enCurso && !mio && !voy) continue; // lo que ya empezó solo lo siguen viendo quienes participan
     planes.push({
       id: p.id, titulo: p.titulo, descripcion: p.descripcion, cuando: proxima.toISOString(), lugarPublico: p.lugar_publico,
       zona: nombreDeZona(p.ciudad, p.barrio), franja: franja(distancia), alcance: p.alcance as Plan['alcance'], tipo: p.tipo,
@@ -143,6 +153,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   const lugaresDe = async (cuenta: string) => (await db.query<FilaLugar>(
     'select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 order by creado_en', [cuenta])).map(aLugar);
   const listaDePlanes = async (cuenta: string) => (await planesVisibles(db, cuenta, ahora(), refs))?.planes ?? [];
+  const planesParticipando = async (cuenta: string) => (await planesVisibles(db, cuenta, ahora(), refs, { participando: true }))?.planes ?? [];
 
   // ---- Lugares ----
   app.get('/api/lugares', async (request, reply) => {
@@ -188,7 +199,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
 
   app.get<{ Params: { plan: string } }>('/api/planes/:plan', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const plan = (await listaDePlanes(id)).find(p => p.id === request.params.plan);
+    const plan = (await planesParticipando(id)).find(p => p.id === request.params.plan);
     return plan ?? reply.code(404).send({ error: 'Este plan ya no está disponible.' });
   });
 
@@ -211,8 +222,16 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     const id = await conSesion(request, reply); if (!id) return reply;
     const plan = (await listaDePlanes(id)).find(p => p.id === request.params.plan);
     if (!plan || plan.mio) return reply.code(404).send({ error: 'Este plan ya no está disponible.' });
-    if (plan.lleno && !plan.voy) return reply.code(409).send({ error: 'Este plan ya está completo.' });
-    await db.query('insert into asistencias (plan_id, cuenta_id, ocurrencia) values ($1, $2, $3) on conflict do nothing', [plan.id, id, plan.cuando]);
+    // El último cupo se reserva de forma atómica (revisión de Codex): un candado por plan mientras se cuenta y se inserta.
+    const lleno = await db.transaccion(async tx => {
+      await tx.query('select pg_advisory_xact_lock(hashtext($1))', [plan.id]);
+      const [{ cupo, van }] = await tx.query<{ cupo: number | null; van: number }>(
+        'select p.cupo, (select count(*)::int from asistencias a where a.plan_id = p.id and a.ocurrencia = $2 and a.cuenta_id <> $3) as van from planes p where p.id = $1', [plan.id, plan.cuando, id]);
+      if (cupo !== null && van >= cupo) return true;
+      await tx.query('insert into asistencias (plan_id, cuenta_id, ocurrencia) values ($1, $2, $3) on conflict do nothing', [plan.id, id, plan.cuando]);
+      return false;
+    });
+    if (lleno) return reply.code(409).send({ error: 'Este plan ya está completo.' });
     return listaDePlanes(id);
   });
 
@@ -241,10 +260,10 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
   // ---- Conversación del plan: solo para quien lo propuso y quienes se sumaron ----
   // Brisa nunca lee estos mensajes (regla 6); se borran 30 días después del plan (mantenimiento).
   const puedeConversar = async (cuenta: string, plan: string) => {
-    const p = (await listaDePlanes(cuenta)).find(x => x.id === plan);
-    if (p && (p.mio || p.voy)) return true;
-    const [antes] = await db.query('select 1 from asistencias where plan_id = $1 and cuenta_id = $2', [plan, cuenta]);
-    return !!antes;
+    // Solo quien propuso el plan o quien va a la ocurrencia vigente (revisión de Codex): haber ido una vez a un plan
+    // semanal no da acceso para siempre.
+    const p = (await planesParticipando(cuenta)).find(x => x.id === plan);
+    return !!p && (p.mio || p.voy);
   };
   const mensajesDe = async (cuenta: string, plan: string): Promise<Mensaje[]> => (await db.query<{ id: string; autor_id: string; autor: string; texto: string; creado_en: string }>(
     `select m.id::text, m.autor_id, split_part(c.nombre, ' ', 1) as autor, m.texto, m.creado_en from plan_mensajes m join cuentas c on c.id = m.autor_id
@@ -265,6 +284,15 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     if (texto.length > MAX_MENSAJE) return reply.code(400).send({ error: 'Ese mensaje es muy largo. Escríbelo en dos partes.' });
     await db.query('insert into plan_mensajes (plan_id, autor_id, texto) values ($1, $2, $3)', [request.params.plan, id, texto]);
     return mensajesDe(id, request.params.plan);
+  });
+
+  // ---- Maqueta del barrio: archivos de geometría por hexágono, servidos por /api (sin datos de personas) ----
+  app.get<{ Params: { celda: string } }>('/api/maqueta/:celda', async (request, reply) => {
+    const id = await conSesion(request, reply); if (!id) return reply;
+    const { celda } = request.params;
+    const archivo = join('public', 'maqueta', `${celda}.json`);
+    if (!/^[0-9a-f]{15}$/.test(celda) || !existsSync(archivo)) return reply.code(404).send({ error: 'Sin maqueta para esta zona.' });
+    return reply.type('application/json').send(readFileSync(archivo, 'utf8'));
   });
 
   // ---- Mapa de la comunidad (diseño de Mateo) ----

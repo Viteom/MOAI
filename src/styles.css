@@ -872,3 +872,6 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 /* La raíz no se marchita: su hilo es siempre cálido y firme; solo el punto cuenta cómo va. */
 .hilo.raiz { stroke: #ffd9a0; stroke-width: 2.2; stroke-dasharray: none; opacity: .9; }
 .lazo-detalle .diario-boton { white-space: normal; text-align: center; }
+/* Regla 12 (revisión de Codex): en el mapa, el sello «IA» de Brisa se ve siempre, también en el teléfono. */
+.mapa-sello { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); font-size: 11px; padding: 1px 7px; background: oklch(.18 .03 160 / .9); }
+.mapa-brisa-globo strong { display: block; font-size: 13px; letter-spacing: .04em; color: var(--lima); }

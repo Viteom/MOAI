@@ -152,12 +152,9 @@ export const api = {
 export type Api = typeof api;
 
 // La maqueta de un hexágono: un archivo estático del mismo origen (public/maqueta), sin datos de personas.
+// Revisión de Codex: también pasa por /api, como toda solicitud del frontend.
 export async function archivoDeMaqueta<T>(celda: string): Promise<T | null> {
   if (!/^[0-9a-f]{15}$/.test(celda)) return null;
-  try {
-    const respuesta = await fetch(`/maqueta/${celda}.json`, { credentials: 'same-origin' });
-    return respuesta.ok ? await respuesta.json() as T : null;
-  } catch {
-    return null;
-  }
+  const r = await llamar<T>(`maqueta/${celda}`);
+  return r.ok ? r.datos : null;
 }

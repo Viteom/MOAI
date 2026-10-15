@@ -33,6 +33,7 @@ async function persona(nombre: string) {
   const c = r.cookies.find(x => x.name === COOKIE_SESION)!;
   const cookie = `${COOKIE_SESION}=${c.value}`;
   const pedir = (method: 'GET' | 'POST' | 'DELETE', url: string, payload?: object) => app.inject({ method, url, payload, headers: { cookie } });
+  await pedir('POST', '/api/perfil/nacimiento', { fechaNacimiento: '1960-05-02' }); // cuenta adulta validada (regla 8)
   return { pedir, json: async (method: 'GET' | 'POST' | 'DELETE', url: string, payload?: object) => (await pedir(method, url, payload)).json() };
 }
 const planCiudad = { titulo: 'Caminata por el parque', cuando: manana, lugarPublico: 'Parque de los Deseos', ciudad: '05001', alcance: 'ciudad' };

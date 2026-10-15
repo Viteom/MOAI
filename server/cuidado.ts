@@ -65,16 +65,14 @@ export function registrarCuidado(app: FastifyInstance, db: Db, cuentaDeSesion: (
     return cuidadoDe(db, cifrador, id);
   });
 
-  // Calcula el resultado. Solo se guarda si la persona lo autoriza (`guardar: true`); si no, se le muestra y se olvida.
+  // Calcula el resultado. Solo se guarda si la persona lo autoriza (`guardar: true`); si no, se le muestra y se olvida,
+  // sin tocar un resultado guardado antes (revisión de Codex): para borrarlo está «Borrar mi resultado».
   app.post('/api/cuidado', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     const body = (request.body ?? {}) as { respuestas?: unknown; guardar?: boolean };
     const letras = resultadoCuidado(body.respuestas);
     if (!letras) return reply.code(400).send({ error: 'Responde las seis preguntas.' });
-    if (body.guardar !== true) {
-      await db.query('delete from cuidado where cuenta_id = $1', [id]);
-      return { letras, guardado: false } satisfies Cuidado;
-    }
+    if (body.guardar !== true) return { letras, guardado: false } satisfies Cuidado;
     await db.query(
       `insert into cuidado (cuenta_id, respuestas, autorizado_en, actualizado_en) values ($1, $2, $3, $3)
        on conflict (cuenta_id) do update set respuestas = $2, autorizado_en = $3, actualizado_en = $3`,

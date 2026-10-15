@@ -132,8 +132,9 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
     : verMapa ? <div className="comunidad-mapa">
       {/* Escenario ilustrado, con planes reales en una capa independiente. */}
       <BarrioIlustrado mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
-      <button type="button" className="mapa-brisa" data-reserva aria-expanded={conBrisa} aria-label={`Hablar con Brisa: ${mensajeBrisa}`} onClick={() => { setElegido(null); setConBrisa(true); }}>
-        <OrbeBrisa/><span className="mapa-brisa-globo">{mensajeBrisa}</span>
+      <button type="button" className="mapa-brisa" data-reserva aria-expanded={conBrisa} aria-label={`Hablar con Brisa, una inteligencia artificial: ${mensajeBrisa}`} onClick={() => { setElegido(null); setConBrisa(true); }}>
+        <OrbeBrisa/><span className="sello-ia mapa-sello" title="Brisa es una inteligencia artificial">IA</span>
+        <span className="mapa-brisa-globo"><strong>Brisa · IA</strong> {mensajeBrisa}</span>
       </button>
       {!planElegido && <div className="mapa-controles" data-reserva>
         <ul className="mapa-leyenda" aria-label="Qué significa cada luz">
@@ -156,6 +157,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {} }: {
       <section className="brisa-tarjeta" aria-label="Brisa">
         <OrbeBrisa/>
         <div className="brisa-tarjeta-cuerpo">
+          <p className="brisa-quien"><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
           {cartas.length === 0 && <>
             <p><strong>Estoy aquí para orientarte.</strong> Soy Brisa, una inteligencia artificial.</p>
             {ayuda && <p>Aquí no hace falta pedir nada: cuentas qué vas a hacer (caminar, un tinto, la huerta) y quien quiera se suma. Después de cada plan te preguntaré con quién te viste: con esas personas puedes formar un Moai, aunque sean solo dos.</p>}

@@ -26,8 +26,7 @@ describe('Privacidad del frontend', () => {
   it('src/lib/api.ts solo llama a /api del mismo origen', () => {
     const codigo = readFileSync(API, 'utf8');
     const destinos = [...codigo.matchAll(/fetch\s*\(\s*`([^`]*)`/g)].map(m => m[1]);
-    // La API y los archivos estáticos de la maqueta, ambos del mismo origen.
-    expect(destinos).toEqual(['/api/${ruta}', '/maqueta/${celda}.json']);
+    expect(destinos).toEqual(['/api/${ruta}']);
     expect(codigo).toMatch(/credentials: 'same-origin'/);
   });
   it('no pide ubicación, contactos, cámara ni sensores del teléfono', () => {
