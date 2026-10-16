@@ -170,3 +170,71 @@ describe('Mensajes: revisión antes de enviar y reportar uno concreto (decisión
     expect((await luis.pedir('POST', '/api/personas/reportar', { ref, motivo: 'trato', mensaje: { tipo: 'plan', id: m.id } })).statusCode).toBe(404);
   });
 });
+
+// Segunda revisión de Codex (commits 8a17e4f y fa139ed).
+const idDe = async (nombre: string) => (await db.query<{ id: string }>('select id from cuentas where destino = $1', [`${nombre.toLowerCase()}@ejemplo.co`]))[0].id;
+async function seVieron(a: Quien, b: string, c: string) {
+  const p = await crearPlan(a, `Encuentro ${b} ${c}`);
+  for (const [x, y] of [[b, c], [c, b]]) await db.query('insert into nos_vimos (de, a, plan_id, ocurrencia, si) values ($1, $2, $3, $4, true)', [await idDe(x), await idDe(y), p.id, p.cuando]);
+}
+
+describe('Segunda revisión de Codex', () => {
+  it('sin fecha de nacimiento tampoco se guarda la comunidad (regla 8)', async () => {
+    const teo = await persona('Teo', { adulta: false });
+    expect((await teo.pedir('POST', '/api/perfil/comunidad', { ciudad: '05001' })).statusCode).toBe(401);
+    expect(await db.query('select 1 from lugares')).toEqual([]);
+  });
+
+  it('si el proveedor falla, «Iniciar sesión» responde igual exista o no la cuenta', async () => {
+    await persona('Rosa', { adulta: false });
+    fallar = true;
+    const existe = await pedirSin('/api/acceso', { canal: 'correo', destino: 'rosa@ejemplo.co' });
+    const noExiste = await pedirSin('/api/acceso', { canal: 'correo', destino: 'nadie@ejemplo.co' });
+    expect(existe.statusCode).toBe(200);
+    expect(noExiste.statusCode).toBe(existe.statusCode);
+  });
+
+  it('un bloqueo después de aprobar la invitación impide entrar al Moai', async () => {
+    const ana = await persona('Ana'); await persona('Beto'); const caro = await persona('Caro');
+    const [a, b, c] = [await idDe('Ana'), await idDe('Beto'), await idDe('Caro')];
+    const [m] = await db.query<{ id: string }>(`insert into moais (nombre) values ('Los del parque') returning id`);
+    await db.query('insert into moai_miembros (moai_id, cuenta_id) values ($1, $2), ($1, $3)', [m.id, a, b]);
+    const [inv] = await db.query<{ id: string }>('insert into moai_invitaciones (moai_id, de, a) values ($1, $2, $3) returning id', [m.id, a, c]);
+    await db.query('insert into moai_votos (invitacion_id, cuenta_id, acepta) values ($1, $2, true), ($1, $3, true)', [inv.id, a, b]);
+    await db.query('insert into bloqueos (de, a) values ($1, $2)', [b, c]); // Beto bloquea a Caro antes de que acepte
+    expect((await caro.pedir('POST', `/api/invitaciones/${inv.id}`, { acepta: true })).statusCode).toBe(404);
+    expect(await db.query('select 1 from moai_miembros where cuenta_id = $1', [c])).toEqual([]);
+    void ana;
+  });
+
+  it('un doble toque en «Sí, me sumo» crea un solo Moai', async () => {
+    await persona('Ana'); const beto = await persona('Beto');
+    const [inv] = await db.query<{ id: string }>(`insert into moai_invitaciones (de, a, nombre) values ($1, $2, 'Tinto') returning id`, [await idDe('Ana'), await idDe('Beto')]);
+    await Promise.all([1, 2, 3].map(() => beto.pedir('POST', `/api/invitaciones/${inv.id}`, { acepta: true })));
+    expect(await db.query('select 1 from moais')).toHaveLength(1);
+  });
+
+  it('quien ya no va a la ocurrencia vigente no puede copiar mensajes al reporte', async () => {
+    const juan = await persona('Juan'), ana = await persona('Ana');
+    const p = await crearPlan(juan, 'Caminata de los viernes', { repite: 'semanal' });
+    await ana.pedir('POST', `/api/planes/${p.id}/ir`);
+    const ref = (await ana.json('GET', '/api/planes')).find((x: { id: string }) => x.id === p.id).autorRef;
+    reloj = new Date('2026-10-20T12:00:00Z'); // ya no va a la semana siguiente
+    await juan.pedir('POST', `/api/planes/${p.id}/mensajes`, { texto: 'La próxima vamos al cerro', confirmado: true });
+    const [{ id }] = await db.query<{ id: string }>('select id::text from plan_mensajes');
+    expect((await ana.pedir('POST', '/api/personas/reportar', { ref, motivo: 'trato', mensaje: { tipo: 'plan', id } })).statusCode).toBe(404);
+  });
+
+  it('a quién le contaste tu invierno no queda legible en la base', async () => {
+    const ana = await persona('Ana'), beto = await persona('Beto');
+    await seVieron(ana, 'Ana', 'Beto');
+    await ana.pedir('POST', '/api/estado/invierno', { activo: true });
+    const ref = (await ana.json('GET', '/api/gente')).conocidos[0].ref;
+    expect((await ana.json('POST', '/api/estado/invierno/contar', { refs: [ref] })).contadoA).toEqual(['Beto']);
+    const filas = JSON.stringify(await db.query('select * from inviernos_contados'));
+    for (const id of [await idDe('Ana'), await idDe('Beto')]) expect(filas).not.toContain(id);
+    expect((await beto.json('GET', '/api/brisa')).some((c: { texto: string }) => /invierno/.test(c.texto))).toBe(true);
+    await ana.pedir('POST', '/api/estado/invierno', { activo: false });
+    expect(await db.query('select 1 from inviernos_contados')).toEqual([]);
+  });
+});

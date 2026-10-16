@@ -65,7 +65,7 @@ async function enviarResend(apiKey: string, remitente: string, destino: string, 
 // Recordatorio para quien empezó su cuenta y no confirmó el correo (decisión de Mateo: dos por semana).
 export function recordatorioResend(apiKey: string, remitente: string, urlApp: string): Recordar {
   return (destino, nombre, diasRestantes) => enviarResend(apiKey, remitente, destino, 'Te falta un paso para entrar a MOAI',
-    `Hola, ${nombre}.\n\nEmpezaste a crear tu cuenta en MOAI y falta confirmar tu correo. Entra a ${urlApp}, elige «Iniciar sesión» y te enviamos un código.\n\nSi no la confirmas en ${diasRestantes} días, borramos los datos que nos diste. Si no fuiste tú, ignora este correo.`);
+    `Hola, ${nombre}.\n\nEmpezaste a crear tu cuenta en MOAI y falta confirmar tu correo. Entra a ${urlApp}, elige «Crear cuenta» con este mismo correo y te enviamos un código nuevo.\n\nSi no la confirmas en ${diasRestantes} días, borramos los datos que nos diste. Si no fuiste tú, ignora este correo.`);
 }
 
 export function recordatorioConsola(escribir: (linea: string) => void = console.log): Recordar {

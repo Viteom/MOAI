@@ -357,4 +357,5 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     await db.query('update cuentas set sugerencias = $2, gustos = $3, resumen_semanal = $4 where id = $1', [id, body.sugerencias === true, [...new Set(gustos)], body.resumenSemanal === true]);
     return preferenciasDe(id);
   });
+  return { puedeConversar }; // Mi gente lo usa para reportar un mensaje de un plan
 }

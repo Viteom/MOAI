@@ -48,6 +48,7 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
   const [desafio, setDesafio] = useState<Desafio | null>(null);
   const [aviso, setAviso] = useState('');
   const [menor, setMenor] = useState(false);
+  const [errorSalida, setErrorSalida] = useState('');
 
   const consultar = useCallback(() => {
     setSesion({ estado: 'cargando' });
@@ -99,7 +100,12 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     if (ruta === '/configuracion/nacimiento') return <PasoNacimiento nombre={perfil.nombre} guardar={api.guardarNacimiento} onGuardado={activa}
       onMenor={() => { setMenor(true); setSesion({ estado: 'anonima' }); }}/>;
     if (ruta === '/configuracion/comunidad') return <PasoComunidad guardar={api.guardarComunidad} onGuardado={activa}/>;
-    const salir = async () => { await api.salir(); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); };
+    // Revisión de Codex: solo se muestra la portada cuando el servidor confirmó que cerró la sesión.
+    const salir = async () => {
+      const r = await api.salir();
+      if (!r.ok) { setErrorSalida('No pudimos cerrar tu sesión. Revisa tu conexión e inténtalo de nuevo.'); return; }
+      setErrorSalida(''); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true });
+    };
     const refrescar = () => void api.sesion().then(r => { if (r.ok) activa(r.datos); });
     const privada = (() => {
       if (ruta === '/inicio') return <InicioBrisa key={window.location.search} perfil={perfil} api={api} ir={ir} onSalir={salir} empezar={(['plan', 'perfil', 'estado'] as const).find(e => new URLSearchParams(window.location.search).has(e))}/>;
@@ -117,7 +123,7 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
       return null;
     })();
     // La barra única necesita saber si la persona es del equipo o responde por una entidad («Más»).
-    if (privada) return <Permisos.Provider value={{ equipo: perfil.equipo, organizaciones: !!perfil.organizaciones?.length }}>{privada}</Permisos.Provider>;
+    if (privada) return <Permisos.Provider value={{ equipo: perfil.equipo, organizaciones: !!perfil.organizaciones?.length }}>{privada}{errorSalida && <p className="aviso-flotante" role="alert">{errorSalida}</p>}</Permisos.Provider>;
   }
   if (ruta === '/') return <Portada onCrear={() => ir('/bienvenida')} onEntrar={() => ir('/acceso')}/>;
   return <Abriendo/>; // mientras el resolvedor redirige

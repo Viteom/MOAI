@@ -10,7 +10,7 @@ import {
 } from '../src/lib/moai';
 import { revisarMensaje } from '../src/lib/moderacion';
 import type { Carta, Conocido, Encuentro, Gente, Invitacion, Mensaje, MoaiResumen } from '../src/lib/api';
-import type { Db } from './db';
+import type { Consulta, Db } from './db';
 import { enPausa, hayBloqueo, type Refs } from './personas';
 
 const MAX_MENSAJE = 500;
@@ -54,7 +54,7 @@ export async function conocidosDe(db: Db, cuenta: string, ahora = new Date()) {
      order by nombre`, [cuenta, ahora]);
 }
 
-const miembrosDe = (db: Db, moai: string) => db.query<{ id: string; nombre: string }>(
+const miembrosDe = (db: Consulta, moai: string) => db.query<{ id: string; nombre: string }>(
   `select m.cuenta_id as id, split_part(c.nombre, ' ', 1) as nombre from moai_miembros m join cuentas c on c.id = m.cuenta_id where m.moai_id = $1 order by m.unido_en`, [moai]);
 
 // Una invitación a un Moai existente llega a la persona solo cuando todos los miembros actuales dijeron que sí.
@@ -138,7 +138,7 @@ export async function cartasDeGente(db: Db, cuenta: string, ahora: Date, refs: R
   return cartas;
 }
 
-export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, refs: Refs) {
+export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, refs: Refs, puedeConversar: (cuenta: string, plan: string) => Promise<boolean>) {
   const conSesion = async (request: FastifyRequest, reply: FastifyReply) => {
     const id = await cuentaDeSesion(request);
     if (!id) void reply.code(401).send({ error: 'Sin sesión.' });
@@ -212,16 +212,27 @@ export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r:
     if (inv.a === id) {
       if (inv.moai_id && !(await todosAprobaron(db, inv.id, inv.moai_id))) return noEsta();
       if (!acepta) { await cerrar('cerrada'); return gente(id); }
-      if (!inv.moai_id) {
-        if (await hayBloqueo(db, inv.de, id)) { await cerrar('cerrada'); return noEsta(); }
-        const [nuevo] = await db.query<{ id: string }>('insert into moais (nombre, creado_en) values ($1, $2) returning id', [inv.nombre ?? 'Nuestro Moai', ahora()]);
-        await db.query('insert into moai_miembros (moai_id, cuenta_id, unido_en) values ($1, $2, $4), ($1, $3, $4)', [nuevo.id, inv.de, id, ahora()]);
-      } else {
-        const [{ total }] = await db.query<{ total: number }>('select count(*)::int as total from moai_miembros where moai_id = $1', [inv.moai_id]);
-        if (total >= MAX_MOAI) { await cerrar('cerrada'); return reply.code(409).send({ error: `Este Moai ya tiene ${MAX_MOAI} personas.` }); }
-        await db.query('insert into moai_miembros (moai_id, cuenta_id, unido_en) values ($1, $2, $3) on conflict do nothing', [inv.moai_id, id, ahora()]);
-      }
-      await cerrar('aceptada');
+      // Revisión de Codex: la invitación se reclama una sola vez (un doble toque no crea dos Moais) y, antes de entrar,
+      // se revisan los bloqueos con todas las personas que están hoy en el grupo.
+      const resultado = await db.transaccion(async tx => {
+        const [reclamada] = await tx.query(`update moai_invitaciones set estado = 'aceptada' where id = $1 and estado = 'abierta' returning id`, [inv.id]);
+        if (!reclamada) return 'no-esta' as const;
+        const cerrarla = () => tx.query(`update moai_invitaciones set estado = 'cerrada' where id = $1`, [inv.id]);
+        if (!inv.moai_id) {
+          if (await hayBloqueo(tx, inv.de, id)) { await cerrarla(); return 'no-esta' as const; }
+          const [nuevo] = await tx.query<{ id: string }>('insert into moais (nombre, creado_en) values ($1, $2) returning id', [inv.nombre ?? 'Nuestro Moai', ahora()]);
+          await tx.query('insert into moai_miembros (moai_id, cuenta_id, unido_en) values ($1, $2, $4), ($1, $3, $4)', [nuevo.id, inv.de, id, ahora()]);
+          return 'ok' as const;
+        }
+        await tx.query('select pg_advisory_xact_lock(hashtext($1))', [inv.moai_id]);
+        const miembros = await miembrosDe(tx, inv.moai_id);
+        for (const m of miembros) if (await hayBloqueo(tx, m.id, id)) { await cerrarla(); return 'no-esta' as const; }
+        if (miembros.length >= MAX_MOAI) { await cerrarla(); return 'lleno' as const; }
+        await tx.query('insert into moai_miembros (moai_id, cuenta_id, unido_en) values ($1, $2, $3) on conflict do nothing', [inv.moai_id, id, ahora()]);
+        return 'ok' as const;
+      });
+      if (resultado === 'no-esta') return noEsta();
+      if (resultado === 'lleno') return reply.code(409).send({ error: `Este Moai ya tiene ${MAX_MOAI} personas.` });
       return gente(id);
     }
     // Voto de un miembro: un «no» cierra la invitación y la persona invitada nunca se entera.
@@ -307,8 +318,9 @@ export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r:
       const [m] = b.mensaje.tipo === 'moai'
         ? await db.query<{ texto: string }>(`select m.texto from moai_mensajes m where m.id = $1 and m.autor_id = $2
             and exists (select 1 from moai_miembros x where x.moai_id = m.moai_id and x.cuenta_id = $3)`, [b.mensaje.id, otro, id])
-        : await db.query<{ texto: string }>(`select m.texto from plan_mensajes m join planes p on p.id = m.plan_id where m.id = $1 and m.autor_id = $2
-            and (p.autor_id = $3 or exists (select 1 from asistencias a where a.plan_id = p.id and a.cuenta_id = $3))`, [b.mensaje.id, otro, id]);
+        // Revisión de Codex: el mismo acceso que para leer la conversación del plan (quien va a la ocurrencia vigente).
+        : await db.query<{ texto: string; plan_id: string }>('select m.texto, m.plan_id from plan_mensajes m where m.id = $1 and m.autor_id = $2', [b.mensaje.id, otro])
+          .then(async ([x]) => x && await puedeConversar(id, x.plan_id) ? [x] : []);
       if (!m) return reply.code(404).send({ error: 'No encontramos ese mensaje.' });
       mensaje = m.texto;
     }

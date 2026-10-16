@@ -29,10 +29,22 @@ export async function enInvierno(db: Db, cifrador: Cifrador, cuenta: string): Pr
 const puertaAbierta = async (db: Db, cuenta: string, ahora: Date) =>
   !!(await db.query('select 1 from estados where cuenta_id = $1 and puerta_hasta > $2', [cuenta, ahora]))[0];
 
+// A quién le contaste tu invierno (revisión de Codex): la fila no dice ni de quién es ni para quién. Se busca por
+// identificadores ciegos y lo demás va cifrado, así una copia de la base no delata quién está en invierno.
+type Contado = { de: string; a: string; creado: string };
+const ciegoDe = (cifrador: Cifrador, cuenta: string) => cifrador.ciego(`invierno-de:${cuenta}`);
+const ciegoA = (cifrador: Cifrador, cuenta: string) => cifrador.ciego(`invierno-a:${cuenta}`);
+const leerContados = (cifrador: Cifrador, filas: { datos: string }[]) =>
+  filas.flatMap(f => { const t = cifrador.descifrar(f.datos); return t ? [JSON.parse(t) as Contado] : []; });
+export const olvidarInvierno = (db: Db, cifrador: Cifrador, cuenta: string) =>
+  db.query('delete from inviernos_contados where de_ciego = $1', [ciegoDe(cifrador, cuenta)]);
+
 async function estadoDe(db: Db, cifrador: Cifrador, cuenta: string, ahora: Date): Promise<Estado> {
-  const contadoA = await db.query<{ nombre: string }>(
-    `select split_part(c.nombre, ' ', 1) as nombre from invierno_avisos i join cuentas c on c.id = i.a where i.de = $1 order by i.creado_en`, [cuenta]);
-  return { invierno: await enInvierno(db, cifrador, cuenta), puertaAbierta: await puertaAbierta(db, cuenta, ahora), contadoA: contadoA.map(c => c.nombre) };
+  const contados = leerContados(cifrador, await db.query<{ datos: string }>('select datos from inviernos_contados where de_ciego = $1', [ciegoDe(cifrador, cuenta)]))
+    .filter(c => c.de === cuenta).sort((x, y) => x.creado.localeCompare(y.creado));
+  const nombres = contados.length ? await db.query<{ id: string; nombre: string }>(`select id, split_part(nombre, ' ', 1) as nombre from cuentas where id = any($1)`, [contados.map(c => c.a)]) : [];
+  const contadoA = contados.flatMap(c => nombres.filter(n => n.id === c.a).map(n => n.nombre));
+  return { invierno: await enInvierno(db, cifrador, cuenta), puertaAbierta: await puertaAbierta(db, cuenta, ahora), contadoA };
 }
 
 // Vecinos con perfil visible en tu zona. Sin dirección ni distancia exacta: «cerca» o «en tu zona».
@@ -76,8 +88,10 @@ export async function cartasDeCercania(db: Db, cuenta: string, ahora: Date, refs
       texto: s.mutuo ? `${s.nombre} también te saludó: «${textoSaludo(s.saludo)}». ¿Y si coinciden en algo?` : `${s.nombre} te manda un saludo de lejos: «${textoSaludo(s.saludo)}».` });
   }
   const semana = Math.floor(ahora.getTime() / (7 * 864e5));
-  const enInviernoMeContaron = await db.query<{ de: string; nombre: string }>(
-    `select i.de, split_part(c.nombre, ' ', 1) as nombre from invierno_avisos i join cuentas c on c.id = i.de where i.a = $1`, [cuenta]);
+  const meContaron = leerContados(cifrador, await db.query<{ datos: string }>('select datos from inviernos_contados where a_ciego = $1', [ciegoA(cifrador, cuenta)]))
+    .filter(c => c.a === cuenta);
+  const enInviernoMeContaron = meContaron.length ? await db.query<{ de: string; nombre: string }>(
+    `select id as de, split_part(nombre, ' ', 1) as nombre from cuentas where id = any($1) and suspendida_en is null`, [meContaron.map(c => c.de)]) : [];
   for (const i of enInviernoMeContaron) {
     const clave = `invierno:${i.de}:${semana}`;
     if (vistos.has(clave) || !(await enInvierno(db, cifrador, i.de)) || await hayBloqueo(db, cuenta, i.de)) continue;
@@ -160,7 +174,7 @@ export function registrarCercania(app: FastifyInstance, db: Db, cuentaDeSesion: 
     const id = await conSesion(request, reply); if (!id) return reply;
     const activo = (request.body as { activo?: boolean } | undefined)?.activo === true;
     await guardarEstado(id, { invierno: activo });
-    if (!activo) await db.query('delete from invierno_avisos where de = $1', [id]); // al salir del invierno, se olvida a quién se le contó
+    if (!activo) await olvidarInvierno(db, cifrador, id); // al salir del invierno, se olvida a quién se le contó
     return estadoDe(db, cifrador, id, ahora());
   });
   // Contar el invierno a personas con las que ya te viste, solo las que elijas.
@@ -169,7 +183,8 @@ export function registrarCercania(app: FastifyInstance, db: Db, cuentaDeSesion: 
     if (!(await enInvierno(db, cifrador, id))) return reply.code(409).send({ error: 'Primero cuéntame que estás en invierno.' });
     const elegidas = (request.body as { refs?: string[] } | undefined)?.refs ?? [];
     for (const c of await conocidosDe(db, id)) {
-      if (elegidas.includes(refs.ref(id, c.id))) await db.query('insert into invierno_avisos (de, a, creado_en) values ($1, $2, $3) on conflict do nothing', [id, c.id, ahora()]);
+      if (elegidas.includes(refs.ref(id, c.id))) await db.query('insert into inviernos_contados (de_ciego, a_ciego, datos) values ($1, $2, $3) on conflict do nothing',
+        [ciegoDe(cifrador, id), ciegoA(cifrador, c.id), cifrador.cifrar(JSON.stringify({ de: id, a: c.id, creado: ahora().toISOString() } satisfies Contado))]);
     }
     return estadoDe(db, cifrador, id, ahora());
   });

@@ -1,13 +1,17 @@
 // Cifrado de datos íntimos en la base (Moai interno y resultado del test de cuidado).
 // Regla 4: nada de criptografía propia. Se usa AES-256-GCM de node:crypto (OpenSSL) con una clave derivada por HKDF
 // del secreto del servidor (CODIGO_SECRETO). Si el secreto cambia, estos datos dejan de poder leerse.
-import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes } from 'node:crypto';
 
-export type Cifrador = { cifrar: (texto: string) => string; descifrar: (guardado: string) => string | null };
+// `ciego`: un identificador opaco y estable (HMAC con otra clave derivada) para buscar filas sin dejar a la vista de
+// quién son. Sin el secreto, una copia de la base no permite saber a qué cuenta corresponde.
+export type Cifrador = { cifrar: (texto: string) => string; descifrar: (guardado: string) => string | null; ciego: (texto: string) => string };
 
 export function crearCifrador(secreto: string): Cifrador {
   const clave = Buffer.from(hkdfSync('sha256', secreto, 'moai', 'datos-intimos-v1', 32));
+  const claveCiega = Buffer.from(hkdfSync('sha256', secreto, 'moai', 'identificador-ciego-v1', 32));
   return {
+    ciego: texto => createHmac('sha256', claveCiega).update(texto).digest('hex'),
     cifrar(texto) {
       const iv = randomBytes(12);
       const cifra = createCipheriv('aes-256-gcm', clave, iv);

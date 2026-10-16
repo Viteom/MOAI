@@ -937,3 +937,6 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
   .maqueta-creditos { bottom: calc(var(--barra-abajo) + 140px); }
   .panel-brisa, .panel-brisa.flotante { top: 30svh; bottom: calc(var(--barra-abajo) + 10px); }
 }
+
+/* Aviso que no debe perderse (por ejemplo, no se pudo cerrar la sesión): flota sobre la barra. */
+.aviso-flotante { position: fixed; z-index: 50; left: 50%; bottom: calc(var(--barra-abajo) + 20px); transform: translateX(-50%); width: min(520px, calc(100% - 32px)); margin: 0; padding: 14px 18px; border-radius: 16px; background: oklch(.3 .08 40); color: #fff; font-size: 16px; box-shadow: 0 12px 30px rgb(0 0 0 / .4); }

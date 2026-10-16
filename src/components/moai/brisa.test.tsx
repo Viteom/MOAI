@@ -116,4 +116,13 @@ describe('Brisa acompaña', () => {
     const enlace = screen.getByRole('link', { name: 'Abrir WhatsApp con este mensaje' });
     expect(enlace.getAttribute('href')).toMatch(/^whatsapp:\/\/send\?text=Hola%2C%20Laura/);
   });
+
+  it('si no se pudo guardar el invierno, no promete bajar el ritmo', async () => {
+    const invierno = vi.fn(async () => ({ ok: false as const, error: 'Sin conexión.', status: 0 }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ invierno })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    await elegirCuandoAparezca('Cómo estoy');
+    await elegirCuandoAparezca('En invierno');
+    expect(await screen.findByText(/No pude guardarlo: Sin conexión/)).toBeInTheDocument();
+    expect(screen.queryByText(/Voy a bajar el ritmo/)).toBeNull();
+  });
 });

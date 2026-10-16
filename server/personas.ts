@@ -3,7 +3,7 @@
 // También: bloqueos y la pausa por reportes (src/lib/moai.ts).
 import { createHmac } from 'node:crypto';
 import { DIAS_REPORTES, REPORTES_PARA_PAUSA } from '../src/lib/moai';
-import type { Db } from './db';
+import type { Consulta, Db } from './db';
 
 export type Refs = { ref: (quien: string, aQuien: string) => string; resolver: (db: Db, quien: string, ref: string) => Promise<string | null> };
 
@@ -27,7 +27,7 @@ export function crearRefs(secreto: string): Refs {
   return { ref, resolver };
 }
 
-export async function hayBloqueo(db: Db, a: string, b: string): Promise<boolean> {
+export async function hayBloqueo(db: Consulta, a: string, b: string): Promise<boolean> {
   const [fila] = await db.query('select 1 from bloqueos where (de = $1 and a = $2) or (de = $2 and a = $1)', [a, b]);
   return !!fila;
 }

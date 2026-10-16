@@ -204,11 +204,12 @@ create table if not exists estados (
   puerta_hasta timestamptz,
   actualizado_en timestamptz not null
 );
-create table if not exists invierno_avisos (
-  de uuid not null references cuentas(id) on delete cascade,
-  a uuid not null references cuentas(id) on delete cascade,
-  creado_en timestamptz not null,
-  primary key (de, a)
+drop table if exists invierno_avisos;
+create table if not exists inviernos_contados (
+  de_ciego text not null,
+  a_ciego text not null,
+  datos text not null,
+  primary key (de_ciego, a_ciego)
 );
 create table if not exists saludos (
   id bigserial primary key,

@@ -193,6 +193,8 @@ describe('Pasos después del código', () => {
 
   it('guarda «Casa» con la ciudad, o el salto', async () => {
     const cookie = await sesionNueva();
+    expect((await conCookie('/api/perfil/comunidad', { ciudad: '05001' }, cookie)).statusCode).toBe(401); // primero la edad (regla 8)
+    await conCookie('/api/perfil/nacimiento', { fechaNacimiento: '1960-05-02' }, cookie);
     const malo = await conCookie('/api/perfil/comunidad', { ciudad: '99999' }, cookie);
     expect(malo.json().errores.ciudad).toBe('Elige la ciudad de la lista.');
     const bueno = await conCookie('/api/perfil/comunidad', { ciudad: '05001' }, cookie);

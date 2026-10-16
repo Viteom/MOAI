@@ -69,19 +69,23 @@ export function entenderHora(texto: string): string | null {
 function CartaEnChat({ carta, api, ir, alTerminar, alCuidado }: { carta: Carta; api: Api; ir: Ir; alTerminar: () => void; alCuidado: () => void }) {
   const [hecho, setHecho] = useState('');
   const [porque, setPorque] = useState(false);
+  const [error, setError] = useState('');
   const cerrar = async (texto: string) => { await api.cartaVista(carta.clave); setHecho(texto); alTerminar(); };
+  // Revisión de Codex: solo se anuncia lo que el servidor confirmó; si falla, la carta sigue ahí para reintentar.
+  const siSale = (r: { ok: boolean; error?: string }, texto: string) => r.ok ? void cerrar(texto) : setError(r.error ?? 'No se pudo. Intenta de nuevo.');
   const motivo = carta.tipo === 'sugerencia' || carta.tipo === 'gente' || carta.tipo === 'interno' ? carta.motivo : undefined;
   return <div>
     <p>{carta.texto}</p>
     {motivo && porque && <p className="carta-motivo">{motivo}</p>}
+    {error && !hecho && <p className="campo-error" role="alert">{error}</p>}
     {hecho ? <p className="campo-ayuda">{hecho}</p> : <div className="plan-acciones">
-      {carta.tipo === 'solo' && carta.repetir && <Button className="diario-boton principal" onClick={() => void api.repetirPlan(carta.planId).then(() => cerrar('Listo: queda cada semana.'))}>Sí, cada semana</Button>}
-      {carta.tipo === 'sugerencia' && <Button className="diario-boton principal" onClick={() => void api.irAPlan(carta.planId).then(() => cerrar('Te sumaste. Nos vemos allá.'))}>Me sumo</Button>}
+      {carta.tipo === 'solo' && carta.repetir && <Button className="diario-boton principal" onClick={() => void api.repetirPlan(carta.planId).then(r => siSale(r, 'Listo: queda cada semana.'))}>Sí, cada semana</Button>}
+      {carta.tipo === 'sugerencia' && <Button className="diario-boton principal" onClick={() => void api.irAPlan(carta.planId).then(r => siSale(r, 'Te sumaste. Nos vemos allá.'))}>Me sumo</Button>}
       {carta.tipo === 'gente' && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => ir('/gente'))}>Ir a Mi gente</Button>}
       {carta.tipo === 'saludo' && carta.opciones.map(o => <Button key={o} className="diario-boton" onClick={() => void api.saludar(carta.ref, o).then(r => cerrar(r.ok ? `Le mandaste: «${textoSaludo(o)}».` : r.error))}>{textoSaludo(o)}</Button>)}
       {carta.tipo === 'saludo' && carta.plan && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => ir('/inicio?plan=1'))}>Proponer algo juntos</Button>}
       {carta.tipo === 'cuidado' && <Button className="diario-boton principal" onClick={() => void api.cartaVista(carta.clave).then(() => { setHecho('Vamos.'); alCuidado(); })}>Sí, volvamos a mirarlo</Button>}
-      {carta.tipo === 'interno' && <Button className="diario-boton principal" onClick={() => void api.hablamos(carta.personaId).then(() => cerrar('Qué bueno. Esos vínculos también te cuidan a ti.'))}>Ya le escribí</Button>}
+      {carta.tipo === 'interno' && <Button className="diario-boton principal" onClick={() => void api.hablamos(carta.personaId).then(r => siSale(r, 'Qué bueno. Esos vínculos también te cuidan a ti.'))}>Ya le escribí</Button>}
       <Button className="diario-boton" onClick={() => void cerrar('Entendido.')}>{carta.tipo === 'solo' && !carta.repetir ? 'Entendido' : 'Ahora no'}</Button>
       {motivo && <button type="button" className="brisa-enlace" aria-expanded={porque} onClick={() => setPorque(p => !p)}>¿Por qué veo esto?</button>}
     </div>}
@@ -90,14 +94,16 @@ function CartaEnChat({ carta, api, ir, alTerminar, alCuidado }: { carta: Carta; 
 
 function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
   const [voy, setVoy] = useState(plan.voy);
+  const [error, setError] = useState('');
   return <div className="brisa-plan">
     <strong>{plan.titulo}</strong>
     <span>{fechaLarga(new Date(plan.cuando))} · {plan.lugarPublico} · {plan.franja}</span>
     <span>{plan.organizacion ? `Convoca ${plan.organizacion.nombre}` : `Lo propone ${plan.autor}`}</span>
     <div className="plan-acciones">
-      {voy ? <span className="plan-voy">Vas a ir</span> : <Button className="diario-boton principal" onClick={() => void api.irAPlan(plan.id).then(r => r.ok && setVoy(true))}>Me sumo</Button>}
+      {voy ? <span className="plan-voy">Vas a ir</span> : <Button className="diario-boton principal" onClick={() => void api.irAPlan(plan.id).then(r => r.ok ? setVoy(true) : setError(r.error))}>Me sumo</Button>}
       <Button className="diario-boton" onClick={() => ir(`/planes/${plan.id}`)}>Ver</Button>
     </div>
+    {error && <span className="campo-error" role="alert">{error}</span>}
   </div>;
 }
 
@@ -278,7 +284,15 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   function mostrarResultado(letras: Letra[], guardado: boolean) {
     decir(...letras.map(l => textosCuidado[l]));
     nota(avisoCuidado);
-    if (guardado) setOpciones([{ texto: 'Borrar mi resultado', hacer: () => void api.borrarCuidado().then(() => volver('Listo, lo borré. ¿Qué más te provoca?')) }, { texto: 'Mi Moai interno', hacer: () => ir('/gente') }, { texto: 'Volver', hacer: () => volver() }]);
+    if (guardado) opcionesResultado();
+  }
+  // Borrar el resultado: solo se dice «lo borré» si el servidor lo confirmó; si no, sigue guardado y se puede reintentar.
+  function opcionesResultado() {
+    setOpciones([{ texto: 'Borrar mi resultado', hacer: () => void api.borrarCuidado().then(r => {
+      if (r.ok) { volver('Listo, lo borré. ¿Qué más te provoca?'); return; }
+      decir(`No pude borrarlo: ${r.error} Sigue guardado; puedes intentarlo de nuevo.`);
+      opcionesResultado();
+    }) }, { texto: 'Mi Moai interno', hacer: () => ir('/gente') }, { texto: 'Volver', hacer: () => volver() }]);
   }
   function seguirConInterno() {
     decir('Algo que ayuda: tener presentes a las personas que te nutren. ¿Armamos tu Moai interno?');
@@ -334,7 +348,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     if (r.ok && r.datos.invierno) {
       decir('Sigo aquí contigo. ¿Cómo va tu invierno?');
       setOpciones([
-        { texto: 'Ya salí del invierno', hacer: () => void api.invierno(false).then(() => { decir('Me alegra mucho. Vuelvo a contarte de planes cerca, con calma.'); volver(); }) },
+        { texto: 'Ya salí del invierno', hacer: () => void api.invierno(false).then(r => { decir(r.ok ? 'Me alegra mucho. Vuelvo a contarte de planes cerca, con calma.' : `No pude guardarlo: ${r.error} Inténtalo de nuevo en un momento.`); volver(); }) },
         { texto: 'Sigo igual', hacer: () => void acompanarInvierno() },
       ]);
       return;
@@ -345,7 +359,10 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       { texto: 'Bien', hacer: () => volver('¡Qué bueno! ¿Qué te provoca hoy?') },
       { texto: 'Más o menos', hacer: () => ofrecerPuerta() },
       { texto: 'Me siento sola o solo', hacer: () => ofrecerPuerta() },
-      { texto: 'En invierno', hacer: () => void api.invierno(true).then(() => { decir('Gracias por contármelo. Voy a bajar el ritmo: mientras dure, no te sugiero planes ni te llegan correos de planes.'); void acompanarInvierno(); }) },
+      { texto: 'En invierno', hacer: () => void api.invierno(true).then(r => {
+        if (!r.ok) { decir(`No pude guardarlo: ${r.error} Por ahora nada cambió; inténtalo de nuevo en un momento.`); volver(); return; }
+        decir('Gracias por contármelo. Voy a bajar el ritmo: mientras dure, no te sugiero planes ni te llegan correos de planes.'); void acompanarInvierno();
+      }) },
     ]);
   }
   function ofrecerPuerta() {

@@ -49,7 +49,9 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   // Revisión de Codex (15 de octubre): el límite por hora se reserva de forma atómica (un candado por destino), y
   // también cuenta cuando no hay cuenta, para que el límite no revele quién está registrado. Sin cuenta no se envía
   // nada: la fila queda usada desde el principio y nunca sirve para entrar. Si el proveedor falla, la fila se borra.
-  async function enviarCodigo(canal: Canal, destino: string, proposito: Proposito | null) {
+  // `ocultarFallo` (acceso, revisión de Codex): si el proveedor falla, la respuesta es la misma que sin cuenta y la fila
+  // queda usada, igual que en la ruta simulada; así ni el estado ni el límite por hora delatan quién está registrado.
+  async function enviarCodigo(canal: Canal, destino: string, proposito: Proposito | null, ocultarFallo = false) {
     const via = vias[canal]!;
     const codigo = proposito && via.tipo === 'propio' ? String(randomInt(0, 1_000_000)).padStart(6, '0') : null;
     const fila = await db.transaccion(async tx => {
@@ -67,6 +69,11 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
       if (via.tipo === 'propio') await via.enviar(destino, codigo!, proposito);
       else await via.iniciar(destino);
     } catch (error) {
+      if (ocultarFallo) {
+        await db.query('update verificaciones set usada_en = now() where id = $1', [fila.id]);
+        app.log.error({ canal }, 'falló el envío del código de acceso');
+        return;
+      }
       await db.query('delete from verificaciones where id = $1', [fila.id]);
       throw error;
     }
@@ -91,9 +98,9 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   }
 
   // Responde igual exista o no la cuenta, para no revelar quién está registrado.
-  async function responderEnvio(reply: { code(n: number): { send(b: unknown): unknown } }, canal: Canal, destino: string, proposito: Proposito | null) {
+  async function responderEnvio(reply: { code(n: number): { send(b: unknown): unknown } }, canal: Canal, destino: string, proposito: Proposito | null, ocultarFallo = false) {
     try {
-      await enviarCodigo(canal, destino, proposito);
+      await enviarCodigo(canal, destino, proposito, ocultarFallo);
     } catch (error) {
       if (error instanceof Limite) return reply.code(429).send({ error: mensajes.limite });
       app.log.error({ canal }, 'falló el envío del código');
@@ -147,7 +154,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     if (!destino) return reply.code(400).send({ error: mensajes.destino });
     const cuenta = await cuentaPorDestino(destino);
     // Solo las cuentas ya verificadas reciben un código de acceso; una pendiente debe completar el registro.
-    return responderEnvio(reply, canal, destino, cuenta?.verificada_en ? 'acceso' : null);
+    return responderEnvio(reply, canal, destino, cuenta?.verificada_en ? 'acceso' : null, true);
   });
 
   app.post('/api/verificar', async (request, reply) => {
@@ -194,10 +201,20 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
     return perfilDe(id);
   });
 
-  // «Tu comunidad»: el primer lugar guardado, «Casa» (ciudad y, en Medellín, barrio), o «Lo haré después».
-  app.post('/api/perfil/comunidad', async (request, reply) => {
+  // Regla 8 (revisión de Codex): la comunidad exige una cuenta adulta ya validada. Con sesión pero sin fecha de
+  // nacimiento declarada, nada de lugares, planes, mensajes ni Moais: primero el paso de la edad.
+  const cuentaAdulta = async (request: FastifyRequest) => {
     const id = await cuentaDeSesion(request);
-    if (!id) return reply.code(401).send({ error: 'Sin sesión.' });
+    if (!id) return null;
+    const [c] = await db.query('select 1 from cuentas where id = $1 and fecha_nacimiento is not null', [id]);
+    return c ? id : null;
+  };
+
+  // «Tu comunidad»: el primer lugar guardado, «Casa» (ciudad y, en Medellín, barrio), o «Lo haré después».
+  // Regla 8 (revisión de Codex): sin una fecha de nacimiento adulta no se guarda ningún lugar.
+  app.post('/api/perfil/comunidad', async (request, reply) => {
+    const id = await cuentaAdulta(request);
+    if (!id) return reply.code(401).send({ error: 'Primero cuéntanos tu fecha de nacimiento.' });
     const body = (request.body ?? {}) as { ciudad?: string; barrio?: string; omitir?: boolean };
     if (body.omitir === true) {
       await db.query(`update cuentas set comunidad_estado = 'skipped' where id = $1`, [id]);
@@ -215,19 +232,11 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
 
   const refs = crearRefs(secreto);
   const cifrador = crearCifrador(secreto);
-  // Regla 8 (revisión de Codex): la comunidad exige una cuenta adulta ya validada. Con sesión pero sin fecha de
-  // nacimiento declarada, nada de lugares, planes, mensajes ni Moais: primero el paso de la edad.
-  const cuentaAdulta = async (request: FastifyRequest) => {
-    const id = await cuentaDeSesion(request);
-    if (!id) return null;
-    const [c] = await db.query('select 1 from cuentas where id = $1 and fecha_nacimiento is not null', [id]);
-    return c ? id : null;
-  };
-  registrarComunidad(app, db, cuentaAdulta, ahora, refs, cifrador);
+  const { puedeConversar } = registrarComunidad(app, db, cuentaAdulta, ahora, refs, cifrador);
   registrarCuidado(app, db, cuentaAdulta, ahora, cifrador);
   registrarCercania(app, db, cuentaAdulta, ahora, refs, cifrador);
   registrarLazos(app, db, cuentaAdulta, ahora, refs, cifrador);
-  registrarMoais(app, db, cuentaAdulta, ahora, refs);
+  registrarMoais(app, db, cuentaAdulta, ahora, refs, puedeConversar);
   registrarEquipo(app, db, cuentaAdulta, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
 
   app.post('/api/salir', async (request, reply) => {

@@ -138,6 +138,17 @@ describe('Resolución de sesión (P00)', () => {
     expect(window.location.pathname).toBe('/inicio');
   });
 
+  it('si cerrar sesión falla, no finge haberla cerrado', async () => {
+    const api = apiFalsa('activa');
+    api.salir = vi.fn(async () => ({ ok: false as const, error: 'Sin conexión.', status: 0 }));
+    render(<Plataforma api={api} />);
+    await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' });
+    clic('Más');
+    clic('Cerrar sesión');
+    expect(await screen.findByText(/No pudimos cerrar tu sesión/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+  });
+
   it('una ruta privada sin sesión pide entrar y después vuelve a ella', async () => {
     window.history.replaceState(null, '', '/gente');
     render(<Plataforma api={apiFalsa('anonima', false)} />);
