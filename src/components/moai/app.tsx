@@ -19,7 +19,8 @@ const soloOptions = ['Quiero conocer a alguien de mi barrio', 'Quiero ir a un Ti
 function Notice() { return <p className="prototype-notice"><Info size={14}/><span>{notice}</span></p>; }
 
 // `inicio` y `estadoInicial` existen para las pruebas y para abrir una pantalla concreta al presentar.
-export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estadoInicial?: Partial<MoaiState> } = {}) {
+// `cuenta` llega cuando hay una sesión real: Ajustes dice qué se guarda y permite cerrar sesión.
+export function MoaiApp({ inicio = 1, estadoInicial, cuenta }: { inicio?: Screen; estadoInicial?: Partial<MoaiState>; cuenta?: { onSalir: () => void } } = {}) {
   const [state, setState] = useState<MoaiState>(() => ({ ...initialState(), ...estadoInicial }));
   const [screen, setScreen] = useState<Screen>(inicio);
   const [history, setHistory] = useState<Screen[]>([]);
@@ -113,7 +114,7 @@ export function MoaiApp({ inicio = 1, estadoInicial }: { inicio?: Screen; estado
     <Button variant="moaiSecondary" size="moai" onClick={() => go('moai')}>Ver un Moai de ejemplo</Button>
     <Button variant="moaiSecondary" size="moai" onClick={() => { patch({ clima: 'lluvia' }); setConfirmacion(null); go('lluvia'); }}>Simular una lluvia fuerte</Button>
   </>)}<Primary onClick={() => go('home')}>Ver mi ciudad</Primary></Panel></>;
-  else content = <><div className="scene-caption home-caption"><h1>Ajustes.</h1><p>A tu ritmo.</p></div><Panel className="home-panel">{scroll(<><Voice line="Este lugar es tuyo." question="Puedes volver a empezar."/><Notice/><p className="help-text">Nada se envía. Nada se guarda. Al salir, tu ciudad vuelve a empezar.</p><Button variant="moaiOption" size="moai" aria-pressed={ahorro} onClick={() => setAhorro(v => !v)}>{ahorro ? 'Modo Ahorro: activo' : 'Modo Ahorro: apagado'}</Button><p className="help-text">Fondo plano, sin imágenes ni movimiento y letra más grande.</p><Button variant="moaiSecondary" size="moai" onClick={() => go('demo')}>Para quien presenta: demostración</Button></>)}<Primary onClick={reset}>Empezar de nuevo</Primary></Panel></>;
+  else content = <><div className="scene-caption home-caption"><h1>Ajustes.</h1><p>A tu ritmo.</p></div><Panel className="home-panel">{scroll(<><Voice line="Este lugar es tuyo." question="Puedes volver a empezar."/>{cuenta ? <p className="help-text">Tu cuenta (nombre, contacto, ciudad y fecha de nacimiento) se guarda en MOAI. Lo que respondes en tu primer día todavía no se guarda: al salir, tu ciudad vuelve a empezar.</p> : <><Notice/><p className="help-text">Nada se envía. Nada se guarda. Al salir, tu ciudad vuelve a empezar.</p></>}<Button variant="moaiOption" size="moai" aria-pressed={ahorro} onClick={() => setAhorro(v => !v)}>{ahorro ? 'Modo Ahorro: activo' : 'Modo Ahorro: apagado'}</Button><p className="help-text">Fondo plano, sin imágenes ni movimiento y letra más grande.</p><Button variant="moaiSecondary" size="moai" onClick={() => go('demo')}>Para quien presenta: demostración</Button>{cuenta && <Button variant="moaiSecondary" size="moai" onClick={cuenta.onSalir}>Cerrar sesión</Button>}</>)}<Primary onClick={reset}>Empezar de nuevo</Primary></Panel></>;
 
   return <main className="moai-stage"><div className={`phone-frame${ahorro ? ' modo-ahorro' : ''}`}><div className="app-screen">
     {ahorro ? <div className="scene ahorro-fondo" aria-hidden="true"/> : <Scene city={state.ciudad} time={hourTime} weather={state.clima} courtyard={showCourtyard ? courtyardState : undefined} descend={screen === 13 && descending} onBackground={setFondoReal}/>}

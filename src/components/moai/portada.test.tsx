@@ -1,0 +1,300 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { Plataforma } from './portada';
+import { enmascarar, normalizarDestino, validarNacimiento, validarRegistro } from '@/lib/registro';
+import { validarLugar } from '@/lib/lugares';
+import type { Api, Perfil } from '@/lib/api';
+
+const casa = { id: 'l1', nombre: 'Casa', ciudad: '05001', barrio: null, zona: 'Medellín', activo: true };
+const listo: Perfil = { nombre: 'Rosa', nacimientoPendiente: false, comunidad: 'completed', lugar: casa };
+const recien: Perfil = { nombre: 'Rosa', nacimientoPendiente: true, comunidad: 'pending', lugar: null };
+
+// API de mentira con las mismas reglas de validación que el servidor; el código correcto es 123456.
+// `nuevo` decide si el código abre una cuenta recién creada (con pasos pendientes) o una que ya existía.
+function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = true): Api {
+  let perfil = nuevo ? recien : listo;
+  const envio = (canal: 'correo' | 'whatsapp', destino: string, pais?: string) =>
+    ({ ok: true as const, datos: { canal, destinoVisible: enmascarar(canal, normalizarDestino(canal, destino, pais) ?? destino) } });
+  return {
+    registrar: vi.fn(async entrada => {
+      const r = validarRegistro(entrada);
+      return r.ok ? envio(entrada.canal, entrada.destino, entrada.pais) : { ok: false as const, error: '', errores: r.errores, status: 400 };
+    }),
+    pedirAcceso: vi.fn(async c => envio(c.canal, c.destino, c.pais)),
+    verificar: vi.fn(async c => c.codigo === '123456'
+      ? { ok: true as const, datos: perfil }
+      : { ok: false as const, error: 'Ese código no coincide o ya venció. Revísalo o pide uno nuevo.', status: 400 }),
+    sesion: vi.fn(async () => sesion === 'activa' ? { ok: true as const, datos: listo }
+      : sesion === 'sin-red' ? { ok: false as const, error: 'Sin conexión', status: 0 } : { ok: false as const, error: 'Sin sesión.', status: 401 }),
+    guardarNacimiento: vi.fn(async fecha => {
+      const r = validarNacimiento(fecha, new Date());
+      if (r.ok) return { ok: true as const, datos: (perfil = { ...perfil, nacimientoPendiente: false }) };
+      return { ok: false as const, error: r.error, status: r.menor ? 403 : 400 };
+    }),
+    guardarComunidad: vi.fn(async c => {
+      if ('omitir' in c) return { ok: true as const, datos: (perfil = { ...perfil, comunidad: 'skipped' as const }) };
+      const r = validarLugar({ nombre: 'Casa', ciudad: c.ciudad, barrio: c.barrio });
+      return r.ok ? { ok: true as const, datos: (perfil = { ...perfil, comunidad: 'completed' as const, lugar: { ...casa, ciudad: c.ciudad, zona: 'Medellín' } }) }
+        : { ok: false as const, error: '', errores: r.errores, status: 400 };
+    }),
+    salir: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
+    lugares: vi.fn(async () => ({ ok: true as const, datos: perfil.lugar ? [perfil.lugar] : [] })),
+    crearLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    activarLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    borrarLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    planes: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    crearPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    irAPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    noIrAPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cancelarPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    plan: vi.fn(async () => ({ ok: false as const, error: 'No está.', status: 404 })),
+    repetirPlan: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    mensajes: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    enviarMensaje: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cartas: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    cartaVista: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    preferencias: vi.fn(async () => ({ ok: true as const, datos: { sugerencias: false, gustos: [], resumenSemanal: false } })),
+    guardarPreferencias: vi.fn(async (p) => ({ ok: true as const, datos: p })),
+    mapa: vi.fn(async () => ({ ok: true as const, datos: { disponible: false as const } })),
+    gente: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    nosVimos: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    proponerMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    invitarAMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    responderInvitacion: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    renombrarMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    salirDeMoai: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    mensajesMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    casos: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    lazos: vi.fn(async () => ({ ok: true as const, datos: { grupos: [], personas: [] } })),
+    perfilPublico: vi.fn(async () => ({ ok: true as const, datos: { frase: '', gustos: [], comparte: '', aprender: '', visible: false } })),
+    guardarPerfilPublico: vi.fn(async p => ({ ok: true as const, datos: p })),
+    zona: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    saludar: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
+    estado: vi.fn(async () => ({ ok: true as const, datos: { invierno: false, puertaAbierta: false, contadoA: [] } })),
+    invierno: vi.fn(async activo => ({ ok: true as const, datos: { invierno: activo, puertaAbierta: false, contadoA: [] } })),
+    contarInvierno: vi.fn(async () => ({ ok: true as const, datos: { invierno: true, puertaAbierta: false, contadoA: [] } })),
+    puerta: vi.fn(async abierta => ({ ok: true as const, datos: { invierno: false, puertaAbierta: abierta, contadoA: [] } })),
+    cuidado: vi.fn(async () => ({ ok: true as const, datos: { letras: null, guardado: false } })),
+    responderCuidado: vi.fn(async () => ({ ok: true as const, datos: { letras: ['B' as const], guardado: false } })),
+    borrarCuidado: vi.fn(async () => ({ ok: true as const, datos: { letras: null, guardado: false } })),
+    interno: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    agregarInterno: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    hablamos: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    quitarInterno: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    decidirCaso: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    organizaciones: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    crearOrganizacion: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    activarOrganizacion: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    enviarMensajeMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
+    bloquear: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    reportar: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+  };
+}
+
+beforeEach(() => window.history.replaceState(null, '', '/'));
+const escribir = (etiqueta: string | RegExp, valor: string) => fireEvent.change(screen.getByLabelText(etiqueta), { target: { value: valor } });
+const clic = (nombre: string | RegExp) => fireEvent.click(screen.getByRole('button', { name: nombre }));
+// La pantalla de carga (P00) también dice MOAI: la portada está lista cuando aparece «Crear cuenta».
+const portadaLista = () => screen.findByRole('button', { name: 'Crear cuenta' });
+const titulo = (nombre: string | RegExp) => screen.findByRole('heading', { level: 1, name: nombre });
+
+function llenarRegistro() {
+  escribir('¿Cómo te llamas?', 'Rosa');
+  escribir('Tu correo electrónico', 'rosa@ejemplo.co');
+  fireEvent.click(screen.getByLabelText(/^Acepto los/));
+  fireEvent.click(screen.getByLabelText(/Ley 1581/));
+}
+async function hastaElCodigo(api: Api) {
+  render(<Plataforma api={api} />);
+  await portadaLista();
+  clic('Crear cuenta');
+  clic('Continuar');
+  await titulo('Empecemos por conocernos');
+  llenarRegistro();
+  clic('Crear mi cuenta');
+  await titulo('Revisa tu correo');
+  escribir('Código de acceso', '123456');
+  clic('Verificar y continuar');
+}
+
+describe('Resolución de sesión (P00)', () => {
+  it('no muestra la portada hasta saber si hay sesión', async () => {
+    render(<Plataforma api={apiFalsa()} />);
+    expect(screen.getByText('Estamos abriendo tu espacio…')).toBeInTheDocument();
+    expect(await portadaLista()).toBeInTheDocument();
+  });
+
+  it('sin conexión ofrece reintentar en vez de cerrar la sesión', async () => {
+    const api = apiFalsa('sin-red');
+    render(<Plataforma api={api} />);
+    expect(await screen.findByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+    clic('Reintentar');
+    expect(api.sesion).toHaveBeenCalledTimes(2);
+  });
+
+  it('con sesión y pasos resueltos entra directo a Brisa', async () => {
+    render(<Plataforma api={apiFalsa('activa')} />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/inicio');
+  });
+
+  it('si cerrar sesión falla, no finge haberla cerrado', async () => {
+    const api = apiFalsa('activa');
+    api.salir = vi.fn(async () => ({ ok: false as const, error: 'Sin conexión.', status: 0 }));
+    render(<Plataforma api={api} />);
+    await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' });
+    clic('Más');
+    clic('Cerrar sesión');
+    expect(await screen.findByText(/No pudimos cerrar tu sesión/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+  });
+
+  it('una ruta privada sin sesión pide entrar y después vuelve a ella', async () => {
+    window.history.replaceState(null, '', '/gente');
+    render(<Plataforma api={apiFalsa('anonima', false)} />);
+    expect(await screen.findByText('Tu sesión terminó. Vuelve a entrar para continuar.')).toBeInTheDocument();
+    escribir('Tu correo electrónico', 'rosa@ejemplo.co');
+    clic('Enviar código');
+    await titulo('Revisa tu correo');
+    escribir('Código de acceso', '123456');
+    clic('Verificar y continuar');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mi gente' })).toBeInTheDocument();
+  });
+
+  it('recargar en /verificar vuelve a pedir el código', async () => {
+    window.history.replaceState(null, '', '/verificar');
+    render(<Plataforma api={apiFalsa()} />);
+    expect(await screen.findByText('Por seguridad, vuelve a pedir tu código.')).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/acceso');
+  });
+});
+
+describe('Crear cuenta', () => {
+  it('Brisa → registro → código → fecha de nacimiento → casa → Brisa', async () => {
+    const api = apiFalsa();
+    render(<Plataforma api={api} />);
+    await portadaLista();
+    clic('Crear cuenta');
+    expect(await titulo('Hola, soy Brisa.')).toBeInTheDocument();
+    expect(screen.getByText(/inteligencia artificial/)).toBeInTheDocument();
+    clic('Continuar');
+    await titulo('Empecemos por conocernos');
+    llenarRegistro();
+    clic('Crear mi cuenta');
+    expect(await titulo('Revisa tu correo')).toBeInTheDocument();
+    expect(screen.getByText(/r•••@ejemplo\.co/)).toBeInTheDocument();
+    expect(api.registrar).toHaveBeenCalledWith(expect.objectContaining({ nombre: 'Rosa', aceptaTerminos: true, aceptaDatos: true }));
+    escribir('Código de acceso', '123456');
+    clic('Verificar y continuar');
+
+    expect(await titulo('Qué gusto, Rosa.')).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/configuracion/nacimiento');
+    escribir('Día', '02'); escribir('Mes', '03'); escribir('Año', '1950');
+    clic('Continuar');
+    expect(await titulo('¿Dónde vives?')).toBeInTheDocument();
+    escribir('Tu ciudad', 'medel');
+    fireEvent.click(screen.getByRole('option', { name: /Medellín/ }));
+    clic('Guardar como «Casa»');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(api.guardarComunidad).toHaveBeenCalledWith({ ciudad: '05001', barrio: null });
+  });
+
+  it('la comunidad se puede dejar para después', async () => {
+    const api = apiFalsa();
+    await hastaElCodigo(api);
+    await titulo('Qué gusto, Rosa.');
+    escribir('Día', '02'); escribir('Mes', '03'); escribir('Año', '1950');
+    clic('Continuar');
+    await titulo('¿Dónde vives?');
+    clic('Lo haré después');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(await screen.findByText(/primero cuéntame dónde vives/)).toBeInTheDocument();
+    expect(api.guardarComunidad).toHaveBeenCalledWith({ omitir: true });
+  });
+
+  it('con menos de 18 años explica la regla y vuelve al inicio', async () => {
+    await hastaElCodigo(apiFalsa());
+    await titulo('Qué gusto, Rosa.');
+    escribir('Día', '01'); escribir('Mes', '01'); escribir('Año', String(new Date().getFullYear() - 10));
+    clic('Continuar');
+    expect(await titulo('Gracias por querer estar aquí')).toBeInTheDocument();
+    expect(screen.getByText(/Borramos los datos que nos diste/)).toBeInTheDocument();
+    clic('Volver al inicio');
+    expect(await portadaLista()).toBeInTheDocument();
+  });
+
+  it('volver a Brisa y regresar conserva lo escrito', async () => {
+    render(<Plataforma api={apiFalsa()} />);
+    await portadaLista();
+    clic('Crear cuenta');
+    clic('Continuar');
+    escribir('¿Cómo te llamas?', 'Rosa');
+    clic('Volver');
+    await titulo('Hola, soy Brisa.');
+    clic('Continuar');
+    expect(screen.getByLabelText('¿Cómo te llamas?')).toHaveValue('Rosa');
+  });
+
+  it('los textos legales se abren sin perder el formulario ni marcar la casilla', async () => {
+    window.history.replaceState(null, '', '/registro');
+    render(<Plataforma api={apiFalsa()} />);
+    await titulo('Empecemos por conocernos');
+    escribir('¿Cómo te llamas?', 'Rosa');
+    fireEvent.click(screen.getByRole('link', { name: 'Términos de uso' }));
+    expect(await titulo('Términos de uso')).toBeInTheDocument();
+    expect(screen.getByText(/Lo que MOAI no es/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Volver' }));
+    await titulo('Empecemos por conocernos');
+    expect(screen.getByLabelText('¿Cómo te llamas?')).toHaveValue('Rosa');
+    expect(screen.getByLabelText(/^Acepto los/)).not.toBeChecked();
+  });
+
+  it('muestra los errores de cada campo y las casillas empiezan sin marcar', async () => {
+    window.history.replaceState(null, '', '/registro');
+    render(<Plataforma api={apiFalsa()} />);
+    await titulo('Empecemos por conocernos');
+    expect(screen.getByLabelText(/^Acepto los/)).not.toBeChecked();
+    expect(screen.getByLabelText(/Ley 1581/)).not.toBeChecked();
+    expect(screen.queryByRole('radio', { name: /WhatsApp/ })).toBeNull(); // WhatsApp aún no está disponible
+    clic('Crear mi cuenta');
+    expect(await screen.findByText('Escribe tu nombre o cómo te gusta que te llamen.')).toBeInTheDocument();
+    expect(screen.getByText('Necesitamos tu autorización para tratar tus datos.')).toBeInTheDocument();
+  });
+
+  it('desde Brisa, «Ya tengo cuenta» lleva a iniciar sesión', async () => {
+    window.history.replaceState(null, '', '/bienvenida');
+    render(<Plataforma api={apiFalsa()} />);
+    await titulo('Hola, soy Brisa.');
+    clic('Ya tengo cuenta');
+    expect(await titulo('Qué bueno verte de nuevo')).toBeInTheDocument();
+  });
+});
+
+describe('Iniciar sesión', () => {
+  it('correo → código → Mi comunidad, sin Brisa ni pasos ya resueltos', async () => {
+    render(<Plataforma api={apiFalsa('anonima', false)} />);
+    await portadaLista();
+    clic('Iniciar sesión');
+    await titulo('Qué bueno verte de nuevo');
+    escribir('Tu correo electrónico', 'rosa@ejemplo.co');
+    clic('Enviar código');
+    await titulo('Revisa tu correo');
+    escribir('Código de acceso', '000000');
+    clic('Verificar y continuar');
+    expect(await screen.findByText(/no coincide/)).toBeInTheDocument();
+    escribir('Código de acceso', '123456');
+    clic('Verificar y continuar');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+  });
+
+  it('«Cambiar correo» vuelve al formulario de acceso', async () => {
+    render(<Plataforma api={apiFalsa()} />);
+    await portadaLista();
+    clic('Iniciar sesión');
+    escribir('Tu correo electrónico', 'rosa@ejemplo.co');
+    clic('Enviar código');
+    await titulo('Revisa tu correo');
+    clic('Cambiar correo');
+    expect(await titulo('Qué bueno verte de nuevo')).toBeInTheDocument();
+  });
+});
