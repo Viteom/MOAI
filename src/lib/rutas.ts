@@ -5,7 +5,7 @@ import type { Perfil } from './api';
 
 export const rutasPublicas = ['/', '/bienvenida', '/registro', '/acceso', '/verificar', '/terminos', '/privacidad'] as const;
 export const rutasPasos = ['/configuracion/nacimiento', '/configuracion/comunidad'] as const;
-export const rutasPrivadas = ['/inicio', '/comunidad', '/gente', '/zona', '/lazos', '/lugares', '/planes/nuevo', '/avisos', '/equipo'] as const;
+export const rutasPrivadas = ['/inicio', '/comunidad', '/gente', '/zona', '/lazos', '/lugares', '/planes/nuevo', '/avisos', '/equipo', '/cuenta'] as const;
 // «/ciudad» era el prototipo del primer día: ya no es una sección. Quien llegue ahí vuelve al inicio con Brisa.
 // El detalle de cada plan: /planes/<uuid>.
 export const rutaDePlan = /^\/planes\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;

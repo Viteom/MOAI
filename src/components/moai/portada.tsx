@@ -12,12 +12,14 @@ import { InicioBrisa } from './brisa';
 import { MiGente } from './lazos';
 import { Permisos } from './diario';
 import { Marco } from './marco';
+import { MiCuenta } from './micuenta';
 
 // P01 · Portada pública (horizontal): una ciudad de fondo y texto mínimo.
-export function Portada({ onCrear, onEntrar }: { onCrear: () => void; onEntrar: () => void }) {
+export function Portada({ onCrear, onEntrar, aviso }: { onCrear: () => void; onEntrar: () => void; aviso?: string }) {
   return <Marco>
     <section className="portada-texto">
       <h1 tabIndex={-1}>MOAI</h1>
+      {aviso && <p className="portada-aviso" role="status">{aviso}</p>}
       <p className="portada-sub">Ciudades del cuidado</p>
       <p className="portada-lema">Conecta. Comparte. Cuida.</p>
       <div className="portada-acciones">
@@ -115,6 +117,8 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
       if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
       if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;
       if (ruta === '/gente' || ruta === '/lazos') return <MiGente perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
+      if (ruta === '/cuenta') return <MiCuenta perfil={perfil} api={api} ir={ir} onSalir={salir}
+        onBorrada={() => { setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true }); setAviso('Borramos tu cuenta y tus datos. Gracias por haber estado aquí.'); }}/>;
       if (ruta === '/equipo') return <Equipo api={api} ir={ir} onSalir={salir} permitido={!!perfil.equipo}/>;
       const moaiId = rutaDeMoai.exec(ruta)?.[1];
       if (moaiId) return <MoaiDetalle key={moaiId} id={moaiId} api={api} ir={ir} onSalir={salir}/>;
@@ -125,6 +129,6 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     // La barra única necesita saber si la persona es del equipo o responde por una entidad («Más»).
     if (privada) return <Permisos.Provider value={{ equipo: perfil.equipo, organizaciones: !!perfil.organizaciones?.length }}>{privada}{errorSalida && <p className="aviso-flotante" role="alert">{errorSalida}</p>}</Permisos.Provider>;
   }
-  if (ruta === '/') return <Portada onCrear={() => ir('/bienvenida')} onEntrar={() => ir('/acceso')}/>;
+  if (ruta === '/') return <Portada onCrear={() => ir('/bienvenida')} onEntrar={() => ir('/acceso')} aviso={aviso}/>;
   return <Abriendo/>; // mientras el resolvedor redirige
 }

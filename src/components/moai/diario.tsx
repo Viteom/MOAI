@@ -44,6 +44,7 @@ export function MenuMas({ ir, onSalir }: { ir: Ir; onSalir: () => void }) {
   return <div className="barra-mas" ref={caja}>
     <button type="button" aria-expanded={abierto} onClick={() => setAbierto(a => !a)}><Menu aria-hidden="true"/><span>Más</span></button>
     {abierto && <ul className="barra-menu">
+      {opcion('Mi cuenta', () => ir('/cuenta'))}
       {opcion('Mis lugares', () => ir('/lugares'))}
       {opcion('Avisos', () => ir('/avisos'))}
       {organizaciones && opcion('Convocar como entidad', () => ir('/planes/nuevo'))}

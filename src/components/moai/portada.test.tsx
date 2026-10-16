@@ -38,6 +38,8 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
         : { ok: false as const, error: '', errores: r.errores, status: 400 };
     }),
     salir: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
+    misDatos: vi.fn(async () => ({ ok: true as const, datos: {} })),
+    borrarCuenta: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
     lugares: vi.fn(async () => ({ ok: true as const, datos: perfil.lugar ? [perfil.lugar] : [] })),
     crearLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
     activarLugar: vi.fn(async () => ({ ok: true as const, datos: [] })),
@@ -136,6 +138,21 @@ describe('Resolución de sesión (P00)', () => {
     render(<Plataforma api={apiFalsa('activa')} />);
     expect(await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
     expect(window.location.pathname).toBe('/inicio');
+  });
+
+  it('borrar la cuenta pide confirmar y vuelve a la portada con un aviso', async () => {
+    const api = apiFalsa('activa');
+    render(<Plataforma api={api} />);
+    await screen.findByRole('heading', { level: 1, name: 'Hola, Rosa' });
+    clic('Más');
+    clic('Mi cuenta');
+    await titulo('Mi cuenta');
+    expect(screen.getByRole('button', { name: 'Borrar mi cuenta' })).toBeDisabled();
+    fireEvent.click(screen.getByLabelText('Entiendo que no se puede deshacer'));
+    clic('Borrar mi cuenta');
+    expect(await screen.findByText(/Borramos tu cuenta y tus datos/)).toBeInTheDocument();
+    expect(api.borrarCuenta).toHaveBeenCalled();
+    expect(window.location.pathname).toBe('/');
   });
 
   it('si cerrar sesión falla, no finge haberla cerrado', async () => {

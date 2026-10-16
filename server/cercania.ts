@@ -38,6 +38,9 @@ const leerContados = (cifrador: Cifrador, filas: { datos: string }[]) =>
   filas.flatMap(f => { const t = cifrador.descifrar(f.datos); return t ? [JSON.parse(t) as Contado] : []; });
 export const olvidarInvierno = (db: Db, cifrador: Cifrador, cuenta: string) =>
   db.query('delete from inviernos_contados where de_ciego = $1', [ciegoDe(cifrador, cuenta)]);
+// Al borrar una cuenta: lo que contó y lo que le contaron.
+export const olvidarInviernoCompleto = (db: Db, cifrador: Cifrador, cuenta: string) =>
+  db.query('delete from inviernos_contados where de_ciego = $1 or a_ciego = $2', [ciegoDe(cifrador, cuenta), ciegoA(cifrador, cuenta)]);
 
 async function estadoDe(db: Db, cifrador: Cifrador, cuenta: string, ahora: Date): Promise<Estado> {
   const contados = leerContados(cifrador, await db.query<{ datos: string }>('select datos from inviernos_contados where de_ciego = $1', [ciegoDe(cifrador, cuenta)]))

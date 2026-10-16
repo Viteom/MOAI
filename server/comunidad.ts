@@ -287,7 +287,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     const revision = revisarMensaje(texto);
     if (revision.nivel === 'bloqueo') return reply.code(422).send({ error: revision.motivo });
     if (revision.nivel === 'aviso' && (request.body as { confirmado?: boolean } | undefined)?.confirmado !== true) return reply.code(409).send({ error: revision.motivo, aviso: true });
-    await db.query('insert into plan_mensajes (plan_id, autor_id, texto) values ($1, $2, $3)', [request.params.plan, id, texto]);
+    await db.query('insert into plan_mensajes (plan_id, autor_id, texto, creado_en) values ($1, $2, $3, $4)', [request.params.plan, id, texto, ahora()]);
     return mensajesDe(id, request.params.plan);
   });
 

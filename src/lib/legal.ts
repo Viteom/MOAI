@@ -95,7 +95,7 @@ export const privacidad: Texto = {
       'El resultado del test de cuidado se guarda hasta que lo borres. Si respondes el test sin autorizar que lo guardemos, no queda guardado. Tu Moai interno se guarda hasta que quites a cada persona.',
       'Tu invierno, hasta que le digas a Brisa que saliste; en ese momento también olvidamos a quién se lo contaste. La puerta abierta se cierra sola a los 7 días. Los saludos de lejos se borran a los 30 días. Tu tarjeta, hasta que la cambies o la borres.',
       'Las sesiones vencen a los 30 días.',
-      'Si pides borrar tu cuenta, borramos tus datos, salvo lo que la ley nos obligue a conservar.',
+      'Si borras tu cuenta (en «Más», «Mi cuenta»), borramos de inmediato tus datos: tu cuenta, lugares, planes, mensajes, Moai interno, test, tarjeta, invierno, reportes y bloqueos. Los Moais siguen para quienes quedan, sin ti.',
     ] },
     { titulo: '8. Con quién los compartimos', parrafos: [
       'Solo con proveedores que nos ayudan a prestar el servicio y que actúan bajo nuestras instrucciones (encargados del tratamiento):',
@@ -113,7 +113,8 @@ export const privacidad: Texto = {
       'Presentar quejas ante la Superintendencia de Industria y Comercio, después de haber hecho tu consulta o reclamo ante nosotros.',
     ] },
     { titulo: '10. Cómo ejercerlos', parrafos: [
-      `Escríbenos a ${RESPONSABLE.correo} desde el correo con el que creaste tu cuenta, diciendo qué necesitas.`,
+      'Desde MOAI, en «Más», «Mi cuenta», puedes descargar todos tus datos en un archivo y borrar tu cuenta, sin escribirle a nadie.',
+      `Para lo demás, escríbenos a ${RESPONSABLE.correo} desde el correo con el que creaste tu cuenta, diciendo qué necesitas.`,
       'Respondemos las consultas en un máximo de 10 días hábiles (prorrogables 5 más) y los reclamos en un máximo de 15 días hábiles (prorrogables 8 más), como indica la ley. Si necesitamos más tiempo, te contamos por qué.',
     ] },
     { titulo: '11. Seguridad', parrafos: [

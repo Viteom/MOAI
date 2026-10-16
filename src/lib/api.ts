@@ -148,6 +148,9 @@ export const api = {
   puerta: (abierta: boolean) => llamar<Estado>('estado/puerta', { abierta }),
   lazos: () => llamar<Lazos>('lazos'),
   salir: () => llamar<{ ok: true }>('salir', {}),
+  // Mi cuenta (Ley 1581): todos mis datos en un archivo, y borrar la cuenta para siempre.
+  misDatos: () => llamar<Record<string, unknown>>('cuenta/datos'),
+  borrarCuenta: () => llamar<{ ok: true }>('cuenta/borrar', { confirmo: true }),
 };
 export type Api = typeof api;
 
