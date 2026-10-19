@@ -1,11 +1,9 @@
 // Lugares guardados, planes de barrio, conversación del plan y cartas de Brisa (docs/09, apartado 9).
 // REVISIÓN HUMANA: ubicación aproximada guardada (celdas de ~1 km), lugares de familiares y mensajes entre vecinos.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cellToBoundary, cellToLatLng, gridDisk, gridDistance } from 'h3-js';
 import {
-  alcances, franja, MAX_LUGARES, nombreDeZona, nombreTipo, proximaOcurrencia, tipos, ultimaOcurrencia, validarLugar, validarPlan,
+  alcances, barriosMedellin, franja, MAX_LUGARES, nombreDeZona, nombreTipo, proximaOcurrencia, tipos, ultimaOcurrencia, validarLugar, validarPlan,
   type EntradaLugar, type EntradaPlan, type Repite, type Tipo,
 } from '../src/lib/lugares';
 import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api';
@@ -291,18 +289,12 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     return mensajesDe(id, request.params.plan);
   });
 
-  // ---- Maqueta del barrio: archivos de geometría por hexágono, servidos por /api (sin datos de personas) ----
-  app.get<{ Params: { celda: string } }>('/api/maqueta/:celda', async (request, reply) => {
-    const id = await conSesion(request, reply); if (!id) return reply;
-    const { celda } = request.params;
-    const archivo = join('public', 'maqueta', `${celda}.json`);
-    if (!/^[0-9a-f]{15}$/.test(celda) || !existsSync(archivo)) return reply.code(404).send({ error: 'Sin maqueta para esta zona.' });
-    return reply.type('application/json').send(readFileSync(archivo, 'utf8'));
-  });
-
   // ---- Mapa de la comunidad (diseño de Mateo) ----
   // El tablero son los hexágonos a dos anillos de la zona activa. Todo va en metros relativos al centro
   // de tu zona: nunca salen coordenadas. Las luces son planes (en lugares públicos), nunca personas.
+  // El nombre del barrio cuya celda es esa (catálogo público de GeoMedellín): rotula el mapa sin ubicar a nadie.
+  const barrioDeCelda = new Map<string, string>();
+  for (const b of barriosMedellin) if (b.celda && !barrioDeCelda.has(b.celda)) barrioDeCelda.set(b.celda, b.nombre);
   app.get('/api/mapa', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     const visibles = await planesVisibles(db, id, ahora());
@@ -314,7 +306,7 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     const tablero = new Set(gridDisk(lugar.celda, 2));
     const celdas = [...tablero].map(c => {
       const [x, y] = proyectar(...cellToLatLng(c));
-      return { id: c, x, y, anillo: gridDistance(lugar.celda!, c), puntos: cellToBoundary(c).map(([la, lo]) => proyectar(la, lo)) };
+      return { id: c, x, y, anillo: gridDistance(lugar.celda!, c), puntos: cellToBoundary(c).map(([la, lo]) => proyectar(la, lo)), barrio: barrioDeCelda.get(c) };
     });
     const ids = visibles.planes.map(p => p.id);
     const celdasDePlanes = ids.length ? await db.query<{ id: string; celda: string | null }>('select id, celda from planes where id = any($1)', [ids]) : [];

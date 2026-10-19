@@ -6,10 +6,9 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { alcances, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
 import type { Api, Carta, Lugar, Mapa, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
-import { ChevronDown, Pencil } from 'lucide-react';
-import { quienPropone, TarjetaMapa } from './mapa';
+import { ChevronDown, Pencil, X } from 'lucide-react';
+import { claseDePlan, cuandoCorto, MapaTinta, quienPropone, Sello, Vineta } from './postales';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, nombreTipoOrganizacion } from '@/lib/organizaciones';
-import { BarrioIlustrado } from './barrio';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { OrbeBrisa } from './bosque';
 import { ConversacionBrisa } from './brisa';
@@ -40,15 +39,6 @@ function DatosPlan({ plan }: { plan: Plan }) {
     <p className={`plan-autor${plan.organizacion ? ' convoca' : ''}`}>{quienPropone(plan)}</p>
     {plan.mio && plan.asistentes && <p className="plan-autor">{plan.asistentes.length ? `Van: ${plan.asistentes.join(', ')}` : 'Si alguien se suma, te lo contaré aquí.'}</p>}
   </>;
-}
-
-function TarjetaPlan({ plan, ir, acciones }: { plan: Plan; ir: Ir; acciones: { onIr: () => void; onNoIr: () => void; onCancelar: () => void } }) {
-  return <article className="plan">
-    <h3><button type="button" className="plan-titulo" onClick={() => ir(`/planes/${plan.id}`)}>{plan.titulo}</button></h3>
-    <DatosPlan plan={plan}/>
-    <AccionesPlan plan={plan} {...acciones}/>
-    {(plan.mio || plan.voy) && <button type="button" className="brisa-enlace plan-conversar" onClick={() => ir(`/planes/${plan.id}`)}>Hablar con quienes van</button>}
-  </article>;
 }
 
 // Lo que Brisa cuenta: «fuiste por tu cuenta» (sin culpas) o una recomendación que la persona pidió, con su motivo.
@@ -88,14 +78,16 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
 }
 
 
-export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, inicial = 'mapa' }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: () => void; inicial?: 'mapa' | 'lista' | 'vecinos' }) {
+export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, inicial = 'planes' }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: () => void; inicial?: 'planes' | 'vecinos' }) {
   const [planes, setPlanes] = useState<Plan[] | null>(null);
   const [cartas, setCartas] = useState<Carta[]>([]);
   const [mapa, setMapa] = useState<Mapa | null>(null);
   const [modo, setModo] = useState(inicial);
+  // La hoja de postales: a media altura sobre el mapa, abierta con todos los planes o recogida para ver el mapa.
+  const [hoja, setHoja] = useState<'media' | 'abierta' | 'recogida'>('media');
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [conBrisa, setConBrisa] = useState(false); // la conversación con Brisa, sobre la ciudad
+  const [conBrisa, setConBrisa] = useState(false); // la conversación con Brisa, sobre el barrio
   const usar = useCallback((r: Respuesta<Plan[]>) => { if (r.ok) { setPlanes(r.datos); setError(''); } else setError(r.error); }, []);
   const usarCartas = useCallback((r: Respuesta<Carta[]>) => { if (r.ok) setCartas(r.datos); }, []);
   const lugarId = perfil.lugar?.id;
@@ -111,77 +103,81 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, ini
     onCancelar: () => void api.cancelarPlan(id).then(usar),
   });
   const conMapa = mapa?.disponible === true;
-  const verMapa = modo === 'mapa' && conMapa;
-  const planElegido = planes?.find(p => p.id === elegido) ?? null;
-  const fueraDelMapa = conMapa && planes ? planes.filter(p => !mapa.planes.some(l => l.id === p.id)) : [];
-  const nombre = perfil.nombre.split(' ')[0];
-  const mensajeBrisa = cartas[0]?.texto ?? (planes?.length ? 'Hay planes cerca esta semana. ¿Te muestro?' : 'Todavía no hay planes cerca. ¿Me cuentas qué tienes ganas de hacer?');
-  const enLista = modo === 'lista' || (modo === 'mapa' && mapa?.disponible === false);
+  const hora = new Date().getHours();
+  const luz = hora >= 6 && hora < 18 ? 'de-dia' : 'de-noche'; // decisión de Mateo: la luz sigue la hora
+  const mensajeBrisa = cartas[0]?.texto ?? (planes?.length ? 'Hay planes cerca esta semana. ¿Te cuento?' : 'Todavía no hay planes cerca. ¿Me cuentas qué tienes ganas de hacer?');
+  // Al elegir un sello en el mapa, su postal sube a la vista; al elegir una postal, su sello se resalta en el mapa.
+  const elegirDesdeMapa = (id: string) => {
+    setElegido(id);
+    if (hoja === 'recogida') setHoja('media');
+    requestAnimationFrame(() => document.getElementById(`postal-${id}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }));
+  };
+  const siguienteHoja = { media: 'abierta', abierta: 'recogida', recogida: 'media' } as const;
+  const textoHoja = { media: 'Ver todos los planes', abierta: 'Ver el mapa', recogida: 'Ver los planes' } as const;
 
-  return <div className={`comunidad${verMapa ? ' en-mapa' : ''}`}>
-    {/* Capa 4 · controles: cada pieza marcada con data-reserva para que las burbujas nunca queden debajo. */}
+  return <div className={`comunidad barrio ${luz}`}>
     <Barra ir={ir} onSalir={onSalir} actual="barrio"/>
-    <div className="barrio-controles" data-reserva>
+    <div className="barrio-controles">
       <h1 tabIndex={-1}>Mi barrio</h1>
       <SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambio}/>
       <div className="modo" role="group" aria-label="Ver">
-        {conMapa && <button type="button" aria-pressed={modo === 'mapa'} onClick={() => setModo('mapa')}>Mapa</button>}
-        <button type="button" aria-pressed={enLista} onClick={() => setModo('lista')}>Lista</button>
+        <button type="button" aria-pressed={modo === 'planes'} onClick={() => setModo('planes')}>Planes</button>
         <button type="button" aria-pressed={modo === 'vecinos'} onClick={() => setModo('vecinos')}>Vecinos</button>
       </div>
     </div>
 
     {modo === 'vecinos' ? <main className="diario-contenido"><Vecinos api={api} ir={ir}/></main>
-    : perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>
-    : verMapa ? <div className="comunidad-mapa">
-      {/* Escenario ilustrado, con planes reales en una capa independiente. */}
-      <BarrioIlustrado mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
-      <button type="button" className="mapa-brisa" data-reserva aria-expanded={conBrisa} aria-label={`Hablar con Brisa, una inteligencia artificial: ${mensajeBrisa}`} onClick={() => { setElegido(null); setConBrisa(true); }}>
-        <OrbeBrisa/><span className="sello-ia mapa-sello" title="Brisa es una inteligencia artificial">IA</span>
-        <span className="mapa-brisa-globo"><strong>Brisa · IA</strong> {mensajeBrisa}</span>
-      </button>
-      {!planElegido && <div className="mapa-controles" data-reserva>
-        <ul className="mapa-leyenda" aria-label="Qué significa cada luz">
-          <li><span className="luz-semana"/>Esta semana</li><li><span className="luz-semanal"/>Cada semana</li><li><span className="luz-mia"/>Ya me sumé</li>
-          {planes?.some(p => p.organizacion) && <li><span className="luz-ciudad"/>Convocatorias</li>}
-          {fueraDelMapa.length > 0 && <li><button type="button" className="mapa-mas" onClick={() => setModo('lista')}>Más en tu ciudad · Ver lista</button></li>}
-        </ul>
-        <Button className="diario-boton principal mapa-contar" onClick={() => ir('/inicio?plan=1')}><Pencil aria-hidden="true"/>Tengo ganas de…</Button>
+    : <main className={`barrio-planes hoja-${conMapa ? hoja : 'sola'}`}>
+      {conMapa && <div className="barrio-mapa">
+        <MapaTinta mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={elegirDesdeMapa}/>
+        <button type="button" className="mapa-brisa" aria-expanded={conBrisa} aria-label={`Hablar con Brisa, una inteligencia artificial: ${mensajeBrisa}`} onClick={() => setConBrisa(true)}>
+          <OrbeBrisa/><span className="sello-ia mapa-sello-ia" title="Brisa es una inteligencia artificial">IA</span>
+        </button>
       </div>}
-      {conBrisa && <aside className="panel-brisa vidrio flotante" data-reserva aria-label="Conversación con Brisa">
-        <button type="button" className="panel-cerrar" aria-label="Cerrar la conversación" onClick={() => setConBrisa(false)}>×</button>
-        <ConversacionBrisa perfil={perfil} api={api} ir={ir}/>
-      </aside>}
-      {planElegido && !conBrisa && <TarjetaMapa plan={planElegido} onCerrar={() => setElegido(null)} onAbrir={() => ir(`/planes/${planElegido.id}`)} {...acciones(planElegido.id)}/>}
-    </div> : <main className="diario-contenido">
-      <p className="diario-bajada comunidad-saludo">Hola, {nombre}. Esto pasa cerca de ti: súmate a lo que te guste o cuéntale a Brisa qué tienes ganas de hacer.</p>
-      {!perfil.lugar && <div className="diario-aviso"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="diario-boton principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}
-      {perfil.lugar && mapa?.disponible === false && <p className="campo-ayuda">El mapa de hexágonos llega cuando tu lugar tiene barrio (por ahora, en Medellín). Mientras tanto, aquí tienes la lista.</p>}
+      {perfil.lugar && mapa === null && <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>}
 
-      {/* Brisa solo aparece aquí si tiene algo que contar; para conversar está en la barra. */}
-      {cartas.length > 0 && <section className="brisa-tarjeta" aria-label="Brisa">
-        <OrbeBrisa/>
-        <div className="brisa-tarjeta-cuerpo">
-          <p className="brisa-quien"><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
-          {cartas.slice(0, 1).map(c => <CartaBrisa key={c.clave} carta={c}
-            onListo={() => void api.cartaVista(c.clave).then(usarCartas)}
-            onRepetir={() => c.tipo === 'solo' && void api.repetirPlan(c.planId).then(r => { usar(r); void api.cartaVista(c.clave).then(usarCartas); })}
-            onSumarme={() => c.tipo === 'sugerencia' && void api.irAPlan(c.planId).then(r => { usar(r); void api.cartaVista(c.clave).then(usarCartas); })}
-            onGente={() => void api.cartaVista(c.clave).then(() => ir('/gente'))}/>)}
+      <section className="hoja" aria-labelledby="hoja-titulo">
+        <div className="hoja-cabeza">
+          <h2 id="hoja-titulo">Esta semana, cerca</h2>
+          {conMapa && <button type="button" className="hoja-alternar" onClick={() => setHoja(h => siguienteHoja[h])}>{textoHoja[hoja]}</button>}
+          <Button className="diario-boton principal hoja-contar" onClick={() => ir('/inicio?plan=1')}><Pencil aria-hidden="true"/>Tengo ganas de…</Button>
         </div>
-      </section>}
-
-      <div className="diario-acciones">
-        <Button className="diario-boton principal" onClick={() => ir('/inicio?plan=1')}>Tengo ganas de…</Button>
-      </div>
-
-      <section aria-labelledby="planes-titulo">
-        <h2 id="planes-titulo">Planes cerca de ti</h2>
+        {!perfil.lugar && <div className="diario-aviso"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="diario-boton principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}
+        {perfil.lugar && mapa?.disponible === false && <p className="campo-ayuda">El mapa llega cuando tu lugar tiene barrio (por ahora, en Medellín). Mientras tanto, aquí están los planes.</p>}
         {error && <p className="campo-error" role="alert">{error}</p>}
         {perfil.lugar && planes === null && !error && <p role="status">Buscando planes…</p>}
-        {planes?.length === 0 && <p>Aún no hay planes cerca. ¿Y si le cuentas a Brisa qué tienes ganas de hacer?</p>}
-        <div className="planes">{planes?.map(plan => <TarjetaPlan key={plan.id} plan={plan} ir={ir} acciones={acciones(plan.id)}/>)}</div>
+        {planes?.length === 0 && <p className="hoja-vacia">Aún no hay planes cerca. ¿Y si le cuentas a Brisa qué tienes ganas de hacer?</p>}
+        <ol className="postales">
+          {planes?.map(plan => <li key={plan.id} id={`postal-${plan.id}`} className={`postal ${claseDePlan(plan)}${elegido === plan.id ? ' elegida' : ''}`}>
+            <button type="button" className="postal-cara" aria-pressed={conMapa ? elegido === plan.id : undefined} onClick={() => conMapa ? setElegido(e => e === plan.id ? null : plan.id) : ir(`/planes/${plan.id}`)}>
+              <span className="postal-vineta"><Vineta tipo={plan.tipo}/></span>
+              <span className="postal-texto">
+                <strong>{plan.titulo}</strong>
+                <span className="postal-cuando">{cuandoCorto(plan)}</span>
+                <span>{plan.lugarPublico} · {plan.franja}</span>
+                <span className="postal-quien">{quienPropone(plan)}</span>
+              </span>
+            </button>
+            <Sello plan={plan}/>
+            <div className="postal-acciones">
+              <AccionesPlan plan={plan} {...acciones(plan.id)}/>
+              <button type="button" className="brisa-enlace" onClick={() => ir(`/planes/${plan.id}`)}>{plan.mio || plan.voy ? 'Hablar con quienes van' : 'Ver detalles'}</button>
+            </div>
+          </li>)}
+        </ol>
+        {/* Brisa solo aparece aquí si tiene algo que contar; para conversar está en la barra. */}
+        {cartas.length > 0 && <div className="hoja-brisa"><p className="brisa-quien"><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
+          <CartaBrisa carta={cartas[0]}
+            onListo={() => void api.cartaVista(cartas[0].clave).then(usarCartas)}
+            onRepetir={() => cartas[0].tipo === 'solo' && void api.repetirPlan(cartas[0].planId).then(r => { usar(r); void api.cartaVista(cartas[0].clave).then(usarCartas); })}
+            onSumarme={() => cartas[0].tipo === 'sugerencia' && void api.irAPlan(cartas[0].planId).then(r => { usar(r); void api.cartaVista(cartas[0].clave).then(usarCartas); })}
+            onGente={() => void api.cartaVista(cartas[0].clave).then(() => ir('/gente'))}/></div>}
       </section>
+
+      {conBrisa && <aside className="panel-brisa vidrio flotante" aria-label="Conversación con Brisa">
+        <button type="button" className="panel-cerrar" aria-label="Cerrar la conversación" onClick={() => setConBrisa(false)}><X aria-hidden="true"/></button>
+        <ConversacionBrisa perfil={perfil} api={api} ir={ir}/>
+      </aside>}
     </main>}
   </div>;
 }

@@ -468,179 +468,22 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .modo { margin-left: auto; display: inline-flex; padding: 4px; border-radius: 999px; background: color-mix(in oklab, oklch(.22 .04 170) 80%, transparent); border: 1px solid color-mix(in oklab, oklch(.88 .1 150) 35%, transparent); }
 .modo button { min-height: 40px; min-width: 104px; border: 0; border-radius: 999px; background: transparent; color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 16px; cursor: pointer; }
 .modo button[aria-pressed="true"] { background: color-mix(in oklab, oklch(.5 .1 140) 65%, transparent); color: var(--niebla); font-weight: 600; box-shadow: inset 0 0 0 1px var(--lima); }
-.comunidad-saludo { margin: 8px 0 0; }
 
-.comunidad-mapa { position: relative; min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 96px 16px 120px; overflow: hidden; }
-.mapa { position: relative; width: min(100%, calc((100svh - 200px) * 1.15), 1100px); }
-.mapa-tablero { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.hex polygon { stroke: oklch(.85 .1 175 / .45); stroke-width: 9; }
-.hex.anillo-2 polygon { opacity: .82; }
-.ventana { fill: oklch(.86 .12 85); opacity: .5; }
-.hex.anillo-2 .ventana { opacity: .3; }
-.hex-borde-centro { fill: none; stroke: oklch(.84 .17 150); stroke-width: 18; filter: drop-shadow(0 0 30px oklch(.84 .17 150)); }
-.luz-centro { fill: var(--lima); }
-.luz-halo { fill: var(--lima); opacity: .7; }
-.luz-semanal .luz-centro, .luz-semanal .luz-halo { fill: var(--cian); }
-.luz-mia .luz-centro, .luz-mia .luz-halo { fill: oklch(.93 .09 90); }
-.luz { animation: luz-respira 4s ease-in-out infinite; }
-.luz.elegida .luz-centro { stroke: var(--niebla); stroke-width: 10; }
-@keyframes luz-respira { 50% { opacity: .65; } }
-.mapa-luz { position: absolute; width: 48px; height: 48px; transform: translate(-50%, -50%); border-radius: 50%; border: 0; background: transparent; cursor: pointer; }
-.mapa-luz:focus-visible { outline: 3px solid var(--niebla); }
-.mapa-tu-zona { position: absolute; transform: translate(-50%, -50%); padding: 6px 16px; border-radius: 999px; background: oklch(.16 .03 175 / .85); border: 1px solid oklch(.84 .17 150 / .7); font-weight: 600; font-size: 17px; pointer-events: none; }
-.mapa-burbuja { position: absolute; transform: translate(-50%, calc(-100% - 26px)); max-width: 220px; padding: 10px 14px; border-radius: 16px; background: oklch(.2 .04 170 / .92); border: 1px solid oklch(.85 .1 175 / .55); color: var(--niebla); font-size: 16px; line-height: 1.3; text-align: left; cursor: pointer; box-shadow: 0 10px 28px oklch(.1 .02 170 / .5); }
-.mapa { --borde-burbuja: 120px; }
-.mapa-burbuja { z-index: 2; }
-.mapa-burbuja.abajo { transform: translate(-50%, 26px); }
-.mapa-burbuja-cola { position: absolute; z-index: 3; width: 16px; height: 16px; transform: translate(-50%, -34px) rotate(45deg); background: oklch(.2 .04 170 / .92); border-right: 1px solid oklch(.85 .1 175 / .55); border-bottom: 1px solid oklch(.85 .1 175 / .55); pointer-events: none; }
-.mapa-burbuja-cola.abajo { transform: translate(-50%, 18px) rotate(225deg); }
-.mapa-burbuja strong { display: block; color: var(--lima); }
-.mapa-brisa { position: absolute; top: 100px; right: clamp(16px, 3vw, 40px); display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; color: var(--niebla); cursor: pointer; }
-.mapa-brisa .orbe { position: relative; top: auto; left: auto; transform: none; --tam: 96px; --k: .48; }
-.mapa-brisa-globo { max-width: 240px; padding: 12px 16px; border-radius: 16px; background: oklch(.2 .04 170 / .9); border: 1px solid oklch(.85 .1 175 / .5); font-size: 16px; text-align: left; }
-.mapa-leyenda { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); display: flex; gap: 18px; margin: 0; padding: 10px 18px; list-style: none; border-radius: 999px; background: oklch(.18 .03 170 / .85); font-size: 15px; white-space: nowrap; }
-.mapa-leyenda li { display: flex; align-items: center; gap: 8px; }
-.mapa-leyenda span { width: 14px; height: 14px; border-radius: 50%; background: var(--lima); }
-.mapa-leyenda .luz-semanal { background: var(--cian); }
-.mapa-leyenda .luz-mia { background: oklch(.93 .09 90); }
-.mapa-contar { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 28px; min-height: 60px; padding: 0 26px; font-size: 19px; gap: 10px; box-shadow: 0 12px 30px oklch(.1 .02 170 / .5); }
-.mapa-contar svg { width: 22px; height: 22px; }
-.mapa-mas { position: absolute; top: 100px; left: clamp(16px, 3vw, 40px); min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid oklch(.85 .1 175 / .5); background: oklch(.18 .03 170 / .85); color: var(--niebla); font-size: 15px; cursor: pointer; }
-.mapa-tarjeta { position: absolute; z-index: 15; left: clamp(16px, 3vw, 40px); bottom: 28px; width: min(560px, calc(100% - 32px)); padding: 22px 24px; border-radius: 24px; display: flex; flex-direction: column; gap: 8px; background: oklch(.2 .04 170 / .94); border: 1px solid oklch(.85 .1 175 / .45); backdrop-filter: blur(14px); box-shadow: 0 20px 50px oklch(.1 .02 170 / .6); }
-.mapa-tarjeta h2 { margin: 0 40px 6px 0; font: 700 24px/1.2 var(--font-sans); }
-.mapa-tarjeta p { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 18px; }
-.mapa-tarjeta p svg { width: 22px; height: 22px; flex-shrink: 0; }
-.mapa-tarjeta-autor { color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 16px !important; }
-.mapa-tarjeta-boton { width: 100%; min-height: 58px; margin-top: 8px; font-size: 20px; }
-.mapa-cerrar { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--niebla); cursor: pointer; }
-.mapa-cerrar svg { width: 24px; height: 24px; }
 @media (max-width: 760px) {
   .modo { margin-left: 0; flex: 1; }
   .modo button { flex: 1; }
-  .comunidad-mapa { padding-top: 250px; padding-bottom: 200px; align-items: flex-start; }
-  .mapa { width: 135%; margin-left: -17.5%; --borde-burbuja: calc(13% + 112px); }
-  .mapa-brisa { top: 190px; }
-  .mapa-brisa-globo { display: none; }
-  .mapa-brisa .orbe { --tam: 72px; --k: .36; }
-  .mapa-mas { top: 200px; }
-  /* En el teléfono la tarjeta, la leyenda y el botón quedan fijos abajo aunque el mapa se desplace. */
-  .mapa-leyenda { position: fixed; z-index: 12; bottom: 100px; gap: 12px; font-size: 14px; }
-  .mapa-contar { position: fixed; z-index: 12; bottom: 24px; left: 16px; right: 16px; justify-content: center; }
-  .mapa-tarjeta { position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; width: 100%; border-radius: 28px 28px 0 0; padding-bottom: 28px; }
+
 }
 
 .mapa-abriendo { min-height: 60svh; display: grid; place-items: center; color: color-mix(in oklab, var(--niebla) 70%, transparent); font-size: 18px; }
 
-/* Maqueta 3D: ocupa toda la pantalla detrás de la cabecera; las burbujas y la tarjeta van encima. */
-.maqueta { position: absolute; inset: 0; --borde-burbuja: 120px; background: #0b1915; }
-.maqueta canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; opacity: 0; transition: opacity .6s ease; }
-.maqueta.lista canvas, .maqueta canvas:not(:only-child) { opacity: 1; }
-.comunidad-mapa:has(.maqueta) { padding: 0; }
-.comunidad-mapa:has(.maqueta) .mapa-brisa, .comunidad-mapa:has(.maqueta) .mapa-mas { z-index: 5; }
-.maqueta .mapa-tu-zona, .maqueta .mapa-luz, .maqueta .mapa-burbuja, .maqueta .mapa-burbuja-cola { z-index: 2; }
-.maqueta-creditos { position: absolute; z-index: 2; right: 12px; bottom: 6px; margin: 0; font-size: 11px; color: color-mix(in oklab, var(--niebla) 55%, transparent); }
-@media (max-width: 760px) { .maqueta-creditos { bottom: 166px; } }
-
-/* Segundo diseño de Mateo: ilustración a tinta y acuarela. Textura de papel y viñeta cálida sobre la maqueta. */
-.maqueta::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; opacity: .55;
-  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(20, 16, 8, .55) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .5 0 0 0 0 .42 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E"); }
-.maqueta-pin { --pin: #cefa63; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, #fff 0 4px, var(--pin) 5px 8px, transparent 9px); box-shadow: 0 0 0 4px color-mix(in oklab, var(--pin) 30%, transparent), 0 0 0 10px color-mix(in oklab, var(--pin) 18%, transparent), 0 0 24px 6px color-mix(in oklab, var(--pin) 45%, transparent); }
-.maqueta-pin::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--pin) 55%, transparent); animation: pin-onda 3s ease-out infinite; }
-.pin-semanal { --pin: #8be4d5; }
-.pin-mia { --pin: #fff1c2; }
-.maqueta-pin[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--pin), 0 0 0 12px color-mix(in oklab, var(--pin) 30%, transparent), 0 0 30px 8px var(--pin); }
-@keyframes pin-onda { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
-.maqueta-tallo { position: absolute; z-index: 2; width: 2px; transform: translateX(-50%); background: linear-gradient(to top, transparent, #e7f3d9 40%); pointer-events: none; }
-.maqueta-burbuja { transform: translate(-50%, calc(-100% - 64px)); max-width: 260px; background: oklch(.2 .03 160 / .9); border-color: oklch(.85 .08 150 / .45); }
-.maqueta-burbuja.abajo { transform: translate(-50%, 64px); }
-.maqueta-burbuja::after { display: none; }
-.maqueta-burbuja strong { display: inline; }
-.maqueta .mapa-tu-zona { background: transparent; border: 0; color: #eef3e2; font-weight: 500; font-size: 19px; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
-@media (min-width: 761px) {
-  .mapa-tarjeta { display: grid; grid-template-columns: 1fr auto; column-gap: 28px; align-items: center; width: min(640px, calc(100% - 32px)); }
-  .mapa-tarjeta > :not(.mapa-tarjeta-boton):not(.plan-acciones):not(.mapa-cerrar) { grid-column: 1; }
-  .mapa-tarjeta-boton, .mapa-tarjeta > .plan-acciones { grid-column: 2; grid-row: 1 / span 5; width: auto; min-width: 160px; margin: 0; }
-}
-
-/* ==== Corrección visual de Mi comunidad (capas independientes y encabezado compacto) ==== */
-/* Capas: 1 escena (canvas) · papel · 2 luces · 3 burbujas · 4 controles */
-.maqueta .capa-escena { z-index: 0; touch-action: none; cursor: grab; }
-.maqueta .capa-escena:active { cursor: grabbing; }
-.maqueta::after { z-index: 1; }
-.maqueta .capa { position: absolute; inset: 0; pointer-events: none; }
-.maqueta .capa > *, .maqueta .capa > span > * { pointer-events: auto; }
-.maqueta .mapa-tu-zona.capa { inset: auto; z-index: 2; pointer-events: none; }
-.capa-luces { z-index: 3; }
-.capa-burbujas { z-index: 4; }
-.maqueta-burbuja { transform: none; max-width: none; padding: 9px 14px; font-size: 15px; line-height: 1.35; border-radius: 14px; }
-.maqueta-burbuja.abajo { transform: none; }
-.maqueta-tallo { z-index: 4; }
-.maqueta-zoom { position: absolute; z-index: 6; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; border: 1px solid oklch(.85 .08 150 / .35); background: oklch(.18 .03 160 / .85); }
-.maqueta-zoom button { width: 44px; height: 44px; border: 0; background: transparent; color: var(--niebla); font-size: 22px; cursor: pointer; }
-.maqueta-zoom button + button { border-top: 1px solid oklch(.85 .08 150 / .25); }
-.maqueta-creditos { z-index: 6; bottom: 4px; right: 12px; }
-
-/* Encabezado compacto: una sola franja en escritorio. */
-.comunidad.en-mapa .selector-lugar { min-height: 40px; padding: 0 14px; font-size: 15px; white-space: nowrap; }
-.comunidad.en-mapa .modo button { min-height: 34px; min-width: 84px; font-size: 15px; }
-
-/* Brisa: orbe con su globo a la izquierda, debajo del encabezado. */
-.comunidad-mapa .mapa-brisa { z-index: 6; top: 88px; right: 20px; flex-direction: row-reverse; }
-.comunidad-mapa .mapa-brisa .orbe { --tam: 72px; --k: .36; }
-.comunidad-mapa .mapa-brisa-globo { font-size: 15px; padding: 10px 14px; }
-
 /* Barra inferior: leyenda a la izquierda, «Contar qué voy a hacer» a la derecha. */
-.mapa-controles { position: absolute; z-index: 6; left: 20px; right: 20px; bottom: 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; pointer-events: none; }
-.mapa-controles > * { pointer-events: auto; }
-.mapa-controles .mapa-leyenda, .mapa-controles .mapa-contar { position: static; transform: none; }
-.mapa-controles .mapa-leyenda { flex-wrap: wrap; white-space: normal; }
-.mapa-controles .mapa-mas { position: static; min-height: 32px; padding: 0 12px; font-size: 14px; }
-.mapa-controles .mapa-contar { min-height: 54px; }
-.comunidad-mapa:has(.maqueta) .mapa-tarjeta { z-index: 7; bottom: 22px; }
 
 /* Tableta: la marca y el título se compactan; todo sigue en una franja. */
-@media (min-width: 761px) and (max-width: 1100px) {
-  .comunidad-mapa .mapa-brisa-globo { display: none; }
-}
 
 /* Teléfono: distribución propia. Fila 1: marca y menú. Fila 2: ubicación y Mapa/Lista. Detalle en hoja inferior. */
-@media (max-width: 760px) {
-  .comunidad.en-mapa .selector-lugar { width: 100%; min-height: 40px; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
-  .comunidad.en-mapa .modo { grid-area: modo; margin: 0; flex: none; }
-  .comunidad.en-mapa .modo button { min-width: 64px; flex: none; }
-  .comunidad-mapa .mapa-brisa { top: 122px; right: 12px; }
-  .comunidad-mapa .mapa-brisa .orbe { --tam: 56px; --k: .28; }
-  .comunidad-mapa .mapa-brisa-globo { display: none; }
-  .maqueta-zoom { right: 12px; top: auto; bottom: 150px; transform: none; }
-  .mapa-controles { position: fixed; left: 12px; right: 12px; bottom: 14px; flex-direction: column; align-items: stretch; gap: 10px; }
-  .mapa-controles .mapa-leyenda { justify-content: center; gap: 4px 12px; padding: 8px 12px; border-radius: 16px; font-size: 13px; }
-  .mapa-controles .mapa-contar { width: 100%; justify-content: center; }
-  .comunidad-mapa:has(.maqueta) .mapa-tarjeta { bottom: 0; }
-  .maqueta-creditos { bottom: 150px; left: 14px; right: auto; }
-}
 
 /* Barrio ilustrado de MOAI: controles reales sobre una escena independiente. */
-.barrio-ilustrado { background: #16312e; }
-.barrio-ilustrado::after { display: none; }
-.barrio-arrastre { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
-.barrio-arrastre:active { cursor: grabbing; }
-.barrio-imagen { position: absolute; left: 50%; top: 50%; max-width: none; user-select: none; pointer-events: none; }
-.barrio-ilustrado .mapa-tu-zona { padding: 8px 15px; border-radius: 999px; background: #15312ed9; border: 1px solid #d7e7ce55; font-size: 18px; }
-.barrio-nota { position: absolute; left: 24px; bottom: 100px; z-index: 6; padding: 6px 10px; border-radius: 8px; background: #15312ed9; color: #e8eee5; font-size: 12px; pointer-events: none; }
-.barrio-ilustrado .maqueta-burbuja { background: #15312ee8; border-color: #d5e7d080; font-size: 18px; box-shadow: 0 8px 24px #071c2266; }
-.comunidad.en-mapa .selector-lugar, .comunidad.en-mapa .modo button { min-height: 48px; }
-.maqueta-zoom button { width: 48px; height: 48px; }
-@media (max-width: 760px) {
-  .barrio-nota { bottom: 158px; left: 12px; font-size: 11px; max-width: calc(100% - 80px); }
-  .barrio-ilustrado .maqueta-zoom { bottom: 190px; }
-  .comunidad-mapa .mapa-brisa { top: 140px; }
-}
-.barrio-ilustrado .maqueta-pin { width: 48px; height: 48px; }
-.barrio-ilustrado .maqueta-pin::after { animation-duration: 4s; }
-@media (prefers-reduced-motion: reduce) {
-  .barrio-ilustrado .maqueta-pin::after { animation: none; }
-}
 
 /* Textos legales: lectura larga dentro del panel del bosque. */
 .texto-legal { display: flex; flex-direction: column; gap: 22px; margin-top: 8px; font-size: 17px; line-height: 1.6; color: color-mix(in oklab, var(--niebla) 92%, transparent); }
@@ -657,8 +500,7 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .reportar { margin-top: 8px; }
 
 /* Convocatorias de entidades: una luz cálida, distinta de los planes entre vecinos. */
-.pin-ciudad { --pin: #ffb27a; }
-.mapa-leyenda .luz-ciudad { background: #ffb27a; }
+
 .plan-autor.convoca { color: #ffcfa8; font-weight: 600; }
 
 /* Equipo de MOAI: casos de reportes y entidades. */
@@ -833,8 +675,7 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .hilo.raiz { stroke: #ffd9a0; stroke-width: 2.2; stroke-dasharray: none; opacity: .9; }
 .lazo-detalle .diario-boton { white-space: normal; text-align: center; }
 /* Regla 12 (revisión de Codex): en el mapa, el sello «IA» de Brisa se ve siempre, también en el teléfono. */
-.mapa-sello { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); font-size: 11px; padding: 1px 7px; background: oklch(.18 .03 160 / .9); }
-.mapa-brisa-globo strong { display: block; font-size: 13px; letter-spacing: .04em; color: var(--lima); }
+.mapa-sello-ia { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); font-size: 11px; padding: 1px 7px; background: oklch(.18 .03 160 / .9); }
 
 /* Conversaciones: reportar un mensaje y aviso antes de enviar. */
 .mensaje { position: relative; }
@@ -889,14 +730,8 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .comunidad:not(.en-mapa) { padding-top: var(--barra-arriba); }
 .comunidad:not(.en-mapa) .barrio-controles { max-width: 760px; margin: 0 auto; padding: 28px 20px 0; }
 .comunidad:not(.en-mapa) .diario-contenido { padding-top: 20px; }
-.comunidad.en-mapa .barrio-controles { position: absolute; z-index: 20; top: 90px; left: 14px; flex-wrap: nowrap; padding: 8px 10px 8px 18px; border-radius: 18px; background: #102c27df; border: 1px solid color-mix(in oklab, oklch(.88 .1 150) 30%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-.comunidad.en-mapa .barrio-controles h1 { font-size: 18px; white-space: nowrap; }
-.comunidad.en-mapa .modo button { min-width: 84px; }
-.comunidad-mapa .mapa-brisa { top: 98px; }
+
 .vecinos-seccion h2 { margin-top: 0; }
-@media (max-width: 1100px) {
-  .comunidad.en-mapa .barrio-controles h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-}
 
 /* Mi gente: en pantallas angostas el panel va arriba (lo pendiente primero) y la red debajo. */
 @media (max-width: 900px) {
@@ -925,16 +760,7 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
   .barrio-controles .selector-lugar-caja { flex: 1 1 100%; min-width: 0; }
   .barrio-controles .modo { flex: 1 1 100%; margin: 0; }
   .barrio-controles .modo button { flex: 1; min-width: 0; }
-  .comunidad.en-mapa .barrio-controles { top: 10px; left: 10px; right: 10px; flex-wrap: wrap; padding: 10px; }
-  .comunidad.en-mapa .barrio-controles h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .comunidad.en-mapa .modo button { min-width: 0; flex: 1; }
-  .comunidad.en-mapa .barrio-controles .modo { flex: 1 1 100%; }
-  .comunidad-mapa .mapa-brisa { top: 162px; }
-  .mapa-controles { bottom: calc(var(--barra-abajo) + 10px); }
-  .mapa-tarjeta, .comunidad-mapa:has(.maqueta) .mapa-tarjeta { bottom: var(--barra-abajo); }
-  .barrio-ilustrado .maqueta-zoom { bottom: calc(var(--barra-abajo) + 180px); }
-  .barrio-nota { bottom: calc(var(--barra-abajo) + 148px); }
-  .maqueta-creditos { bottom: calc(var(--barra-abajo) + 140px); }
+
   .panel-brisa, .panel-brisa.flotante { top: 30svh; bottom: calc(var(--barra-abajo) + 10px); }
 }
 
@@ -961,3 +787,201 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .dictado:focus-visible { outline: 3px solid var(--lima); outline-offset: 2px; }
 .dictado-aviso { flex-basis: 100%; margin: 0; font-size: 14px; color: rgb(232 239 226 / .8); }
 @keyframes dictado-pulso { 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--lima) 25%, transparent); } }
+
+/* ==== Mi barrio en tinta y postales (dirección de Mateo, 19 de octubre: mezcla de barrio vivo, mapa en tinta y postales) ====
+   La luz sigue la hora: de día, papel salvia y tinta verde bosque; de noche, el mismo dibujo en tinta clara sobre el bosque.
+   Cada plan tiene un color de tinta: verde azulado (esta semana), cian (cada semana), lima (ya me sumé) y naranja (convocatoria). */
+.barrio {
+  --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158);
+  --celda-0: oklch(.87 .1 128); --celda-1: oklch(.925 .04 138); --celda-2: oklch(.945 .025 142);
+  --p-semana: oklch(.5 .13 145); --p-semanal: oklch(.52 .1 210); --p-mio: oklch(.6 .13 75); --p-convocatoria: oklch(.6 .15 50);
+  --lavado-semana: oklch(.9 .07 140); --lavado-semanal: oklch(.92 .05 210); --lavado-mio: oklch(.93 .07 85); --lavado-convocatoria: oklch(.92 .06 55);
+  min-height: 100svh; color: var(--tinta); background: var(--papel);
+}
+.barrio.de-noche {
+  --papel: oklch(.2 .035 165); --papel-hoja: oklch(.24 .035 165); --tinta: oklch(.9 .03 140); --tinta-suave: oklch(.74 .035 145);
+  --celda-0: oklch(.42 .1 135); --celda-1: oklch(.27 .04 160); --celda-2: oklch(.235 .035 163);
+  --p-semana: oklch(.84 .17 135); --p-semanal: oklch(.82 .1 200); --p-mio: oklch(.9 .1 85); --p-convocatoria: oklch(.8 .12 55);
+  --lavado-semana: oklch(.32 .06 145); --lavado-semanal: oklch(.31 .05 205); --lavado-mio: oklch(.34 .05 85); --lavado-convocatoria: oklch(.33 .06 50);
+}
+.barrio ::selection { background: var(--celda-0); color: var(--tinta); }
+.barrio .barrio-controles h1, .barrio .hoja h2, .postal-texto strong { font-family: "Fraunces", serif; }
+.barrio .barrio-controles { color: var(--tinta); }
+.barrio.de-dia .selector-lugar { background: var(--papel-hoja); color: var(--tinta); border-color: color-mix(in oklab, var(--tinta) 35%, transparent); }
+.barrio.de-dia .modo { background: var(--papel-hoja); border-color: color-mix(in oklab, var(--tinta) 30%, transparent); }
+.barrio.de-dia .modo button { color: var(--tinta-suave); }
+.barrio.de-dia .modo button[aria-pressed="true"] { background: var(--tinta); color: var(--papel-hoja); box-shadow: none; }
+.barrio.de-dia .selector-lugar-lista { background: var(--papel-hoja); border-color: color-mix(in oklab, var(--tinta) 25%, transparent); }
+.barrio.de-dia .selector-lugar-lista button { color: var(--tinta); }
+
+/* El mapa en tinta. */
+.barrio-planes { position: relative; }
+.barrio-mapa { position: relative; display: grid; place-items: center; padding: 8px 12px; }
+.mapa-tinta { position: relative; width: min(100%, 720px); max-height: 100%; }
+.mapa-tinta > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.celda { stroke: var(--tinta); stroke-width: 1.6px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.celda.anillo-0 { fill: var(--celda-0); stroke-width: 2.4px; }
+.celda.anillo-1 { fill: var(--celda-1); }
+.celda.anillo-2 { fill: var(--celda-2); stroke: var(--tinta-suave); }
+.anillo-guia { fill: none; stroke: var(--tinta-suave); stroke-width: 1.4px; vector-effect: non-scaling-stroke; stroke-dasharray: 2 7; stroke-linecap: round; }
+.trazo { fill: none; stroke: var(--tinta); stroke-width: 2.6px; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazo-dibuja .7s cubic-bezier(.16, 1, .3, 1) forwards; }
+@keyframes trazo-dibuja { to { stroke-dashoffset: 0; } }
+.nombre-barrio { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; max-width: 11ch; font-size: 13px; line-height: 1.15; font-weight: 500; letter-spacing: .01em; text-align: center; color: var(--tinta-suave); pointer-events: none; }
+.nombre-barrio.anillo-1 { color: var(--tinta); }
+.mapa-tu { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: "Fraunces", serif; font-size: 18px; font-weight: 600; color: var(--tinta); pointer-events: none; }
+.mapa-tu small { font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 500; color: var(--tinta-suave); }
+.mapa-tu-punto { width: 16px; height: 16px; border-radius: 50%; background: var(--tinta); box-shadow: 0 0 0 5px color-mix(in oklab, var(--celda-0) 80%, transparent); }
+.mapa-etiqueta-anillo { position: absolute; transform: translate(-50%, -50%); padding: 1px 8px; border-radius: 999px; background: var(--papel); font-family: "Fraunces", serif; font-style: italic; font-size: 13px; color: var(--tinta-suave); pointer-events: none; }
+
+/* Los sellos del mapa: el mismo color y la misma viñeta que su postal. */
+.mapa-sello { --c: var(--p-semana); position: absolute; z-index: 2; width: 52px; height: 52px; transform: translate(-50%, -50%) rotate(-6deg); display: grid; place-items: center; padding: 0; border-radius: 50%; border: 2.5px solid var(--c); background: var(--papel-hoja); color: var(--c); cursor: pointer; box-shadow: 0 3px 8px -2px color-mix(in oklab, var(--tinta) 45%, transparent); transition: transform .25s cubic-bezier(.16, 1, .3, 1), box-shadow .25s; }
+.mapa-sello::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; border: 1px dashed var(--c); opacity: .7; }
+.mapa-sello .vineta { width: 36px; height: 27px; }
+.mapa-sello:hover { transform: translate(-50%, -50%) rotate(0deg) scale(1.08); }
+.mapa-sello.elegido { z-index: 3; transform: translate(-50%, -50%) rotate(0deg) scale(1.28); box-shadow: 0 0 0 4px var(--papel), 0 0 0 7px var(--c), 0 10px 22px -6px color-mix(in oklab, var(--tinta) 55%, transparent); }
+.mapa-sello:focus-visible, .postal-cara:focus-visible, .hoja-alternar:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+.es-semana { --c: var(--p-semana); --lavado: var(--lavado-semana); }
+.es-semanal { --c: var(--p-semanal); --lavado: var(--lavado-semanal); }
+.es-mio { --c: var(--p-mio); --lavado: var(--lavado-mio); }
+.es-convocatoria { --c: var(--p-convocatoria); --lavado: var(--lavado-convocatoria); }
+.barrio .mapa-brisa { position: absolute; top: 8px; right: 12px; z-index: 4; display: block; padding: 0; border: 0; background: none; cursor: pointer; }
+.barrio .mapa-brisa .orbe { position: relative; top: auto; left: auto; transform: none; --tam: 60px; --k: .3; }
+
+/* La hoja de postales. */
+.hoja { position: relative; z-index: 5; display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 24px; background: var(--papel-hoja); color: var(--tinta); }
+.hoja-cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.hoja-cabeza h2 { margin: 0; flex: 1 1 auto; font-size: 24px; font-weight: 600; line-height: 1.15; }
+.hoja-alternar { min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--tinta) 35%, transparent); background: transparent; color: var(--tinta); font-size: 15px; cursor: pointer; }
+.hoja-contar { flex-basis: 100%; min-height: 52px; gap: 8px; font-size: 18px; }
+.hoja-contar svg { width: 20px; height: 20px; }
+.hoja .campo-ayuda, .hoja-vacia { color: var(--tinta-suave); font-size: 16px; margin: 0; }
+.hoja-brisa { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 14px; background: color-mix(in oklab, var(--celda-0) 35%, var(--papel-hoja)); }
+.hoja-brisa .brisa-quien { margin: 0; display: flex; align-items: center; gap: 8px; }
+.barrio.de-dia .hoja .diario-boton:not(.principal), .barrio.de-dia .hoja .plan-voy { color: var(--tinta); border-color: color-mix(in oklab, var(--tinta) 40%, transparent); }
+.barrio.de-dia .hoja .brisa-enlace { color: var(--tinta); }
+.barrio.de-dia .hoja .diario-aviso { background: var(--papel); color: var(--tinta); border-color: color-mix(in oklab, var(--tinta) 30%, transparent); }
+
+/* Una postal: viñeta a tinta sobre su lavado de color, el texto y el sello con su matasellos. */
+.postales { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.postal { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 6px; background: var(--papel-hoja); border: 1px solid color-mix(in oklab, var(--tinta) 22%, transparent); box-shadow: inset 0 0 0 4px var(--papel-hoja), inset 0 0 0 5px color-mix(in oklab, var(--c) 30%, transparent), 0 6px 16px -10px color-mix(in oklab, var(--tinta) 60%, transparent); scroll-margin: 12px; transition: box-shadow .25s, transform .25s cubic-bezier(.16, 1, .3, 1); }
+.postal.elegida { transform: translateY(-2px); box-shadow: inset 0 0 0 4px var(--papel-hoja), inset 0 0 0 6px var(--c), 0 12px 24px -12px color-mix(in oklab, var(--tinta) 70%, transparent); }
+.postal-cara { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; align-items: start; padding: 0 64px 0 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.postal-vineta { display: grid; place-items: center; width: 84px; height: 72px; border-radius: 4px; background: var(--lavado); color: var(--tinta); }
+.postal-vineta .vineta { width: 70px; height: 52px; }
+.postal-texto { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 16px; line-height: 1.35; color: var(--tinta-suave); }
+.postal-texto strong { font-size: 20px; line-height: 1.2; font-weight: 600; color: var(--tinta); text-wrap: balance; }
+.postal-cuando { font-weight: 600; font-size: 17px; color: var(--c); }
+.barrio.de-dia .postal-cuando { color: color-mix(in oklab, var(--c) 80%, var(--tinta)); }
+.postal-quien { font-size: 15px; }
+.postal-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.postal-acciones .plan-acciones { margin: 0; }
+.sello { position: absolute; top: 10px; right: 10px; width: 62px; height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--c); transform: rotate(-9deg); pointer-events: none; }
+.sello > svg:first-child { position: absolute; inset: 0; fill: none; stroke: currentColor; }
+.sello > svg:first-child circle:first-child { stroke-width: 2.5; }
+.sello > svg:first-child circle:last-child { stroke-width: 1; stroke-dasharray: 3 3; }
+.sello-dia { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; line-height: 1; }
+.sello-hora { font-family: "Fraunces", serif; font-size: 14px; font-weight: 700; line-height: 1.1; white-space: nowrap; }
+.sello-ondas { position: absolute; right: 54px; top: 18px; width: 38px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.4; opacity: .55; }
+
+/* Teléfono: el mapa arriba y la hoja que sube desde abajo, a media altura, abierta o recogida. Sin arrastrar: un botón. */
+@media (max-width: 899px) {
+  .barrio:has(.barrio-mapa) { height: 100svh; display: flex; flex-direction: column; overflow: hidden; }
+  .barrio:has(.barrio-mapa) .barrio-planes { flex: 1; min-height: 0; }
+  .barrio-planes:not(.hoja-sola) .barrio-mapa { position: absolute; inset: 0 0 calc(var(--alto-hoja) + var(--barra-abajo)) 0; transition: bottom .4s cubic-bezier(.16, 1, .3, 1); }
+  .barrio-planes:not(.hoja-sola) .mapa-tinta { width: auto; height: 100%; max-width: 100%; }
+  .barrio-planes:not(.hoja-sola) .hoja { position: absolute; left: 0; right: 0; bottom: var(--barra-abajo); height: var(--alto-hoja); overflow-y: auto; overscroll-behavior: contain; border-radius: 22px 22px 0 0; box-shadow: 0 -10px 30px -12px color-mix(in oklab, var(--tinta) 50%, transparent); transition: height .4s cubic-bezier(.16, 1, .3, 1); }
+  .barrio-planes.hoja-media { --alto-hoja: 46%; }
+  .barrio-planes.hoja-abierta { --alto-hoja: calc(100% - var(--barra-abajo) - 8px); }
+  .barrio-planes.hoja-recogida { --alto-hoja: 132px; }
+  .barrio-planes.hoja-recogida .postales, .barrio-planes.hoja-recogida .hoja-brisa { visibility: hidden; }
+  .barrio-planes:not(.hoja-sola) .hoja::before { content: ""; align-self: center; width: 40px; height: 4px; margin: -6px 0 2px; border-radius: 2px; background: color-mix(in oklab, var(--tinta) 30%, transparent); }
+  .barrio .barrio-controles { padding: 12px 14px 8px; }
+  .hoja-sola .hoja { padding-bottom: calc(var(--barra-abajo) + 24px); background: transparent; }
+}
+@media (max-width: 420px) {
+  .postal-cara { grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding-right: 58px; }
+  .postal-vineta { width: 64px; height: 58px; }
+  .postal-vineta .vineta { width: 54px; height: 40px; }
+  .sello { width: 56px; height: 56px; }
+}
+
+/* Escritorio: el mapa a la izquierda y la columna de postales a la derecha, siempre a la vista. */
+@media (min-width: 900px) {
+  .barrio:has(.barrio-mapa) .barrio-planes { display: grid; grid-template-columns: minmax(0, 1fr) min(460px, 38vw); height: calc(100svh - var(--barra-arriba) - 76px); }
+  .barrio .barrio-controles { max-width: none; padding: 14px 24px 8px; }
+  .barrio-mapa { min-height: 0; height: 100%; padding: 16px 24px 24px; }
+  .mapa-tinta { width: auto; height: 100%; max-width: 100%; }
+  .barrio-planes:not(.hoja-sola) .hoja { height: 100%; overflow-y: auto; border-left: 1px solid color-mix(in oklab, var(--tinta) 15%, transparent); padding: 20px 22px 32px; }
+  .hoja-alternar { display: none; }
+  .hoja-sola { max-width: 760px; margin: 0 auto; }
+  .hoja-sola .hoja { background: transparent; }
+  .barrio .mapa-brisa { top: 16px; right: 24px; }
+  .barrio .mapa-brisa .orbe { --tam: 72px; --k: .36; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trazo { animation: none; stroke-dashoffset: 0; }
+  .mapa-sello, .postal, .barrio-mapa, .hoja { transition: none; }
+}
+
+/* Ajustes tras la primera revisión: el sello respira, los controles se alinean y en el teléfono el mapa se acerca. */
+.sello { width: 66px; height: 66px; gap: 1px; }
+.sello-dia { font-size: 10px; }
+.sello-hora { font-size: 17px; }
+.sello-franja { font-size: 10px; font-weight: 600; line-height: 1; }
+.postal-cara { padding-right: 70px; }
+@media (min-width: 900px) {
+  .comunidad.barrio .barrio-controles { max-width: none; margin: 0; padding: 14px 24px 10px; }
+  .comunidad.barrio .barrio-controles .modo { margin-left: 24px; }
+}
+@media (max-width: 899px) {
+  .comunidad.barrio .barrio-controles { max-width: none; margin: 0; padding: 12px 14px 8px; gap: 8px; }
+  .comunidad.barrio .barrio-controles h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .barrio-planes:not(.hoja-sola) .barrio-mapa { overflow: hidden; display: block; padding: 0; }
+  .barrio-planes:not(.hoja-sola) .mapa-tinta { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: auto; height: 172%; max-width: none; }
+  .nombre-barrio.anillo-2, .mapa-etiqueta-anillo { display: none; }
+  .mapa-tinta .nombre-barrio { font-size: 12px; }
+}
+
+/* Revisión final (correcciones del revisor): hoja pegada a la barra, barra legible de día, nombres grandes en el
+   teléfono, el mismo sello con su hora en el mapa, lima para lo tuyo y el mapa entero en el escritorio. */
+.barrio { --p-semana: oklch(.45 .09 168); --lavado-semana: oklch(.9 .045 165); --p-mio: oklch(.52 .15 130); --lavado-mio: oklch(.9 .1 125); }
+.barrio.de-noche { --p-semana: oklch(.8 .08 165); --lavado-semana: oklch(.3 .05 165); --p-mio: oklch(.88 .18 125); --lavado-mio: oklch(.34 .08 128); }
+.barrio.de-dia .barra { background: var(--papel-hoja); backdrop-filter: none; -webkit-backdrop-filter: none; border: 1px solid color-mix(in oklab, var(--tinta) 18%, transparent); box-shadow: 0 6px 18px -10px color-mix(in oklab, var(--tinta) 45%, transparent); }
+.barrio.de-dia .barra::before { display: none; }
+.barrio.de-dia .barra-lugares > button, .barrio.de-dia .barra-mas > button, .barrio.de-dia .diario-marca { color: var(--tinta); }
+.barrio.de-dia .barra-lugares > button[aria-current="page"] { background: var(--celda-0); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tinta) 35%, transparent); }
+.mapa-sello-hora { position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%) rotate(6deg); padding: 1px 7px; border-radius: 999px; background: var(--c); color: var(--papel-hoja); font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.mapa-sello.elegido .mapa-sello-hora { transform: translateX(-50%); }
+.hoja-cabeza .hoja-contar { flex: 1 1 auto; flex-basis: auto; }
+.hoja-cabeza h2 { flex-basis: 100%; }
+.panel-cerrar svg { width: 22px; height: 22px; }
+
+@media (max-width: 899px) {
+  .comunidad.barrio:has(.barrio-mapa) { padding-bottom: 0; }
+  .barrio-planes.hoja-media { --alto-hoja: 56%; }
+  .barrio-planes:not(.hoja-sola) .hoja::before { display: none; }
+  .barrio-planes.hoja-abierta .barrio-mapa { visibility: hidden; transition: bottom .4s cubic-bezier(.16, 1, .3, 1), visibility 0s .4s; }
+  .barrio-planes:not(.hoja-sola) .mapa-tinta { height: 205%; }
+  .mapa-tinta .nombre-barrio { font-size: 15px; font-weight: 600; }
+  .mapa-tinta .nombre-barrio.largo { display: none; }
+  .mapa-tu { z-index: 4; }
+  .mapa-sello { width: 44px; height: 44px; }
+  .mapa-sello .vineta { width: 30px; height: 23px; }
+  .mapa-sello.elegido { transform: translate(-50%, -50%) scale(1.15); }
+}
+@media (min-width: 900px) {
+  .comunidad.barrio:has(.barrio-mapa) { height: 100svh; display: grid; grid-template-rows: auto minmax(0, 1fr); padding-top: var(--barra-arriba); box-sizing: border-box; overflow: hidden; }
+  .barrio:has(.barrio-mapa) .barrio-planes { height: auto; min-height: 0; }
+}
+@media (max-width: 899px) {
+  .barrio-planes:not(.hoja-sola) .mapa-tinta { max-height: none; }
+}
+@media (max-width: 899px) {
+  .barrio-planes.hoja-recogida { --alto-hoja: 204px; }
+  .barrio-planes:not(.hoja-sola) .mapa-tinta { top: calc(50% + 34px); }
+}
+@media (max-width: 899px) {
+  .barrio-planes:not(.hoja-sola) .mapa-tinta { top: calc(50% + 16px); }
+}
+.mapa-sello.elegido { z-index: 5; }
+@media (min-width: 900px) { .nombre-barrio { font-size: 14px; } }

@@ -16,9 +16,8 @@ describe('Mi barrio', () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
     expect(screen.getByRole('heading', { level: 1, name: 'Mi barrio' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Estás en/ })).toHaveTextContent('Estás en: Casa · Medellín');
-    expect(await screen.findByText(/Hola, Rosa. Esto pasa cerca de ti/)).toBeInTheDocument();
-    expect(await screen.findByText('Caminata por el parque')).toBeInTheDocument();
-    expect(screen.getByText('Parque de los Deseos · Medellín · En tu ciudad')).toBeInTheDocument();
+        expect(await screen.findByText('Caminata por el parque')).toBeInTheDocument();
+    expect(screen.getByText('Parque de los Deseos · En tu ciudad')).toBeInTheDocument();
   });
 
   it('una sola barra: Brisa, Mi barrio y Mi gente, y lo demás en «Más»', async () => {
@@ -169,38 +168,38 @@ describe('Avisos', () => {
   });
 });
 
-describe('Mapa de la comunidad', () => {
-  // Un tablero mínimo: tu zona en el centro y una vecina al norte, con la luz del plan de Luis.
-  const hex = (x: number, y: number, anillo: number) => ({ x, y, anillo, puntos: [[x - 500, y], [x - 250, y - 430], [x + 250, y - 430], [x + 500, y], [x + 250, y + 430], [x - 250, y + 430]] as [number, number][] });
-  const mapa = { disponible: true as const, celdas: [hex(0, 0, 0), hex(0, -860, 1)], planes: [{ id: 'p1', x: 0, y: -860 }] };
+describe('Mi barrio en tinta y postales (19 de octubre)', () => {
+  // Un tablero mínimo: tu zona en el centro y una celda vecina al norte, con su barrio y el plan de Luis.
+  const hex = (x: number, y: number, anillo: number, barrio?: string) => ({ x, y, anillo, barrio, puntos: [[x - 500, y], [x - 250, y - 430], [x + 250, y - 430], [x + 500, y], [x + 250, y + 430], [x - 250, y + 430]] as [number, number][] });
+  const mapa = { disponible: true as const, celdas: [hex(0, 0, 0, 'Laureles'), hex(0, -860, 1, 'Lorena')], planes: [{ id: 'p1', x: 0, y: -860 }] };
 
-  it('muestra el mapa por defecto: tu zona, una luz por plan y su burbuja', async () => {
+  it('dibuja las celdas con sus barrios reales, tu lugar y un sello por plan', async () => {
     render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    expect(await screen.findByText('Tu zona')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mapa' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /Caminata por el parque · .* · Parque de los Deseos · En tu ciudad/ })).toBeInTheDocument();
-    expect(screen.getByText('caminata por el parque')).toBeInTheDocument(); // la burbuja: «Luis: caminata por el parque»
+    expect(await screen.findByText('Lorena')).toBeInTheDocument();
+    expect(screen.getByText('Tú')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Caminata por el parque. .*Lo propone Luis$/ })).toBeInTheDocument();
   });
 
-  it('al tocar una luz se abre la tarjeta del plan con «Me sumo»', async () => {
-    const irAPlan = ok([{ ...caminata, voy: true }]);
-    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa), irAPlan })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    fireEvent.click(await screen.findByRole('button', { name: /Caminata por el parque · / }));
-    expect(screen.getByRole('heading', { level: 2, name: 'Caminata por el parque' })).toBeInTheDocument();
-    expect(screen.getByText('Lugar público: Parque de los Deseos')).toBeInTheDocument();
+  it('cada plan es una postal; tocar su sello en el mapa la elige y tocar la postal resalta el sello', async () => {
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    const sello = await screen.findByRole('button', { name: /^Caminata por el parque. / });
+    fireEvent.click(sello);
+    expect(sello).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /Caminata por el parque.*Parque de los Deseos/s, pressed: true })).toBeInTheDocument();
+  });
+
+  it('desde la postal uno se suma, y la hoja deja ver el mapa o todos los planes', async () => {
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver todos los planes' }));
+    expect(screen.getByRole('button', { name: 'Ver el mapa' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Me sumo' }));
     expect(await screen.findByText('Vas a ir')).toBeInTheDocument();
   });
 
-  it('se puede pasar a la lista', async () => {
-    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    fireEvent.click(await screen.findByRole('button', { name: 'Lista' }));
-    expect(screen.getByRole('heading', { level: 2, name: 'Planes cerca de ti' })).toBeInTheDocument();
-  });
-
-  it('sin barrio no hay mapa: queda la lista y lo explica', async () => {
+  it('sin barrio no hay mapa: quedan las postales y lo explica', async () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
-    expect(await screen.findByText(/El mapa de hexágonos llega cuando tu lugar tiene barrio/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Mapa' })).toBeNull();
+    expect(await screen.findByText(/El mapa llega cuando tu lugar tiene barrio/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ver todos los planes' })).toBeNull();
+    expect(screen.getByText('Caminata por el parque')).toBeInTheDocument();
   });
 });

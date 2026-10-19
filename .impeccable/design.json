@@ -1,0 +1,775 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-19T00:00:00Z",
+  "title": "Design System: MOAI",
+  "extensions": {
+    "colorMeta": {
+      "bosque": {
+        "role": "neutral",
+        "displayName": "Bosque",
+        "canonical": "oklch(0.17 0.022 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 165)",
+          "oklch(0.26 0.018 165)",
+          "oklch(0.37 0.03 165)",
+          "oklch(0.48 0.03 165)",
+          "oklch(0.59 0.03 165)",
+          "oklch(0.7 0.03 165)",
+          "oklch(0.83 0.03 165)",
+          "oklch(0.95 0.018 165)"
+        ]
+      },
+      "bosque-alto": {
+        "role": "neutral",
+        "displayName": "Bosque Alto",
+        "canonical": "oklch(0.22 0.03 162)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 162)",
+          "oklch(0.26 0.018 162)",
+          "oklch(0.37 0.03 162)",
+          "oklch(0.48 0.03 162)",
+          "oklch(0.59 0.03 162)",
+          "oklch(0.7 0.03 162)",
+          "oklch(0.83 0.03 162)",
+          "oklch(0.95 0.018 162)"
+        ]
+      },
+      "niebla": {
+        "role": "neutral",
+        "displayName": "Niebla",
+        "canonical": "oklch(0.93 0.015 150)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 150)",
+          "oklch(0.26 0.018 150)",
+          "oklch(0.37 0.03 150)",
+          "oklch(0.48 0.03 150)",
+          "oklch(0.59 0.03 150)",
+          "oklch(0.7 0.03 150)",
+          "oklch(0.83 0.03 150)",
+          "oklch(0.95 0.018 150)"
+        ]
+      },
+      "lima": {
+        "role": "primary",
+        "displayName": "Lima Viva",
+        "canonical": "oklch(0.82460 0.17617 121.113)",
+        "tonalRamp": [
+          "oklch(0.15 0.1057 121.113)",
+          "oklch(0.26 0.1057 121.113)",
+          "oklch(0.37 0.1762 121.113)",
+          "oklch(0.48 0.1762 121.113)",
+          "oklch(0.59 0.1762 121.113)",
+          "oklch(0.7 0.1762 121.113)",
+          "oklch(0.83 0.1762 121.113)",
+          "oklch(0.95 0.1057 121.113)"
+        ]
+      },
+      "cian": {
+        "role": "secondary",
+        "displayName": "Cian Rocío",
+        "canonical": "oklch(0.84 0.12 205)",
+        "tonalRamp": [
+          "oklch(0.15 0.072 205)",
+          "oklch(0.26 0.072 205)",
+          "oklch(0.37 0.12 205)",
+          "oklch(0.48 0.12 205)",
+          "oklch(0.59 0.12 205)",
+          "oklch(0.7 0.12 205)",
+          "oklch(0.83 0.12 205)",
+          "oklch(0.95 0.072 205)"
+        ]
+      },
+      "barrio-papel": {
+        "role": "neutral",
+        "displayName": "Papel Salvia",
+        "canonical": "oklch(0.955 0.02 140)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 140)",
+          "oklch(0.26 0.018 140)",
+          "oklch(0.37 0.03 140)",
+          "oklch(0.48 0.03 140)",
+          "oklch(0.59 0.03 140)",
+          "oklch(0.7 0.03 140)",
+          "oklch(0.83 0.03 140)",
+          "oklch(0.95 0.018 140)"
+        ]
+      },
+      "barrio-papel-hoja": {
+        "role": "neutral",
+        "displayName": "Hoja",
+        "canonical": "oklch(0.985 0.008 140)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 140)",
+          "oklch(0.26 0.018 140)",
+          "oklch(0.37 0.03 140)",
+          "oklch(0.48 0.03 140)",
+          "oklch(0.59 0.03 140)",
+          "oklch(0.7 0.03 140)",
+          "oklch(0.83 0.03 140)",
+          "oklch(0.95 0.018 140)"
+        ]
+      },
+      "barrio-tinta": {
+        "role": "neutral",
+        "displayName": "Tinta Bosque",
+        "canonical": "oklch(0.3 0.06 160)",
+        "tonalRamp": [
+          "oklch(0.15 0.036 160)",
+          "oklch(0.26 0.036 160)",
+          "oklch(0.37 0.06 160)",
+          "oklch(0.48 0.06 160)",
+          "oklch(0.59 0.06 160)",
+          "oklch(0.7 0.06 160)",
+          "oklch(0.83 0.06 160)",
+          "oklch(0.95 0.036 160)"
+        ]
+      },
+      "barrio-tinta-suave": {
+        "role": "neutral",
+        "displayName": "Tinta Suave",
+        "canonical": "oklch(0.48 0.045 158)",
+        "tonalRamp": [
+          "oklch(0.15 0.027 158)",
+          "oklch(0.26 0.027 158)",
+          "oklch(0.37 0.045 158)",
+          "oklch(0.48 0.045 158)",
+          "oklch(0.59 0.045 158)",
+          "oklch(0.7 0.045 158)",
+          "oklch(0.83 0.045 158)",
+          "oklch(0.95 0.027 158)"
+        ]
+      },
+      "barrio-celda-0": {
+        "role": "neutral",
+        "displayName": "Celda Tuya",
+        "canonical": "oklch(0.87 0.1 128)",
+        "tonalRamp": [
+          "oklch(0.15 0.06 128)",
+          "oklch(0.26 0.06 128)",
+          "oklch(0.37 0.1 128)",
+          "oklch(0.48 0.1 128)",
+          "oklch(0.59 0.1 128)",
+          "oklch(0.7 0.1 128)",
+          "oklch(0.83 0.1 128)",
+          "oklch(0.95 0.06 128)"
+        ]
+      },
+      "barrio-celda-1": {
+        "role": "neutral",
+        "displayName": "Celda Cerca",
+        "canonical": "oklch(0.925 0.04 138)",
+        "tonalRamp": [
+          "oklch(0.15 0.024 138)",
+          "oklch(0.26 0.024 138)",
+          "oklch(0.37 0.04 138)",
+          "oklch(0.48 0.04 138)",
+          "oklch(0.59 0.04 138)",
+          "oklch(0.7 0.04 138)",
+          "oklch(0.83 0.04 138)",
+          "oklch(0.95 0.024 138)"
+        ]
+      },
+      "barrio-celda-2": {
+        "role": "neutral",
+        "displayName": "Celda Tu Zona",
+        "canonical": "oklch(0.945 0.025 142)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 142)",
+          "oklch(0.26 0.018 142)",
+          "oklch(0.37 0.03 142)",
+          "oklch(0.48 0.03 142)",
+          "oklch(0.59 0.03 142)",
+          "oklch(0.7 0.03 142)",
+          "oklch(0.83 0.03 142)",
+          "oklch(0.95 0.018 142)"
+        ]
+      },
+      "barrio-noche-papel": {
+        "role": "neutral",
+        "displayName": "Papel de Noche",
+        "canonical": "oklch(0.2 0.035 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.021 165)",
+          "oklch(0.26 0.021 165)",
+          "oklch(0.37 0.035 165)",
+          "oklch(0.48 0.035 165)",
+          "oklch(0.59 0.035 165)",
+          "oklch(0.7 0.035 165)",
+          "oklch(0.83 0.035 165)",
+          "oklch(0.95 0.021 165)"
+        ]
+      },
+      "barrio-noche-papel-hoja": {
+        "role": "neutral",
+        "displayName": "Hoja de Noche",
+        "canonical": "oklch(0.24 0.035 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.021 165)",
+          "oklch(0.26 0.021 165)",
+          "oklch(0.37 0.035 165)",
+          "oklch(0.48 0.035 165)",
+          "oklch(0.59 0.035 165)",
+          "oklch(0.7 0.035 165)",
+          "oklch(0.83 0.035 165)",
+          "oklch(0.95 0.021 165)"
+        ]
+      },
+      "barrio-noche-tinta": {
+        "role": "neutral",
+        "displayName": "Tinta Clara",
+        "canonical": "oklch(0.9 0.03 140)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 140)",
+          "oklch(0.26 0.018 140)",
+          "oklch(0.37 0.03 140)",
+          "oklch(0.48 0.03 140)",
+          "oklch(0.59 0.03 140)",
+          "oklch(0.7 0.03 140)",
+          "oklch(0.83 0.03 140)",
+          "oklch(0.95 0.018 140)"
+        ]
+      },
+      "barrio-noche-tinta-suave": {
+        "role": "neutral",
+        "displayName": "Tinta Clara Suave",
+        "canonical": "oklch(0.74 0.035 145)",
+        "tonalRamp": [
+          "oklch(0.15 0.021 145)",
+          "oklch(0.26 0.021 145)",
+          "oklch(0.37 0.035 145)",
+          "oklch(0.48 0.035 145)",
+          "oklch(0.59 0.035 145)",
+          "oklch(0.7 0.035 145)",
+          "oklch(0.83 0.035 145)",
+          "oklch(0.95 0.021 145)"
+        ]
+      },
+      "barrio-noche-celda-0": {
+        "role": "neutral",
+        "displayName": "Celda Tuya de Noche",
+        "canonical": "oklch(0.42 0.1 135)",
+        "tonalRamp": [
+          "oklch(0.15 0.06 135)",
+          "oklch(0.26 0.06 135)",
+          "oklch(0.37 0.1 135)",
+          "oklch(0.48 0.1 135)",
+          "oklch(0.59 0.1 135)",
+          "oklch(0.7 0.1 135)",
+          "oklch(0.83 0.1 135)",
+          "oklch(0.95 0.06 135)"
+        ]
+      },
+      "barrio-noche-celda-1": {
+        "role": "neutral",
+        "displayName": "Celda Cerca de Noche",
+        "canonical": "oklch(0.27 0.04 160)",
+        "tonalRamp": [
+          "oklch(0.15 0.024 160)",
+          "oklch(0.26 0.024 160)",
+          "oklch(0.37 0.04 160)",
+          "oklch(0.48 0.04 160)",
+          "oklch(0.59 0.04 160)",
+          "oklch(0.7 0.04 160)",
+          "oklch(0.83 0.04 160)",
+          "oklch(0.95 0.024 160)"
+        ]
+      },
+      "barrio-noche-celda-2": {
+        "role": "neutral",
+        "displayName": "Celda Tu Zona de Noche",
+        "canonical": "oklch(0.235 0.035 163)",
+        "tonalRamp": [
+          "oklch(0.15 0.021 163)",
+          "oklch(0.26 0.021 163)",
+          "oklch(0.37 0.035 163)",
+          "oklch(0.48 0.035 163)",
+          "oklch(0.59 0.035 163)",
+          "oklch(0.7 0.035 163)",
+          "oklch(0.83 0.035 163)",
+          "oklch(0.95 0.021 163)"
+        ]
+      },
+      "tinta-semana": {
+        "role": "tertiary",
+        "displayName": "Verde Semana",
+        "canonical": "oklch(0.45 0.09 168)",
+        "tonalRamp": [
+          "oklch(0.15 0.054 168)",
+          "oklch(0.26 0.054 168)",
+          "oklch(0.37 0.09 168)",
+          "oklch(0.48 0.09 168)",
+          "oklch(0.59 0.09 168)",
+          "oklch(0.7 0.09 168)",
+          "oklch(0.83 0.09 168)",
+          "oklch(0.95 0.054 168)"
+        ]
+      },
+      "lavado-semana": {
+        "role": "tertiary",
+        "displayName": "Lavado Semana",
+        "canonical": "oklch(0.9 0.045 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.027 165)",
+          "oklch(0.26 0.027 165)",
+          "oklch(0.37 0.045 165)",
+          "oklch(0.48 0.045 165)",
+          "oklch(0.59 0.045 165)",
+          "oklch(0.7 0.045 165)",
+          "oklch(0.83 0.045 165)",
+          "oklch(0.95 0.027 165)"
+        ]
+      },
+      "tinta-semanal": {
+        "role": "tertiary",
+        "displayName": "Cian Semanal",
+        "canonical": "oklch(0.52 0.1 210)",
+        "tonalRamp": [
+          "oklch(0.15 0.06 210)",
+          "oklch(0.26 0.06 210)",
+          "oklch(0.37 0.1 210)",
+          "oklch(0.48 0.1 210)",
+          "oklch(0.59 0.1 210)",
+          "oklch(0.7 0.1 210)",
+          "oklch(0.83 0.1 210)",
+          "oklch(0.95 0.06 210)"
+        ]
+      },
+      "lavado-semanal": {
+        "role": "tertiary",
+        "displayName": "Lavado Semanal",
+        "canonical": "oklch(0.92 0.05 210)",
+        "tonalRamp": [
+          "oklch(0.15 0.03 210)",
+          "oklch(0.26 0.03 210)",
+          "oklch(0.37 0.05 210)",
+          "oklch(0.48 0.05 210)",
+          "oklch(0.59 0.05 210)",
+          "oklch(0.7 0.05 210)",
+          "oklch(0.83 0.05 210)",
+          "oklch(0.95 0.03 210)"
+        ]
+      },
+      "tinta-mio": {
+        "role": "tertiary",
+        "displayName": "Lima Tuyo",
+        "canonical": "oklch(0.52 0.15 130)",
+        "tonalRamp": [
+          "oklch(0.15 0.09 130)",
+          "oklch(0.26 0.09 130)",
+          "oklch(0.37 0.15 130)",
+          "oklch(0.48 0.15 130)",
+          "oklch(0.59 0.15 130)",
+          "oklch(0.7 0.15 130)",
+          "oklch(0.83 0.15 130)",
+          "oklch(0.95 0.09 130)"
+        ]
+      },
+      "lavado-mio": {
+        "role": "tertiary",
+        "displayName": "Lavado Tuyo",
+        "canonical": "oklch(0.9 0.1 125)",
+        "tonalRamp": [
+          "oklch(0.15 0.06 125)",
+          "oklch(0.26 0.06 125)",
+          "oklch(0.37 0.1 125)",
+          "oklch(0.48 0.1 125)",
+          "oklch(0.59 0.1 125)",
+          "oklch(0.7 0.1 125)",
+          "oklch(0.83 0.1 125)",
+          "oklch(0.95 0.06 125)"
+        ]
+      },
+      "tinta-convocatoria": {
+        "role": "tertiary",
+        "displayName": "Naranja Convocatoria",
+        "canonical": "oklch(0.6 0.15 50)",
+        "tonalRamp": [
+          "oklch(0.15 0.09 50)",
+          "oklch(0.26 0.09 50)",
+          "oklch(0.37 0.15 50)",
+          "oklch(0.48 0.15 50)",
+          "oklch(0.59 0.15 50)",
+          "oklch(0.7 0.15 50)",
+          "oklch(0.83 0.15 50)",
+          "oklch(0.95 0.09 50)"
+        ]
+      },
+      "lavado-convocatoria": {
+        "role": "tertiary",
+        "displayName": "Lavado Convocatoria",
+        "canonical": "oklch(0.92 0.06 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.036 55)",
+          "oklch(0.26 0.036 55)",
+          "oklch(0.37 0.06 55)",
+          "oklch(0.48 0.06 55)",
+          "oklch(0.59 0.06 55)",
+          "oklch(0.7 0.06 55)",
+          "oklch(0.83 0.06 55)",
+          "oklch(0.95 0.036 55)"
+        ]
+      },
+      "noche-tinta-semana": {
+        "role": "tertiary",
+        "displayName": "Verde Semana de Noche",
+        "canonical": "oklch(0.8 0.08 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.048 165)",
+          "oklch(0.26 0.048 165)",
+          "oklch(0.37 0.08 165)",
+          "oklch(0.48 0.08 165)",
+          "oklch(0.59 0.08 165)",
+          "oklch(0.7 0.08 165)",
+          "oklch(0.83 0.08 165)",
+          "oklch(0.95 0.048 165)"
+        ]
+      },
+      "noche-lavado-semana": {
+        "role": "tertiary",
+        "displayName": "Lavado Semana de Noche",
+        "canonical": "oklch(0.3 0.05 165)",
+        "tonalRamp": [
+          "oklch(0.15 0.03 165)",
+          "oklch(0.26 0.03 165)",
+          "oklch(0.37 0.05 165)",
+          "oklch(0.48 0.05 165)",
+          "oklch(0.59 0.05 165)",
+          "oklch(0.7 0.05 165)",
+          "oklch(0.83 0.05 165)",
+          "oklch(0.95 0.03 165)"
+        ]
+      },
+      "noche-tinta-semanal": {
+        "role": "tertiary",
+        "displayName": "Cian Semanal de Noche",
+        "canonical": "oklch(0.82 0.1 200)",
+        "tonalRamp": [
+          "oklch(0.15 0.06 200)",
+          "oklch(0.26 0.06 200)",
+          "oklch(0.37 0.1 200)",
+          "oklch(0.48 0.1 200)",
+          "oklch(0.59 0.1 200)",
+          "oklch(0.7 0.1 200)",
+          "oklch(0.83 0.1 200)",
+          "oklch(0.95 0.06 200)"
+        ]
+      },
+      "noche-lavado-semanal": {
+        "role": "tertiary",
+        "displayName": "Lavado Semanal de Noche",
+        "canonical": "oklch(0.31 0.05 205)",
+        "tonalRamp": [
+          "oklch(0.15 0.03 205)",
+          "oklch(0.26 0.03 205)",
+          "oklch(0.37 0.05 205)",
+          "oklch(0.48 0.05 205)",
+          "oklch(0.59 0.05 205)",
+          "oklch(0.7 0.05 205)",
+          "oklch(0.83 0.05 205)",
+          "oklch(0.95 0.03 205)"
+        ]
+      },
+      "noche-tinta-mio": {
+        "role": "tertiary",
+        "displayName": "Lima Tuyo de Noche",
+        "canonical": "oklch(0.88 0.18 125)",
+        "tonalRamp": [
+          "oklch(0.15 0.108 125)",
+          "oklch(0.26 0.108 125)",
+          "oklch(0.37 0.18 125)",
+          "oklch(0.48 0.18 125)",
+          "oklch(0.59 0.18 125)",
+          "oklch(0.7 0.18 125)",
+          "oklch(0.83 0.18 125)",
+          "oklch(0.95 0.108 125)"
+        ]
+      },
+      "noche-lavado-mio": {
+        "role": "tertiary",
+        "displayName": "Lavado Tuyo de Noche",
+        "canonical": "oklch(0.34 0.08 128)",
+        "tonalRamp": [
+          "oklch(0.15 0.048 128)",
+          "oklch(0.26 0.048 128)",
+          "oklch(0.37 0.08 128)",
+          "oklch(0.48 0.08 128)",
+          "oklch(0.59 0.08 128)",
+          "oklch(0.7 0.08 128)",
+          "oklch(0.83 0.08 128)",
+          "oklch(0.95 0.048 128)"
+        ]
+      },
+      "noche-tinta-convocatoria": {
+        "role": "tertiary",
+        "displayName": "Naranja Convocatoria de Noche",
+        "canonical": "oklch(0.8 0.12 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.072 55)",
+          "oklch(0.26 0.072 55)",
+          "oklch(0.37 0.12 55)",
+          "oklch(0.48 0.12 55)",
+          "oklch(0.59 0.12 55)",
+          "oklch(0.7 0.12 55)",
+          "oklch(0.83 0.12 55)",
+          "oklch(0.95 0.072 55)"
+        ]
+      },
+      "noche-lavado-convocatoria": {
+        "role": "tertiary",
+        "displayName": "Lavado Convocatoria de Noche",
+        "canonical": "oklch(0.33 0.06 50)",
+        "tonalRamp": [
+          "oklch(0.15 0.036 50)",
+          "oklch(0.26 0.036 50)",
+          "oklch(0.37 0.06 50)",
+          "oklch(0.48 0.06 50)",
+          "oklch(0.59 0.06 50)",
+          "oklch(0.7 0.06 50)",
+          "oklch(0.83 0.06 50)",
+          "oklch(0.95 0.036 50)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The «Mi barrio» screen title in Fraunces. Forest screens set their h1 in Inter 700."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Sheet heading «Esta semana, cerca»."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Postcard titles; «Tú» on the map at 18px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Postcard detail: where, distance band; who at 15px."
+      },
+      "body-emphasis": {
+        "displayName": "Body emphasis",
+        "purpose": "The «when» line of a postcard, in the plan ink."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Barrio names inside map cells (15px on phone; the 13px desktop size is a known defect)."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "«MOAI» in the bar only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "glass-panel",
+        "value": "inset 0 1px 0 rgb(255 255 255 / .16), 0 18px 50px rgb(4 18 14 / .35)",
+        "purpose": "Glass panels on forest (Brisa, reading screens)."
+      },
+      {
+        "name": "postal-rest",
+        "value": "inset 0 0 0 4px var(--papel-hoja), inset 0 0 0 5px color-mix(in oklab, var(--c) 30%, transparent), 0 6px 16px -10px color-mix(in oklab, var(--tinta) 60%, transparent)",
+        "purpose": "Postcard: printed inner frame in the plan ink plus a low lift."
+      },
+      {
+        "name": "postal-chosen",
+        "value": "inset 0 0 0 4px var(--papel-hoja), inset 0 0 0 6px var(--c), 0 12px 24px -12px color-mix(in oklab, var(--tinta) 70%, transparent)",
+        "purpose": "Chosen postcard, with translateY(-2px)."
+      },
+      {
+        "name": "mapa-sello",
+        "value": "0 3px 8px -2px color-mix(in oklab, var(--tinta) 45%, transparent)",
+        "purpose": "Map stamp at rest."
+      },
+      {
+        "name": "mapa-sello-chosen",
+        "value": "0 0 0 4px var(--papel), 0 0 0 7px var(--c), 0 10px 22px -6px color-mix(in oklab, var(--tinta) 55%, transparent)",
+        "purpose": "Chosen map stamp: paper gap and ink ring."
+      },
+      {
+        "name": "hoja-phone",
+        "value": "0 -10px 30px -12px color-mix(in oklab, var(--tinta) 50%, transparent)",
+        "purpose": "Rising sheet on phone."
+      },
+      {
+        "name": "barra-paper",
+        "value": "0 6px 18px -10px color-mix(in oklab, var(--tinta) 45%, transparent)",
+        "purpose": "The bar on daytime paper."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-tinta",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Ink stroke, stamp scale, postcard lift and sheet height changes."
+      },
+      {
+        "name": "trazo-dibuja",
+        "value": ".7s",
+        "purpose": "Ink stroke drawn from «Tú» to the chosen stamp (stroke-dashoffset 1 to 0)."
+      },
+      {
+        "name": "sello-postal",
+        "value": ".25s",
+        "purpose": "Stamp and postcard state transitions."
+      },
+      {
+        "name": "hoja",
+        "value": ".4s",
+        "purpose": "Phone sheet height and map inset."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "Under prefers-reduced-motion the stroke appears already drawn and Mi barrio transitions switch off."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "small-phone",
+        "value": "420px"
+      },
+      {
+        "name": "bar-bottom",
+        "value": "760px"
+      },
+      {
+        "name": "barrio-split",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single main action of a region: lime pill with dark forest text.",
+      "html": "<button class=\"ds-btn-primary\">Me sumo</button>",
+      "css": ".ds-btn-primary { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1.5px solid var(--lima); background: var(--lima); color: var(--bosque); font: 600 17px/1 Inter, sans-serif; cursor: pointer; transition: filter .2s; } .ds-btn-primary:hover { filter: brightness(1.06); } .ds-btn-primary:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }"
+    },
+    {
+      "name": "Outline Button (night)",
+      "kind": "button",
+      "refersTo": "button-outline-noche",
+      "description": "Secondary action on forest: mist text and mist hairline.",
+      "html": "<div class=\"ds-noche\"><button class=\"ds-btn-outline-noche\">No, gracias</button></div>",
+      "css": ".ds-noche { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); background: var(--bosque); padding: 16px; } .ds-btn-outline-noche { min-height: 48px; padding: 0 22px; border-radius: 999px; background: transparent; color: var(--niebla); border: 1.5px solid color-mix(in oklab, var(--niebla) 45%, transparent); font: 500 17px/1 Inter, sans-serif; cursor: pointer; } .ds-btn-outline-noche:hover { background: color-mix(in oklab, var(--niebla) 10%, transparent); } .ds-btn-outline-noche:focus-visible { outline: 3px solid var(--lima); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button (day, on paper)",
+      "kind": "button",
+      "refersTo": "button-outline-dia",
+      "description": "Secondary action on Mi barrio paper: ink text and a 40% ink border.",
+      "html": "<button class=\"ds-btn-outline-dia\">Ya no voy</button>",
+      "css": ".ds-btn-outline-dia { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); min-height: 48px; padding: 0 22px; border-radius: 999px; background: transparent; color: var(--tinta); border: 1.5px solid color-mix(in oklab, var(--tinta) 40%, transparent); font: 500 17px/1 Inter, sans-serif; cursor: pointer; } .ds-btn-outline-dia:hover { background: color-mix(in oklab, var(--tinta) 8%, transparent); } .ds-btn-outline-dia:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }"
+    },
+    {
+      "name": "Segmented Toggle (day)",
+      "kind": "chip",
+      "refersTo": "modo-dia-activo",
+      "description": "Planes · Vecinos on paper; the active option is solid ink.",
+      "html": "<div class=\"ds-modo\" role=\"group\"><button aria-pressed=\"true\">Planes</button><button aria-pressed=\"false\">Vecinos</button></div>",
+      "css": ".ds-modo { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); display: inline-flex; padding: 4px; border-radius: 999px; background: var(--papel-hoja); border: 1px solid color-mix(in oklab, var(--tinta) 30%, transparent); } .ds-modo button { min-height: 40px; min-width: 104px; border: 0; border-radius: 999px; background: transparent; color: var(--tinta-suave); font: 400 16px/1 Inter, sans-serif; cursor: pointer; } .ds-modo button:hover { color: var(--tinta); } .ds-modo button[aria-pressed=\"true\"] { background: var(--tinta); color: var(--papel-hoja); font-weight: 600; } .ds-modo button:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }"
+    },
+    {
+      "name": "Bar on Paper",
+      "kind": "nav",
+      "refersTo": "barra-dia",
+      "description": "The shared bar where it sits on Mi barrio daytime paper: a solid sheet without glass; the current place in Celda-0.",
+      "html": "<nav class=\"ds-barra\"><span class=\"ds-marca\">MOAI</span><div class=\"ds-lugares\"><button>Brisa</button><button aria-current=\"page\">Mi barrio</button><button>Mi gente</button><button>Más</button></div></nav>",
+      "css": ".ds-barra { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 10px 8px 22px; border-radius: 22px; background: var(--papel-hoja); border: 1px solid color-mix(in oklab, var(--tinta) 18%, transparent); box-shadow: 0 6px 18px -10px color-mix(in oklab, var(--tinta) 45%, transparent); color: var(--tinta); font-family: Inter, sans-serif; } .ds-marca { font-size: 15px; font-weight: 600; letter-spacing: .4em; } .ds-lugares { display: flex; gap: 4px; margin-left: auto; } .ds-lugares button { min-height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--tinta); font-size: 16px; cursor: pointer; transition: background .2s; } .ds-lugares button:hover { background: color-mix(in oklab, var(--tinta) 8%, transparent); } .ds-lugares button[aria-current=\"page\"] { background: var(--celda-0); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tinta) 35%, transparent); font-weight: 600; } .ds-lugares button:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }"
+    },
+    {
+      "name": "Glass Panel",
+      "kind": "card",
+      "refersTo": null,
+      "description": "Incumbent forest material: translucent, blurred, white hairline, deep ambient shadow. Brisa’s conversation.",
+      "html": "<div class=\"ds-fondo\"><div class=\"ds-vidrio\"><strong>Brisa</strong><p>Soy Brisa, tu compañera en MOAI.</p></div></div>",
+      "css": ".ds-fondo { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); padding: 24px; background: radial-gradient(ellipse at 20% 0%, oklch(.26 .04 165), oklch(.12 .02 175) 70%); } .ds-vidrio { padding: 18px; color: var(--niebla); background: color-mix(in oklab, oklch(.3 .035 165) 34%, transparent); border: 1px solid color-mix(in oklab, white 32%, transparent); border-radius: 28px; backdrop-filter: blur(18px) saturate(1.25); -webkit-backdrop-filter: blur(18px) saturate(1.25); box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), 0 18px 50px rgb(4 18 14 / .35); font: 400 17px/1.5 Inter, sans-serif; } .ds-vidrio p { margin: 6px 0 0; }"
+    },
+    {
+      "name": "Postal",
+      "kind": "card",
+      "refersTo": "postal",
+      "description": "A plan as a postcard: inked vignette on its wash, Fraunces title, the when-line in the plan ink, and the postal seal.",
+      "html": "<article class=\"ds-postal\"><div class=\"ds-cara\"><span class=\"ds-vineta\"><svg viewBox=\"0 0 80 60\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"70\" height=\"52\"><path d=\"M4 50 C 24 46, 44 52, 76 47\"/><circle cx=\"27\" cy=\"18\" r=\"4\"/><path d=\"M27 22 L 26 35 M26 35 L 21 47 M26 35 L 31 46 M26 26 L 20 32 M26 26 L 33 30\"/><circle cx=\"41\" cy=\"20\" r=\"3.6\"/><path d=\"M41 24 L 41 36 M41 36 L 37 47 M41 36 L 46 46 M41 27 L 35 31 M41 27 L 47 32\"/><path d=\"M62 46 L 62 30 M62 30 C 52 28, 52 14, 62 12 C 72 14, 72 28, 62 30\"/></svg></span><span class=\"ds-texto\"><strong>Voy a caminar, ¿alguien viene?</strong><span class=\"ds-cuando\">Todos los domingos, 8:00 a. m.</span><span>Parque de Bolivariana · A menos de 2 km</span><span class=\"ds-quien\">Lo propone Juan</span></span></div><span class=\"ds-sello\" aria-hidden=\"true\"><svg viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"44\"/><circle cx=\"50\" cy=\"50\" r=\"37\"/></svg><span class=\"ds-dia\">dom</span><span class=\"ds-hora\">8:00</span><span class=\"ds-franja\">a. m.</span></span><button class=\"ds-sumo\">Me sumo</button></article>",
+      "css": ".ds-postal { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); --c: oklch(.52 .1 210); --lavado: oklch(.92 .05 210); position: relative; display: flex; flex-direction: column; gap: 10px; max-width: 420px; padding: 14px; border-radius: 6px; background: var(--papel-hoja); color: var(--tinta); border: 1px solid color-mix(in oklab, var(--tinta) 22%, transparent); box-shadow: inset 0 0 0 4px var(--papel-hoja), inset 0 0 0 5px color-mix(in oklab, var(--c) 30%, transparent), 0 6px 16px -10px color-mix(in oklab, var(--tinta) 60%, transparent); font-family: Inter, sans-serif; transition: box-shadow .25s, transform .25s cubic-bezier(.16, 1, .3, 1); } .ds-postal:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 4px var(--papel-hoja), inset 0 0 0 6px var(--c), 0 12px 24px -12px color-mix(in oklab, var(--tinta) 70%, transparent); } .ds-cara { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; padding-right: 70px; } .ds-vineta { display: grid; place-items: center; width: 84px; height: 72px; border-radius: 4px; background: var(--lavado); color: var(--tinta); } .ds-texto { display: flex; flex-direction: column; gap: 3px; font-size: 16px; line-height: 1.35; color: var(--tinta-suave); } .ds-texto strong { font: 600 20px/1.2 Fraunces, serif; color: var(--tinta); text-wrap: balance; } .ds-cuando { font-weight: 600; font-size: 17px; color: color-mix(in oklab, var(--c) 80%, var(--tinta)); } .ds-quien { font-size: 15px; } .ds-sello { position: absolute; top: 10px; right: 10px; width: 66px; height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--c); transform: rotate(-9deg); } .ds-sello svg { position: absolute; inset: 0; fill: none; stroke: currentColor; } .ds-sello circle:first-child { stroke-width: 2.5; } .ds-sello circle:last-child { stroke-width: 1; stroke-dasharray: 3 3; } .ds-dia { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; line-height: 1; } .ds-hora { font: 700 17px/1.1 Fraunces, serif; } .ds-franja { font-size: 10px; font-weight: 600; line-height: 1; } .ds-sumo { align-self: flex-start; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: var(--lima); color: var(--bosque); font: 600 17px/1 Inter, sans-serif; cursor: pointer; } .ds-sumo:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }"
+    },
+    {
+      "name": "Map Stamp",
+      "kind": "custom",
+      "refersTo": "mapa-sello",
+      "description": "The same seal on the ink map: the plan vignette in a paper circle with a day-and-hour pill; chosen, it straightens and gains an ink ring.",
+      "html": "<div class=\"ds-mapa\"><button class=\"ds-mapa-sello\" aria-pressed=\"false\"><svg viewBox=\"0 0 80 60\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"36\" height=\"27\"><path d=\"M10 48 L 70 48\"/><path d=\"M18 30 L 20 46 L 34 46 L 36 30 Z M36 34 C 42 34, 42 42, 35 42\"/><path d=\"M44 30 L 46 46 L 60 46 L 62 30 Z M62 34 C 68 34, 68 42, 61 42\"/><path d=\"M24 26 C 21 21, 28 18, 25 12 M30 26 C 27 21, 34 18, 31 12 M50 26 C 47 21, 54 18, 51 12\"/></svg><span class=\"ds-mapa-hora\">sáb 4:00</span></button></div>",
+      "css": ".ds-mapa { --lima: oklch(0.82460 0.17617 121.113); --bosque: oklch(.17 .022 165); --niebla: oklch(.93 .015 150); --papel: oklch(.955 .02 140); --papel-hoja: oklch(.985 .008 140); --tinta: oklch(.3 .06 160); --tinta-suave: oklch(.48 .045 158); --celda-0: oklch(.87 .1 128); --c: oklch(.45 .09 168); display: grid; place-items: center; height: 140px; background: var(--celda-0); } .ds-mapa-sello { position: relative; width: 52px; height: 52px; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 2.5px solid var(--c); background: var(--papel-hoja); color: var(--c); transform: rotate(-6deg); cursor: pointer; box-shadow: 0 3px 8px -2px color-mix(in oklab, var(--tinta) 45%, transparent); transition: transform .25s cubic-bezier(.16, 1, .3, 1), box-shadow .25s; } .ds-mapa-sello::after { content: \"\"; position: absolute; inset: 3px; border-radius: 50%; border: 1px dashed var(--c); opacity: .7; } .ds-mapa-sello:hover { transform: rotate(0deg) scale(1.08); } .ds-mapa-sello[aria-pressed=\"true\"], .ds-mapa-sello:active { transform: scale(1.28); box-shadow: 0 0 0 4px var(--papel), 0 0 0 7px var(--c), 0 10px 22px -6px color-mix(in oklab, var(--tinta) 55%, transparent); } .ds-mapa-sello:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; } .ds-mapa-hora { position: absolute; top: calc(100% + 3px); left: 50%; transform: translateX(-50%) rotate(6deg); padding: 1px 7px; border-radius: 999px; background: var(--c); color: var(--papel-hoja); font: 600 11px/1.4 Inter, sans-serif; white-space: nowrap; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El barrio en tinta y el bosque de noche",
+    "overview": "MOAI lives in two worlds that share one bar, one pair of typefaces and one lime. The incumbent world is a night forest: a near-black green ground, translucent grained glass panels, mist-coloured text and a single lime light. It carries Brisa's conversation over the illustrated city, Mi gente's ink-thread network, the reading screens and the shared bar. Mi barrio is the second world: a hand-inked map on sage paper, made only of honest H3 hex cells labelled with real barrio names, with a stack of plan postcards beside it (desktop) or rising from below (phone). The light follows the hour: from 06:00 to 18:00 the drawing is forest ink on sage paper; after dark the same drawing is redrawn in light ink on forest. Nothing in the drawing moves except the one ink stroke that runs from «Tú» to the chosen plan.\n\nDensity is low and type is large, because many users are older: body text starts at 16px, every control is at least 44px tall and the main actions are 48px pills. One thing at a time: a single lime primary action per region, one postcard selected at a time, and the map and postcards always agree about which plan that is.\n\nThe confirmed rejections come from the Mi barrio direction: no fake illustrated scene with tiny pins, no generic street map, and never anything that shows where a person lives.",
+    "keyCharacteristics": [
+      "Two worlds, one system: glass on forest for Brisa, Mi gente and the reading screens; ink on paper (day) or ink on forest (night) for Mi barrio.",
+      "Light follows the hour in Mi barrio; the drawing never changes, only its tokens do.",
+      "One ink per plan type, shared by the postcard, its seal and its stamp on the map.",
+      "Fraunces speaks (titles, seals, «Tú»); Inter works (everything you read to act).",
+      "Lime marks the main action and what is yours.",
+      "Large type and 44–48px targets throughout."
+    ],
+    "rules": [
+      {
+        "name": "The Light Follows the Hour Rule",
+        "body": "Mi barrio is day from 06:00 to 18:00 and night otherwise. The two states swap token values only; geometry, layout and components stay identical.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Ink per Plan Rule",
+        "body": "A plan's type picks one ink and one wash, and every mark that belongs to that plan uses that pair and nothing else. Lime always means «yours».",
+        "section": "colors"
+      },
+      {
+        "name": "The Lime Is Rare Rule",
+        "body": "Lime fills the single primary action of a region and the «yours» family, and marks the current place, focus on forest and the IA seal. It never becomes a background wash for whole panels.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fraunces Speaks, Inter Works Rule",
+        "body": "Fraunces is reserved for titles, seals and «Tú». Anything a person reads in order to act (when, where, buttons, navigation) is Inter.",
+        "section": "typography"
+      },
+      {
+        "name": "The Large Print Rule",
+        "body": "Running text is at least 16px and actionable labels at least 15px. Smaller lettering exists only inside the decorative seal and map labels, and it is not a type role (see Don'ts).",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper Lies Flat Rule",
+        "body": "On paper, shadows are soft, negative-spread and tinted with ink; selection is shown with the plan's ink ring, not with a heavier shadow alone.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Solid Bar on Paper Rule",
+        "body": "Where the bar sits on Mi barrio's daytime paper it turns into a solid sheet (Hoja, ink hairline at 18%, no blur, no grain) with Tinta Bosque text. On forest, including Mi barrio at night, it stays glass. Brisa's conversation panel stays glass in both worlds: glass is Brisa's material.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** draw only what is true on the map: H3 cells, real barrio names, the two dotted rings and «Tú». Plans appear as stamps placed inside their cell.",
+      "**Do** switch Mi barrio between day and night by the hour, swapping token values only.",
+      "**Do** give every mark of a plan the same ink and wash: frame, vignette tile, seal, map stamp and «when» line.",
+      "**Do** keep the postcard seal and the map stamp the same object, so choosing either highlights both.",
+      "**Do** keep primary actions as 48px lime pills and every other target at least 44px.",
+      "**Do** offer a button for every sheet height change; never require a drag.",
+      "**Do** turn the bar into solid paper where it sits on Mi barrio's daytime paper.",
+      "**Do** honour reduced motion: the ink stroke, stamp and postcard transitions all switch off."
+    ],
+    "donts": [
+      "**Don't** draw streets, pins, building footprints or anything that could locate a person; the map is cells and names only.",
+      "**Don't** introduce a fifth plan ink, or spread lime beyond its roles: the main action, «yours», the current place in the bar, focus on forest and Brisa's IA seal.",
+      "**Don't** set text that a person must read to act below 15px; the seal's 10–11px lettering, the 13px desktop map labels and the 13px phone bar labels are known defects, not a scale to reuse.",
+      "**Don't** set action labels (pills, links, the bar) or the when, where and who lines in Fraunces.",
+      "**Don't** use hard offset shadows or black shadows on paper; lift with ink-tinted, negative-spread shadows.",
+      "**Don't** put a translucent, blurred bar on daytime paper."
+    ]
+  }
+}
