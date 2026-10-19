@@ -14,6 +14,7 @@ import { registrarCuidado } from './cuidado';
 import { registrarCercania } from './cercania';
 import { registrarLazos } from './lazos';
 import { registrarCuenta } from './cuenta';
+import { registrarHistorial } from './historial';
 import { crearCifrador } from './cifrado';
 import { RESPONSABLE } from '../src/lib/legal';
 import { validarLugar } from '../src/lib/lugares';
@@ -237,6 +238,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   registrarCuidado(app, db, cuentaAdulta, ahora, cifrador);
   registrarCercania(app, db, cuentaAdulta, ahora, refs, cifrador);
   registrarLazos(app, db, cuentaAdulta, ahora, refs, cifrador);
+  registrarHistorial(app, db, cuentaAdulta, ahora, cifrador);
   registrarCuenta(app, db, cuentaDeSesion, ahora, cifrador, COOKIE_SESION); // también sin edad declarada: borrar y descargar son derechos de todos
   registrarMoais(app, db, cuentaAdulta, ahora, refs, puedeConversar);
   registrarEquipo(app, db, cuentaAdulta, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));

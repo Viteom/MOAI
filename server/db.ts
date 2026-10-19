@@ -227,6 +227,14 @@ create table if not exists moai_interno (
   creado_en timestamptz not null
 );
 alter table moai_interno add column if not exists familia boolean not null default false;
+create table if not exists brisa_mensajes (
+  id bigserial primary key,
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  de text not null check (de in ('brisa', 'yo')),
+  texto text not null,
+  creado_en timestamptz not null
+);
+create index if not exists brisa_mensajes_cuenta on brisa_mensajes (cuenta_id, id);
 `;
 
 export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {

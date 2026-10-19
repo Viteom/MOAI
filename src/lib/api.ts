@@ -150,6 +150,10 @@ export const api = {
   salir: () => llamar<{ ok: true }>('salir', {}),
   // Mi cuenta (Ley 1581): todos mis datos en un archivo, y borrar la cuenta para siempre.
   misDatos: () => llamar<Record<string, unknown>>('cuenta/datos'),
+  // La conversación con Brisa: cifrada en el servidor, solo para la persona, 90 días.
+  historial: () => llamar<{ de: 'brisa' | 'yo'; texto: string; fecha: string }[]>('brisa/historial'),
+  guardarHistorial: (mensajes: { de: 'brisa' | 'yo'; texto: string }[]) => llamar<{ ok: true }>('brisa/historial', { mensajes }),
+  borrarHistorial: () => llamar<{ ok: true }>('brisa/historial', undefined, 'DELETE'),
   borrarCuenta: () => llamar<{ ok: true }>('cuenta/borrar', { confirmo: true }),
 };
 export type Api = typeof api;

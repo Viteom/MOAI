@@ -7,6 +7,7 @@ import { cuandoLegible, planesVisibles } from './comunidad';
 import { DIAS_MENSAJES_MOAI } from '../src/lib/moai';
 import { enInvierno } from './cercania';
 import type { Cifrador } from './cifrado';
+import { borrarHistorialViejo } from './historial';
 
 export const DIAS_PARA_VERIFICAR = 20;
 const HORAS_ENTRE_RECORDATORIOS = 84; // 3,5 días
@@ -72,4 +73,5 @@ export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<v
          or (p.repite is not null and m.creado_en < $1::timestamptz - interval '30 days'))`, [ahora]); // en los semanales, cada mensaje a sus 30 días
   await db.query(`delete from moai_mensajes where creado_en < $1::timestamptz - make_interval(days => $2)`, [ahora, DIAS_MENSAJES_MOAI]);
   await db.query(`delete from saludos where creado_en < $1::timestamptz - interval '30 days'`, [ahora]); // los saludos de lejos duran 30 días
+  await borrarHistorialViejo(db, ahora); // la conversación con Brisa, 90 días
 }

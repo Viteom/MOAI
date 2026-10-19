@@ -1,19 +1,25 @@
 // Inicio con Brisa (decisión de Mateo, 15 de octubre de 2026): Brisa es la pantalla de inicio y guía la plataforma
 // conversando. Por ahora es un guion (sin modelo de IA): entiende opciones y algunas palabras; lo demás lo dice con
 // honestidad. Los planes y el test de cuidado ocurren en la conversación, no en formularios.
+// 19 de octubre (Mateo): la conversación se guarda cifrada 90 días y Brisa la retoma; cada día hace una o dos preguntas
+// directas (src/lib/conversacion.ts), responde dudas de la plataforma y se le puede dictar con la voz.
 // Regla 12: el sello «IA» va siempre junto a su nombre, y la primera vez dice que no es una persona.
-// Regla 11: ante señales de riesgo, deriva a una persona y a la línea de emergencias. Nada de esto se guarda.
+// Regla 11: ante señales de riesgo, deriva a una persona y a la línea de emergencias.
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
+import { esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, type Pregunta } from '@/lib/conversacion';
 import { OrbeBrisa } from './bosque';
 import { Barra, type Ir } from './diario';
 import { EscenaCuidado } from './escena';
 
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
+type Previo = { de: 'brisa' | 'yo'; texto: string };
+const MAX_PREGUNTAS_DIA = 2;
 // `silencioso`: opciones como «Otra cosa» que solo muestran más opciones, sin aparecer como respuesta de la persona.
 type Opcion = { texto: string; hacer: () => void; silencioso?: boolean };
 // Ritmo (pedido de Mateo, 15 de octubre): Brisa escribe un mensaje a la vez, con una pausa en la que se ve
@@ -23,7 +29,7 @@ const pausaPara = (m: { contenido: ReactNode; nota?: boolean }) =>
   m.nota ? 250 : Math.min(1500, 500 + (typeof m.contenido === 'string' ? m.contenido.length : 80) * 10);
 const esperar = (ms: number) => new Promise(r => setTimeout(r, ms));
 type Borrador = { titulo: string; tipo: Tipo; dia?: Date; hora?: string; lugar?: string; semanal: boolean };
-type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'perfil-gustos' | 'perfil-comparte' | 'perfil-aprender' | 'perfil-frase';
+type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla';
 
 const RIESGO = /(suicid|matarme|quitarme la vida|no quiero vivir|me quiero morir|hacerme daño|no aguanto más)/i;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -127,6 +133,31 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   const siguiente = useRef(0);
   const final = useRef<HTMLDivElement>(null);
   const iniciado = useRef(false);
+  // Conversación de cada día: qué preguntas ya hizo (según lo guardado), cuál espera respuesta y, al conocerte, la fila
+  // de preguntas para la tarjeta.
+  const [previos, setPrevios] = useState<Previo[]>([]);
+  const hechas = useRef<Set<string>>(new Set());
+  const preguntasHoy = useRef(0);
+  const preguntaActual = useRef<Pregunta | null>(null);
+  const secuencia = useRef<Pregunta[]>([]);
+  const conociendote = useRef(false);
+  const tarjetaVisible = useRef(false);
+
+  // Lo que se dice en texto se guarda (cifrado, 90 días) en lotes pequeños; las tarjetas y los planes no.
+  const porGuardar = useRef<Previo[]>([]);
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const guardarAhora = useCallback(() => {
+    if (temporizador.current) { clearTimeout(temporizador.current); temporizador.current = null; }
+    const lote = porGuardar.current.splice(0, 20);
+    if (lote.length) void api.guardarHistorial?.(lote);
+    if (porGuardar.current.length) guardarAhora();
+  }, [api]);
+  const registrar = useCallback((de: Previo['de'], contenido: ReactNode) => {
+    if (typeof contenido !== 'string') return;
+    porGuardar.current.push({ de, texto: contenido });
+    if (!temporizador.current) temporizador.current = setTimeout(guardarAhora, 800);
+  }, [guardarAhora]);
+  useEffect(() => () => guardarAhora(), [guardarAhora]);
 
   // Los mensajes de Brisa entran en fila: uno a la vez, con su pausa. Las opciones esperan a que termine.
   const procesar = useCallback(async () => {
@@ -140,13 +171,14 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
         if (!vivo.current) return;
         setEscribiendo(false);
         setMensajes(ms => [...ms, m]);
+        registrar('brisa', m.contenido);
         await esperar(150);
       }
     } finally { procesando.current = false; }
     if (opcionesPendientes.current && vivo.current) { setOpcionesVisibles(opcionesPendientes.current); opcionesPendientes.current = null; }
-  }, []);
+  }, [registrar]);
   const encolar = useCallback((nuevos: Mensaje[]) => {
-    if (!CON_PAUSAS) { setMensajes(m => [...m, ...nuevos]); return; }
+    if (!CON_PAUSAS) { setMensajes(m => [...m, ...nuevos]); nuevos.forEach(m => registrar('brisa', m.contenido)); return; }
     cola.current.push(...nuevos);
     void procesar();
   }, [procesar]);
@@ -164,7 +196,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   const decir = useCallback((...contenidos: ReactNode[]) => encolar(contenidos.map(c => ({ id: siguiente.current++, de: 'brisa' as const, contenido: c }))), [encolar]);
   const nota = useCallback((c: ReactNode) => encolar([{ id: siguiente.current++, de: 'brisa', contenido: c, nota: true }]), [encolar]);
   const hablo = useRef(false); // si la persona ya tomó la palabra, el saludo no la interrumpe con más cartas
-  const yo = useCallback((t: string) => { hablo.current = true; setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]); }, []);
+  const yo = useCallback((t: string) => { hablo.current = true; setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]); registrar('yo', t); }, [registrar]);
   useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes]);
 
   // ---- Menú principal ----
@@ -181,6 +213,63 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const volver = (pregunta = '¿Qué más te provoca?') => { paso.current = 'libre'; decir(pregunta); setOpciones(menu()); };
   const elegir = (o: Opcion) => { if (!o.silencioso) yo(o.texto); setOpciones([]); o.hacer(); };
+  // Sin botones de por medio: la conversación sigue escribiendo. Las opciones quedan a un toque, por si se necesitan.
+  const verOpciones: Opcion = { texto: 'Ver qué puedo hacer', silencioso: true, hacer: () => { paso.current = 'libre'; preguntaActual.current = null; decir('Esto es lo que podemos hacer juntas:'); setOpciones(menu()); } };
+
+  // ---- Conversar: una o dos preguntas directas por día ----
+  // `antes`: lo que Brisa dice primero (por ejemplo, «Listo, ya está en tu tarjeta»). Después, la pregunta del día si
+  // queda alguna; si no, deja la conversación abierta.
+  function conversar(antes?: string) {
+    if (antes) decir(antes);
+    const p = preguntasHoy.current < MAX_PREGUNTAS_DIA ? preguntaDelDia(hechas.current, new Date(), preguntasHoy.current) : null;
+    if (p) { preguntasHoy.current++; preguntar(p); return; }
+    paso.current = 'libre';
+    if (!antes) decir('Aquí sigo. Cuéntame lo que quieras, o pregúntame cualquier duda sobre MOAI.');
+    setOpciones([verOpciones]);
+  }
+  function preguntar(p: Pregunta) {
+    hechas.current.add(p.clave);
+    preguntaActual.current = p;
+    paso.current = 'charla';
+    decir(p.texto);
+    setOpciones([{ ...verOpciones, texto: 'Mejor otra cosa' }]);
+  }
+  // Lo que la persona cuenta y puede ir a su tarjeta. Devuelve si hubo algo nuevo.
+  function anotar(p: Pregunta, t: string): boolean {
+    const b = borradorPerfil.current;
+    if (p.tarjeta === 'gustos') { const nuevos = gustosEn(t).filter(g => !b.gustos.includes(g)); b.gustos = [...b.gustos, ...nuevos]; return nuevos.length > 0; }
+    if (p.tarjeta === 'comparte') { b.comparte = t.slice(0, 80); return true; }
+    if (p.tarjeta === 'aprender') { b.aprender = t.slice(0, 80); return true; }
+    if (p.tarjeta === 'frase') { b.frase = t.replace(/^[«"]|[»"]$/g, '').slice(0, 140); return true; }
+    return false;
+  }
+  function responder(t: string) {
+    const p = preguntaActual.current;
+    preguntaActual.current = null;
+    paso.current = 'libre';
+    if (conociendote.current) { // «Cuéntame de ti»: las preguntas de la tarjeta seguidas, y al final la tarjeta
+      if (p) anotar(p, t);
+      decir(reaccionar(p, t));
+      const otra = secuencia.current.shift();
+      if (otra) preguntar(otra); else { conociendote.current = false; mostrarPerfil(); }
+      return;
+    }
+    decir(reaccionar(p, t));
+    if (p && anotar(p, t)) {
+      decir('¿Lo sumo a tu tarjeta para los vecinos? Solo la ven si tú lo apruebas.');
+      setOpciones([
+        { texto: 'Sí, súmalo', hacer: () => void api.guardarPerfilPublico({ ...borradorPerfil.current, visible: tarjetaVisible.current }).then(r => {
+          if (!r.ok) { decir(r.error); conversar(); return; }
+          if (tarjetaVisible.current) { conversar('Listo, ya está en tu tarjeta.'); return; }
+          decir('Listo, lo guardé. Tu tarjeta todavía no se muestra a nadie.');
+          setOpciones([{ texto: 'Ver mi tarjeta', hacer: () => mostrarPerfil() }, { texto: 'Seguir conversando', silencioso: true, hacer: () => conversar() }]);
+        }) },
+        { texto: 'No, era solo para ti', hacer: () => conversar('Entendido, queda entre nosotras.') },
+      ]);
+      return;
+    }
+    conversar();
+  }
 
   function conocer() {
     decir('Aquí la gente se conoce haciendo cosas sencillas juntas: una caminata, un tinto, una partida en el parque.',
@@ -300,34 +389,15 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   }
 
   // ---- Cuéntame de ti: la tarjeta que verán tus vecinos (solo si la apruebas) ----
+  // Directo, sin opciones para elegir (pedido de Mateo): cuatro preguntas seguidas y, al final, la tarjeta.
   async function iniciarPerfil() {
     const r = await api.perfilPublico();
-    borradorPerfil.current = { ...(r.ok ? r.datos : borradorPerfil.current), gustos: [] };
-    decir('Me encantaría conocerte un poco más. Con lo que me cuentes armo una tarjeta para tus vecinos, sin foto ni ubicación, y solo la muestro si tú quieres.',
-      '¿Qué te gusta hacer? Elige todo lo que quieras.');
-    preguntarGustos();
-  }
-  function preguntarGustos() {
-    paso.current = 'perfil-gustos';
-    const elegidos = borradorPerfil.current.gustos;
-    setOpciones(pocas(
-      plantillas.filter(p => !elegidos.includes(p.tipo)).map(p => ({ texto: p.nombre, hacer: () => { borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, p.tipo]; preguntarGustos(); } })),
-      3, 'Ver más', [{ texto: elegidos.length ? 'Eso es todo' : 'Prefiero no decir', hacer: () => preguntarComparte() }]));
-  }
-  function preguntarComparte() {
-    paso.current = 'perfil-comparte';
-    decir('¿Hay algo que sepas hacer y te guste compartir o enseñar? Cocinar, arreglar cosas, contar historias… Escríbemelo.');
-    setOpciones([{ texto: 'Por ahora nada', hacer: () => preguntarAprender() }]);
-  }
-  function preguntarAprender() {
-    paso.current = 'perfil-aprender';
-    decir('¿Y algo que te gustaría aprender?');
-    setOpciones([{ texto: 'Por ahora nada', hacer: () => preguntarFrase() }]);
-  }
-  function preguntarFrase() {
-    paso.current = 'perfil-frase';
-    decir('Última: si tus vecinos te conocieran por una frase, ¿cuál sería? Por ejemplo, «Me gusta madrugar a regar mis matas».');
-    setOpciones([{ texto: 'Prefiero no escribirla', hacer: () => mostrarPerfil() }]);
+    if (r.ok) { borradorPerfil.current = { ...r.datos, gustos: [] }; tarjetaVisible.current = r.datos.visible; }
+    conociendote.current = true;
+    secuencia.current = ['domingo', 'sabes', 'aprender', 'frase'].map(c => PREGUNTAS.find(p => p.clave === c)!);
+    decir('Cuéntame de ti.');
+    preguntar(secuencia.current.shift()!);
+    setOpciones([{ texto: 'Mejor después', silencioso: true, hacer: () => { conociendote.current = false; secuencia.current = []; verOpciones.hacer(); } }]);
   }
   function mostrarPerfil() {
     paso.current = 'libre';
@@ -421,29 +491,41 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       case 'plan-dia': { const dia = entenderDia(t, new Date()); if (dia && b) { b.dia = dia; preguntarHora(); } else { decir('No te entendí el día. Dime, por ejemplo, «mañana» o «el sábado».'); preguntarDia(); } return; }
       case 'plan-hora': { const hora = entenderHora(t); if (hora && b) { b.hora = hora; preguntarLugar(); } else { decir('No te entendí la hora. Dime, por ejemplo, «7 am» o «4:30 pm».'); preguntarHora(); } return; }
       case 'plan-donde': if (b && t.length >= 3) { b.lugar = t.slice(0, 80); mostrarBorrador(); } else preguntarLugar(); return;
-      case 'perfil-gustos': {
-        const tipo = entenderPlan(t).tipo;
-        if (tipo !== 'otro' && !borradorPerfil.current.gustos.includes(tipo)) borradorPerfil.current.gustos = [...borradorPerfil.current.gustos, tipo];
-        preguntarGustos(); return;
-      }
-      case 'perfil-comparte': borradorPerfil.current.comparte = t.slice(0, 80); preguntarAprender(); return;
-      case 'perfil-aprender': borradorPerfil.current.aprender = t.slice(0, 80); preguntarFrase(); return;
-      case 'perfil-frase': borradorPerfil.current.frase = t.replace(/^[«"]|[»"]$/g, '').slice(0, 140); mostrarPerfil(); return;
+      case 'charla': if (!esDuda(t) || !responderDuda(t)) { responder(t); return; } break; // si responde con una duda, primero la duda
+    }
+    // Dudas sobre la plataforma: respuestas escritas por el equipo.
+    if (esDuda(t)) {
+      const respuesta = responderDuda(t);
+      if (respuesta) { decir(...respuesta); setOpciones([verOpciones]); return; }
     }
     const plano = sinTildes(t);
     if (/vecin|conocer gente|amig/.test(plano)) { conocer(); return; }
     if (/que pasa|planes|cerca|hay algo/.test(plano)) { void cerca(); return; }
     if (/sol[ao]\b|triste|invierno|desanimad/.test(plano)) { void comoEstoy(); return; }
     if (/cuid|cansad|agotad|nutre|limite/.test(plano)) { void cuidarme(); return; }
-    if (/quiero|ganas|voy a|me gustaria/.test(plano) || PALABRAS.some(([re]) => re.test(plano))) { iniciarPlan(entenderPlan(t)); return; }
-    decir('Todavía estoy aprendiendo a conversar, así que no siempre entiendo todo. Por ahora te puedo ayudar con esto:');
-    setOpciones(menu());
+    if (/quiero|ganas|voy a|me gustaria/.test(plano)) { iniciarPlan(entenderPlan(t)); return; }
+    if (esDuda(t)) { decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.'); setOpciones([verOpciones]); return; }
+    // Lo demás es conversación: Brisa reacciona a lo que le cuentan y sigue.
+    conversar(reaccionar(null, t));
   }
 
   // ---- Saludo ----
   useEffect(() => {
     if (iniciado.current) return;
     iniciado.current = true;
+    // Primero, lo que ya hablaron (para retomar y no repetir preguntas) y la tarjeta (para sumarle lo que cuente).
+    void Promise.all([api.historial?.() ?? Promise.resolve(null), api.perfilPublico?.() ?? Promise.resolve(null)]).then(([h, t]) => {
+      const lineas = h?.ok ? h.datos : [];
+      setPrevios(lineas.map(l => ({ de: l.de, texto: l.texto })));
+      hechas.current = preguntasHechas(lineas.filter(l => l.de === 'brisa').map(l => l.texto));
+      const hoy = new Date().toDateString();
+      preguntasHoy.current = PREGUNTAS.filter(p => lineas.some(l => l.de === 'brisa' && l.texto === p.texto && new Date(l.fecha).toDateString() === hoy)).length;
+      if (t?.ok) { borradorPerfil.current = { ...t.datos }; tarjetaVisible.current = t.datos.visible; }
+      saludar();
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function saludar() {
     // La primera vez se presenta; después, un saludo corto. Una cosa a la vez: primero lo pendiente, después la pregunta.
     if (primeraVez) {
       decir('Soy Brisa, tu compañera en MOAI.');
@@ -464,22 +546,20 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       const cartas = r.ok ? r.datos : [];
       const mostrar = (i: number) => {
         if (hablo.current) return;
-        if (i >= cartas.length) {
-          decir(i ? '¿Qué más te provoca?' : primeraVez ? '¿Por dónde quieres empezar?' : '¿Qué te provoca hoy?');
-          setOpciones(menu());
-          return;
-        }
+        if (i >= cartas.length) { conversar(primeraVez ? 'Me gustaría conocerte un poco.' : undefined); return; }
         decir(i ? 'Y otra cosa:' : 'Antes, algo que quería contarte:',
           <CartaEnChat key={cartas[i].clave} carta={cartas[i]} api={api} ir={ir} alTerminar={() => mostrar(i + 1)} alCuidado={() => setEscena(true)}/>);
       };
       mostrar(0);
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
   return <div className="brisa-chat">
     <div className="brisa-quien"><OrbeBrisa/><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span>
 </div>
     <div className="brisa-mensajes" aria-live="polite">
+      {previos.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
+      {previos.length > 0 && <p className="brisa-separador" role="separator">Hoy</p>}
       {mensajes.map(m => <div key={m.id} className={`burbuja de-${m.de}${m.nota ? ' nota' : ''}`}>{m.contenido}</div>)}
       {escribiendo && <div className="burbuja de-brisa escribiendo" role="status" aria-label="Brisa está escribiendo"><span/><span/><span/></div>}
       <div ref={final}/>
@@ -490,6 +570,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     <form className="mensaje-form brisa-escribir" onSubmit={enviar}>
       <label htmlFor="a-brisa" className="solo-lectores">Escríbele a Brisa</label>
       <input id="a-brisa" className="cuenta-campo" maxLength={300} placeholder="Escríbele a Brisa" value={texto} onChange={e => setTexto(e.target.value)} autoComplete="off"/>
+      <Dictado alTexto={setTexto}/>
       <Button type="submit" className="diario-boton principal">Enviar</Button>
     </form>
     {escena && <EscenaCuidado onTerminar={alTerminarEscena}/>}
@@ -524,4 +605,34 @@ function TarjetaPerfil({ nombre, perfil }: { nombre: string; perfil: EntradaPerf
     {perfil.comparte && <span>Comparte: {perfil.comparte}</span>}
     {perfil.aprender && <span>Quiere aprender: {perfil.aprender}</span>}
   </div>;
+}
+
+// Dictado (decisión de Mateo, 19 de octubre): la voz pasa a texto con el reconocimiento del navegador y queda en la caja
+// para revisarla antes de enviar. MOAI nunca recibe ni guarda el audio; el navegador sí lo envía a su servicio de
+// dictado (en Chrome, Google), y eso se avisa mientras se escucha. Si el navegador no lo tiene, no aparece el botón.
+type Reconocedor = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
+const ReconocedorDeVoz = (globalThis as unknown as { SpeechRecognition?: new () => Reconocedor; webkitSpeechRecognition?: new () => Reconocedor }).SpeechRecognition
+  ?? (globalThis as unknown as { webkitSpeechRecognition?: new () => Reconocedor }).webkitSpeechRecognition;
+
+function Dictado({ alTexto }: { alTexto: (t: string) => void }) {
+  const [escuchando, setEscuchando] = useState(false);
+  const reconocedor = useRef<Reconocedor | null>(null);
+  useEffect(() => () => reconocedor.current?.stop(), []);
+  if (!ReconocedorDeVoz) return null;
+  const alternar = () => {
+    if (escuchando) { reconocedor.current?.stop(); return; }
+    const r = new ReconocedorDeVoz();
+    r.lang = 'es-CO'; r.interimResults = true; r.continuous = false;
+    r.onresult = e => alTexto(Array.from(e.results).map(x => x[0].transcript).join(' ').slice(0, 300));
+    r.onend = () => setEscuchando(false);
+    r.onerror = () => setEscuchando(false);
+    reconocedor.current = r;
+    r.start();
+    setEscuchando(true);
+  };
+  return <>
+    <button type="button" className={`dictado${escuchando ? ' escuchando' : ''}`} aria-pressed={escuchando} aria-label={escuchando ? 'Dejar de escuchar' : 'Dictar con la voz'} onClick={alternar}><Mic aria-hidden="true"/></button>
+    {escuchando && <p className="dictado-aviso" role="status">Te escucho. Tu navegador pasa tu voz a texto con su servicio de dictado; MOAI no guarda el audio. Revisa el texto y envíalo.</p>}
+  </>;
 }

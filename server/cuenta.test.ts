@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { abrirDb, type Db } from './db';
 import { crearApp, COOKIE_SESION } from './app';
 import type { Propio } from './envios';
+import { borrarHistorialViejo } from './historial';
 
 let db: Db;
 let app: Awaited<ReturnType<typeof crearApp>>;
@@ -13,7 +14,7 @@ const correo: Propio = { tipo: 'propio', async enviar(destino, codigo) { codigos
 beforeAll(async () => { db = await abrirDb(); }, 60_000);
 afterAll(async () => { await db.close(); });
 beforeEach(async () => {
-  await db.query('truncate cuentas, verificaciones, moais, inviernos_contados restart identity cascade');
+  await db.query('truncate cuentas, verificaciones, moais, inviernos_contados, brisa_mensajes restart identity cascade');
   codigos = {};
   app = await crearApp({ db, vias: { correo }, secreto: 'prueba', ahora: () => new Date('2026-10-16T12:00:00Z') });
 });
@@ -24,7 +25,7 @@ async function persona(nombre: string) {
   await app.inject({ method: 'POST', url: '/api/registro', payload: { nombre, canal: 'correo', destino, aceptaTerminos: true, aceptaDatos: true } });
   const r = await app.inject({ method: 'POST', url: '/api/verificar', payload: { canal: 'correo', destino, codigo: codigos[destino] } });
   const cookie = `${COOKIE_SESION}=${r.cookies.find(x => x.name === COOKIE_SESION)!.value}`;
-  const pedir = (method: 'GET' | 'POST', url: string, payload?: object) => app.inject({ method, url, payload, headers: { cookie } });
+  const pedir = (method: 'GET' | 'POST' | 'DELETE', url: string, payload?: object) => app.inject({ method, url, payload, headers: { cookie } });
   await pedir('POST', '/api/perfil/nacimiento', { fechaNacimiento: '1960-05-02' });
   await pedir('POST', '/api/lugares', { nombre: 'Casa', ciudad: '05001' });
   const [{ id }] = await db.query<{ id: string }>('select id from cuentas where destino = $1', [destino]);
@@ -81,5 +82,29 @@ describe('Borrar mi cuenta', () => {
     expect((await db.query<{ total: number }>('select count(*)::int as total from moai_miembros where moai_id = $1', [solo.id]))[0].total).toBe(1);
     expect((await rosa.pedir('GET', '/api/cuenta/datos')).statusCode).toBe(401);
     void luis;
+  });
+});
+
+describe('Conversación con Brisa', () => {
+  it('se guarda cifrada, solo la ve su dueña, sale en la descarga y se puede borrar', async () => {
+    const rosa = await persona('Rosa'), luis = await persona('Luis');
+    expect((await rosa.pedir('POST', '/api/brisa/historial', { mensajes: [{ de: 'brisa', texto: '¿Qué haces un domingo?' }, { de: 'yo', texto: 'Voy a misa con mis nietos' }] })).statusCode).toBe(200);
+    expect((await rosa.pedir('GET', '/api/brisa/historial')).json().map((l: { texto: string }) => l.texto)).toEqual(['¿Qué haces un domingo?', 'Voy a misa con mis nietos']);
+    expect(JSON.stringify(await db.query('select texto from brisa_mensajes'))).not.toContain('nietos'); // cifrada en la base
+    expect((await luis.pedir('GET', '/api/brisa/historial')).json()).toEqual([]);
+    expect((await rosa.pedir('GET', '/api/cuenta/datos')).json().conversacionConBrisa).toHaveLength(2);
+    await rosa.pedir('POST', '/api/brisa/historial', { mensajes: [{ de: 'otra', texto: 'x' }, { de: 'yo', texto: '' }] }); // lo inválido no entra
+    expect(await db.query('select 1 from brisa_mensajes')).toHaveLength(2);
+    expect((await rosa.pedir('DELETE', '/api/brisa/historial')).statusCode).toBe(200);
+    expect(await db.query('select 1 from brisa_mensajes')).toEqual([]);
+  });
+
+  it('se borra a los 90 días', async () => {
+    const rosa = await persona('Rosa');
+    await rosa.pedir('POST', '/api/brisa/historial', { mensajes: [{ de: 'yo', texto: 'Hola' }] });
+    await borrarHistorialViejo(db, new Date('2027-01-10T12:00:00Z')); // 86 días después
+    expect(await db.query('select 1 from brisa_mensajes')).toHaveLength(1);
+    await borrarHistorialViejo(db, new Date('2027-01-20T12:00:00Z')); // 96 días después
+    expect(await db.query('select 1 from brisa_mensajes')).toEqual([]);
   });
 });

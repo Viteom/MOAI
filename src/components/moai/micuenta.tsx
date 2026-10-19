@@ -10,6 +10,7 @@ export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perf
   const [entiendo, setEntiendo] = useState(false);
   const [borrando, setBorrando] = useState(false);
   const [error, setError] = useState('');
+  const [conversacion, setConversacion] = useState('');
 
   async function descargar() {
     setDescarga('Preparando tu archivo…');
@@ -34,9 +35,16 @@ export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perf
   return <Diario titulo="Mi cuenta" bajada={`${perfil.nombre}. Tus datos son tuyos: puedes llevártelos o borrarlos cuando quieras.`} ir={ir} onSalir={onSalir}>
     <section aria-labelledby="datos-titulo" className="cuenta-seccion">
       <h2 id="datos-titulo">Descargar mis datos</h2>
-      <p>Un archivo con todo lo que MOAI tiene de ti: tu cuenta, tus autorizaciones, lugares, planes, mensajes, Moais, tu tarjeta, tu Moai interno y el resultado del test, si lo guardaste. De otras personas solo aparece su primer nombre.</p>
+      <p>Un archivo con todo lo que MOAI tiene de ti: tu cuenta, tus autorizaciones, lugares, planes, mensajes, Moais, tu tarjeta, tu Moai interno, tu conversación con Brisa y el resultado del test, si lo guardaste. De otras personas solo aparece su primer nombre.</p>
       <Button className="diario-boton principal" onClick={() => void descargar()}>Descargar mis datos</Button>
       {descarga && <p className="campo-ayuda" role="status">{descarga}</p>}
+    </section>
+
+    <section aria-labelledby="conversacion-titulo" className="cuenta-seccion">
+      <h2 id="conversacion-titulo">Mi conversación con Brisa</h2>
+      <p>Brisa guarda lo que hablan, cifrado y solo para ti, durante 90 días, para retomar la conversación. Puedes borrarla cuando quieras.</p>
+      <Button className="diario-boton" onClick={() => void api.borrarHistorial().then(r => setConversacion(r.ok ? 'Listo, borré nuestra conversación.' : r.error))}>Borrar mi conversación</Button>
+      {conversacion && <p className="campo-ayuda" role="status">{conversacion}</p>}
     </section>
 
     <section aria-labelledby="borrar-titulo" className="cuenta-seccion zona-borrar">
@@ -44,7 +52,7 @@ export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perf
       <p>Se borra todo de inmediato y no se puede deshacer:</p>
       <ul>
         <li>Tu cuenta, tus lugares, tus planes y tus mensajes en planes y Moais.</li>
-        <li>Tu tarjeta, tu Moai interno, el test de cuidado y tu invierno.</li>
+        <li>Tu tarjeta, tu Moai interno, el test de cuidado, tu invierno y tu conversación con Brisa.</li>
         <li>Tus reportes y bloqueos. Los Moais siguen para quienes quedan, sin ti.</li>
       </ul>
       <p className="campo-ayuda">Si quieres, descarga tus datos antes. Siempre puedes volver a crear una cuenta.</p>

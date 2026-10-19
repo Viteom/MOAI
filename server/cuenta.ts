@@ -9,6 +9,7 @@ import type { Db } from './db';
 import type { Cifrador } from './cifrado';
 import { cuidadoDe, internoDe } from './cuidado';
 import { enInvierno, olvidarInviernoCompleto } from './cercania';
+import { historialDe } from './historial';
 
 const fechaISO = (f: string | Date | null) => (f ? new Date(f).toISOString() : null);
 
@@ -41,6 +42,7 @@ export async function datosDe(db: Db, cifrador: Cifrador, cuenta: string, ahora:
     estado: { invierno: await enInvierno(db, cifrador, cuenta), puertaAbiertaHasta: fechaISO(estado?.puerta_hasta ?? null) },
     testDeCuidado: cuidado.letras ? { resultado: cuidado.letras, guardado: cuidado.guardado, fecha: cuidado.fecha ?? null } : null,
     moaiInterno: (await internoDe(db, cifrador, cuenta, ahora)).map(p => ({ nombre: p.nombre, relacion: p.relacion, familia: p.familia })),
+    conversacionConBrisa: await historialDe(db, cifrador, cuenta, ahora, 100_000), // los últimos DIAS_HISTORIAL (90) días
   };
 }
 
