@@ -6,7 +6,7 @@
 // Regla 12: el sello «IA» va siempre junto a su nombre, y la primera vez dice que no es una persona.
 // Regla 11: ante señales de riesgo, deriva a una persona y a la línea de emergencias.
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Mic } from 'lucide-react';
+import { Mic, SendHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
@@ -114,7 +114,7 @@ function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
 }
 
 // La conversación con Brisa, sin marco: va en el panel de vidrio del inicio y en el del mapa.
-export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado' }) {
+export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado'; titulo?: ReactNode }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [opciones, setOpcionesVisibles] = useState<Opcion[]>([]);
@@ -555,8 +555,8 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   }
 
   return <div className="brisa-chat">
-    <div className="brisa-quien"><OrbeBrisa/><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span>
-</div>
+    <div className="brisa-quien"><OrbeBrisa/><p><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p></div>
+    {titulo}
     <div className="brisa-mensajes" aria-live="polite">
       {previos.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
       {previos.length > 0 && <p className="brisa-separador" role="separator">Hoy</p>}
@@ -571,7 +571,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       <label htmlFor="a-brisa" className="solo-lectores">Escríbele a Brisa</label>
       <input id="a-brisa" className="cuenta-campo" maxLength={300} placeholder="Escríbele a Brisa" value={texto} onChange={e => setTexto(e.target.value)} autoComplete="off"/>
       <Dictado alTexto={setTexto}/>
-      <Button type="submit" className="diario-boton principal">Enviar</Button>
+      <button type="submit" className="boton-enviar" aria-label="Enviar"><SendHorizontal aria-hidden="true"/></button>
     </form>
     {escena && <EscenaCuidado onTerminar={alTerminarEscena}/>}
     </div>;
@@ -580,11 +580,14 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
 // Inicio: la ciudad ilustrada de fondo y Brisa en un panel de vidrio al lado (referente de Mateo, 15 de octubre).
 export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
   return <div className="inicio-ciudad">
-    <img className="inicio-fondo" src="/backgrounds/comunidad-ilustrada.webp" alt="" aria-hidden="true"/>
+    <picture className="inicio-fondo" aria-hidden="true">
+      <source type="image/avif" srcSet="/backgrounds/internas/barrio-1100.avif 1100w, /backgrounds/internas/barrio-1586.avif 1586w" sizes="100vw"/>
+      <img src="/backgrounds/internas/barrio-1586.webp" srcSet="/backgrounds/internas/barrio-1100.webp 1100w, /backgrounds/internas/barrio-1586.webp 1586w" sizes="100vw" alt="" fetchPriority="high" decoding="async"
+        onError={e => { e.currentTarget.style.display = 'none'; }}/>
+    </picture>
     <Barra ir={ir} onSalir={onSalir} actual="brisa"/>
-    <aside className="panel-brisa vidrio" aria-labelledby="inicio-titulo">
-      <h1 id="inicio-titulo" tabIndex={-1}>Hola, {perfil.nombre.split(' ')[0]}</h1>
-      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar}/>
+    <aside className="panel-brisa" aria-labelledby="inicio-titulo">
+      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar} titulo={<h1 id="inicio-titulo" tabIndex={-1}>Hola, {perfil.nombre.split(' ')[0]}</h1>}/>
     </aside>
   </div>;
 }
@@ -615,7 +618,7 @@ type Reconocedor = { lang: string; interimResults: boolean; continuous: boolean;
 const ReconocedorDeVoz = (globalThis as unknown as { SpeechRecognition?: new () => Reconocedor; webkitSpeechRecognition?: new () => Reconocedor }).SpeechRecognition
   ?? (globalThis as unknown as { webkitSpeechRecognition?: new () => Reconocedor }).webkitSpeechRecognition;
 
-function Dictado({ alTexto }: { alTexto: (t: string) => void }) {
+export function Dictado({ alTexto }: { alTexto: (t: string) => void }) {
   const [escuchando, setEscuchando] = useState(false);
   const reconocedor = useRef<Reconocedor | null>(null);
   useEffect(() => () => reconocedor.current?.stop(), []);

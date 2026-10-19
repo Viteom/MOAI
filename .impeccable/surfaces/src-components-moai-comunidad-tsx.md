@@ -5,6 +5,8 @@ primary_target: "src/components/moai/comunidad.tsx"
 related_targets: ["src/components/moai/barrio.tsx"]
 ---
 
+> Reemplazado el 19 de octubre de 2026 por el escenario ilustrado (ver DESIGN.md, «Internas»). Se conserva como historia.
+
 # Mi barrio
 
 Scope: la pantalla Mi barrio (`/comunidad`, pestañas Planes y Vecinos). Mode: Operate. Build: code-led (superficie de trabajo; sin generación de imágenes).

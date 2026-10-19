@@ -93,6 +93,7 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     enviarMensajeMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
     bloquear: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
     reportar: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    reportarPlan: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
   };
 }
 
@@ -150,6 +151,8 @@ describe('Resolución de sesión (P00)', () => {
     clic('Más');
     clic('Mi cuenta');
     await titulo('Mi cuenta');
+    // Lo destructivo va aparte: primero se abre y después se confirma.
+    clic('Eliminar mi cuenta');
     expect(screen.getByRole('button', { name: 'Borrar mi cuenta' })).toBeDisabled();
     fireEvent.click(screen.getByLabelText('Entiendo que no se puede deshacer'));
     clic('Borrar mi cuenta');

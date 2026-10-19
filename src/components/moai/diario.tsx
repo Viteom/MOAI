@@ -2,6 +2,7 @@
 // (Brisa, Mi barrio, Mi gente) y «Más». Arriba en el escritorio y abajo en el teléfono; la misma en todas las pantallas.
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, Map as Mapa, Menu, MessageCircle, Users } from 'lucide-react';
+import { Cabecera, type NombreImagen } from './interna';
 
 export type Ir = (ruta: string) => void;
 export type Lugar = 'brisa' | 'barrio' | 'gente';
@@ -54,14 +55,16 @@ export function MenuMas({ ir, onSalir }: { ir: Ir; onSalir: () => void }) {
   </div>;
 }
 
-// Pantallas de lectura (un plan, un Moai, Mis lugares, Avisos…): la barra, un «volver» claro y el contenido.
-export function Diario({ titulo, bajada, ir, actual, volver, onSalir, children }: { titulo: string; bajada?: ReactNode; ir: Ir; actual?: Lugar; volver?: { texto: string; ruta: string }; onSalir: () => void; children: ReactNode }) {
-  return <div className="diario">
+// Pantallas internas (un plan, un Moai, Mis lugares, Mi cuenta…): la barra, una cabecera con imagen y su «volver»,
+// y el contenido en paneles. Sin `imagen`, una cabecera sencilla (Avisos, Equipo).
+export function Diario({ titulo, bajada, ir, actual, volver, imagen, onSalir, children }: { titulo: string; bajada?: ReactNode; ir: Ir; actual?: Lugar; volver?: { texto: string; ruta: string }; imagen?: NombreImagen; onSalir: () => void; children: ReactNode }) {
+  return <div className="diario interna">
     <Barra ir={ir} onSalir={onSalir} actual={actual}/>
-    <main className="diario-contenido">
-      {volver && <button type="button" className="diario-volver" onClick={() => ir(volver.ruta)}><ArrowLeft aria-hidden="true"/>{volver.texto}</button>}
-      <h1 tabIndex={-1}>{titulo}</h1>
-      {bajada && <p className="diario-bajada">{bajada}</p>}
+    {imagen ? <Cabecera imagen={imagen} titulo={titulo} bajada={bajada} volver={volver} ir={ir}/> : null}
+    <main className={`diario-contenido interna-contenido${imagen ? ' con-cabecera' : ''}`}>
+      {!imagen && volver && <button type="button" className="diario-volver" onClick={() => ir(volver.ruta)}><ArrowLeft aria-hidden="true"/>{volver.texto}</button>}
+      {!imagen && <h1 tabIndex={-1}>{titulo}</h1>}
+      {!imagen && bajada && <p className="diario-bajada">{bajada}</p>}
       {children}
     </main>
   </div>;

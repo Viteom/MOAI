@@ -1,0 +1,63 @@
+// Mi barrio: el escenario ilustrado con sus luces (rediseño de Mateo, 19 de octubre de 2026).
+// - El fondo es una ilustración estática: no representa calles ni edificios reales, y la pantalla lo dice.
+// - Cada luz es un plan, nunca una persona ni un domicilio. Su posición sale de la celda del plan respecto a tu zona,
+//   repartida dentro de una zona segura de la ilustración: indica cerca o lejos, no el lugar exacto.
+// - Las luces viven dentro del mismo lienzo que la imagen, así que quedan ancladas a ella en cualquier tamaño.
+// - Como mucho dos burbujas de invitación a la vez; al elegir un plan desaparecen y se abre su tarjeta.
+import { useMemo, useState } from 'react';
+import type { Mapa, Plan } from '@/lib/api';
+import { nombreTipoOrganizacion } from '@/lib/organizaciones';
+import type { NombreImagen } from './interna';
+
+// Quién está detrás de un plan: una persona o, en las convocatorias, una entidad verificada por el equipo.
+export const quienPropone = (plan: Plan) => plan.organizacion
+  ? (plan.mio ? `Lo publicaste a nombre de ${plan.organizacion.nombre}` : `Convoca ${plan.organizacion.nombre} · ${nombreTipoOrganizacion(plan.organizacion.tipo)}`)
+  : plan.mio ? 'Lo propusiste tú' : `Lo propone ${plan.autor}`;
+
+const capital = (t: string) => t.charAt(0).toLocaleUpperCase('es') + t.slice(1);
+export const cuandoCorto = (plan: Plan) => {
+  const fecha = new Date(plan.cuando);
+  const hora = new Intl.DateTimeFormat('es-CO', { hour: 'numeric', minute: '2-digit' }).format(fecha);
+  const horaJunta = hora.replace(/\s/g, ' '); // «8:00 a. m.» no se parte entre renglones
+  if (plan.repite) return `Todos los ${plan.diaRepite} · ${horaJunta}`;
+  return capital(`${new Intl.DateTimeFormat('es-CO', { weekday: 'long' }).format(fecha)} · ${horaJunta}`);
+};
+
+export const claseDePlan = (plan: Plan) => plan.voy || plan.mio ? 'es-mio' : plan.organizacion ? 'es-convocatoria' : plan.repite ? 'es-semanal' : 'es-semana';
+// La miniatura de cada tipo de plan: un recorte de la misma ilustración (decorativo).
+export const imagenDePlan = (plan: Plan): NombreImagen => ({ caminar: 'plan', tinto: 'moai', huerta: 'gente', voluntariado: 'gente' } as Record<string, NombreImagen>)[plan.tipo] ?? 'crear';
+
+type Disponible = Extract<Mapa, { disponible: true }>;
+const IMAGEN = { ancho: 1586, alto: 992 };
+const MAX_BURBUJAS = 2;
+const posicion = (px: number, py: number) => ({ ['--px' as string]: px.toFixed(3), ['--py' as string]: py.toFixed(3) });
+
+export function EscenaBarrio({ mapa, planes, elegido, onElegir }: { mapa: Disponible; planes: Plan[]; elegido: string | null; onElegir: (id: string | null) => void }) {
+  const [fallo, setFallo] = useState(false);
+  // De metros alrededor de tu zona a 0..1 dentro de la zona segura de la ilustración (la que se ve en todo tamaño).
+  const radio = useMemo(() => Math.max(1, ...mapa.celdas.flatMap(c => c.puntos.map(([x, y]) => Math.max(Math.abs(x), Math.abs(y))))), [mapa]);
+  const luces = mapa.planes.flatMap(m => {
+    const plan = planes.find(p => p.id === m.id);
+    return plan ? [{ plan, px: 0.5 + m.x / (2 * radio), py: 0.5 + m.y / (2 * radio) }] : [];
+  });
+  const burbujas = elegido ? [] : luces.slice(0, MAX_BURBUJAS);
+
+  return <div className="escena-barrio" onClick={e => { if (e.target === e.currentTarget) onElegir(null); }}>
+    <div className="escena-lienzo" onClick={e => { if (e.target === e.currentTarget) onElegir(null); }}>
+      {!fallo && <picture>
+        <source type="image/avif" srcSet="/backgrounds/internas/barrio-1100.avif 1100w, /backgrounds/internas/barrio-1586.avif 1586w" sizes="(max-width: 899px) 1100px, 100vw"/>
+        <img className="escena-imagen" src="/backgrounds/internas/barrio-1586.webp" srcSet="/backgrounds/internas/barrio-1100.webp 1100w, /backgrounds/internas/barrio-1586.webp 1586w"
+          sizes="(max-width: 899px) 1100px, 100vw" alt="" width={IMAGEN.ancho} height={IMAGEN.alto} fetchPriority="high" decoding="async" onError={() => setFallo(true)}/>
+      </picture>}
+      {luces.map(({ plan, px, py }) => <button key={plan.id} type="button" className={`luz ${claseDePlan(plan)}${elegido === plan.id ? ' elegida' : ''}`}
+        style={posicion(px, py)} aria-pressed={elegido === plan.id}
+        aria-label={`${plan.titulo}. ${cuandoCorto(plan)}. ${quienPropone(plan)}`} onClick={() => onElegir(elegido === plan.id ? null : plan.id)}>
+        <span aria-hidden="true"/>
+      </button>)}
+      {burbujas.map(({ plan, px, py }) => <span key={`b${plan.id}`} aria-hidden="true"
+        className={`burbuja-invitacion ${claseDePlan(plan)}${py < 0.45 ? ' abajo' : ''}`} style={posicion(px, py)}>
+        <strong>{plan.organizacion?.nombre ?? (plan.mio ? 'Tú' : plan.autor)}</strong>{plan.titulo}
+      </span>)}
+    </div>
+  </div>;
+}

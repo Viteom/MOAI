@@ -4,17 +4,16 @@
 // Nunca se inventan planes, personas ni distancias; nada de contadores (regla 5).
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { alcances, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
-import type { Api, Carta, Lugar, Mapa, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
-import { ChevronDown, Pencil, X } from 'lucide-react';
-import { claseDePlan, cuandoCorto, MapaTinta, quienPropone, Sello, Vineta } from './postales';
+import { alcances, costos, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type Costo, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
+import type { Api, Lugar, Mapa, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
+import { Building2, CalendarDays, ChevronDown, ChevronRight, Coffee, Coins, Flag, Footprints, HandHeart, Home, MapPin, MessagesSquare, Navigation, Plus, Puzzle, Repeat, Scissors, Search, ShoppingBag, Sparkles, Sprout, Trash2, Wallet, X } from 'lucide-react';
+import { claseDePlan, cuandoCorto, EscenaBarrio, imagenDePlan, quienPropone } from './barrio-escena';
+import { Imagen } from './interna';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, nombreTipoOrganizacion } from '@/lib/organizaciones';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
-import { OrbeBrisa } from './bosque';
-import { ConversacionBrisa } from './brisa';
 import { Barra, Diario, type Ir } from './diario';
 import { Vecinos } from './zona';
-import { ReportarPersona } from './gente';
+import { MAX_DETALLE_REPORTE, motivosReporte, type MotivoReporte } from '@/lib/moai';
 import { Conversacion } from './conversacion';
 
 const capital = (texto: string) => texto.charAt(0).toLocaleUpperCase('es') + texto.slice(1);
@@ -31,32 +30,6 @@ function AccionesPlan({ plan, onIr, onNoIr, onCancelar }: { plan: Plan; onIr: ()
   </div>;
 }
 
-function DatosPlan({ plan }: { plan: Plan }) {
-  return <>
-    <p className="plan-cuando">{cuandoPlan(plan)}</p>
-    {plan.descripcion && <p>{plan.descripcion}</p>}
-    <p className="plan-donde">{plan.lugarPublico} · {plan.zona} · {plan.franja}</p>
-    <p className={`plan-autor${plan.organizacion ? ' convoca' : ''}`}>{quienPropone(plan)}</p>
-    {plan.mio && plan.asistentes && <p className="plan-autor">{plan.asistentes.length ? `Van: ${plan.asistentes.join(', ')}` : 'Si alguien se suma, te lo contaré aquí.'}</p>}
-  </>;
-}
-
-// Lo que Brisa cuenta: «fuiste por tu cuenta» (sin culpas) o una recomendación que la persona pidió, con su motivo.
-function CartaBrisa({ carta, onListo, onRepetir, onSumarme, onGente }: { carta: Carta; onListo: () => void; onRepetir: () => void; onSumarme: () => void; onGente: () => void }) {
-  const [porque, setPorque] = useState(false);
-  const motivo = carta.tipo === 'sugerencia' || carta.tipo === 'gente' ? carta.motivo : undefined;
-  return <div className="carta-brisa" role="status">
-    <p>{carta.texto}</p>
-    {motivo && porque && <p className="carta-motivo">{motivo}</p>}
-    <div className="plan-acciones">
-      {carta.tipo === 'solo' && carta.repetir && <Button className="diario-boton principal" onClick={onRepetir}>Sí, cada semana</Button>}
-      {carta.tipo === 'sugerencia' && <Button className="diario-boton principal" onClick={onSumarme}>Me sumo</Button>}
-      {carta.tipo === 'gente' && <Button className="diario-boton principal" onClick={onGente}>Ir a Mi gente</Button>}
-      <Button className="diario-boton" onClick={onListo}>{carta.tipo === 'solo' ? (carta.repetir ? 'No, así está bien' : 'Entendido') : carta.tipo === 'gente' ? 'Ahora no' : 'No, gracias'}</Button>
-      {motivo && <button type="button" className="brisa-enlace" aria-expanded={porque} onClick={() => setPorque(p => !p)}>¿Por qué veo esto?</button>}
-    </div>
-  </div>;
-}
 
 // «Estás en: Casa · Laureles ▾»: cambiar de lugar sin salir del mapa.
 function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api; ir: Ir; onCambio: () => void }) {
@@ -78,111 +51,134 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
 }
 
 
-export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, inicial = 'planes' }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: () => void; inicial?: 'planes' | 'vecinos' }) {
+// La tarjeta de un plan elegido en el escenario: en el teléfono es una hoja inferior; en el escritorio, flota abajo.
+function TarjetaElegida({ plan, ir, acciones, onCerrar }: { plan: Plan; ir: Ir; acciones: { onIr: () => void; onNoIr: () => void; onCancelar: () => void }; onCerrar: () => void }) {
+  return <section className="tarjeta-plan hoja-plan" aria-labelledby="plan-elegido">
+    <button type="button" className="hoja-plan-cerrar" aria-label="Cerrar" onClick={onCerrar}><X aria-hidden="true"/></button>
+    <div className="tarjeta-plan-cuerpo">
+      <Imagen nombre={imagenDePlan(plan)} clase="tarjeta-plan-imagen"/>
+      <div className="tarjeta-plan-texto">
+        <h2 id="plan-elegido">{plan.titulo}</h2>
+        <p className="dato"><CalendarDays aria-hidden="true"/>{cuandoCorto(plan)}</p>
+        <p className="dato"><MapPin aria-hidden="true"/>{plan.lugarPublico}</p>
+        <p className="dato-suave">{plan.franja} · {quienPropone(plan)}</p>
+      </div>
+    </div>
+    <div className="tarjeta-plan-acciones">
+      <AccionesPlan plan={plan} {...acciones}/>
+      <Button className="boton-secundario" onClick={() => ir(`/planes/${plan.id}`)}>Ver plan</Button>
+    </div>
+  </section>;
+}
+
+// Un plan en la lista: la misma tarjeta, sin hoja.
+function TarjetaLista({ plan, ir }: { plan: Plan; ir: Ir }) {
+  return <li className={`tarjeta-plan ${claseDePlan(plan)}`}>
+    <button type="button" className="tarjeta-plan-cuerpo tarjeta-plan-enlace" onClick={() => ir(`/planes/${plan.id}`)}>
+      <Imagen nombre={imagenDePlan(plan)} clase="tarjeta-plan-imagen"/>
+      <span className="tarjeta-plan-texto">
+        <strong>{plan.titulo}</strong>
+        <span className="dato"><CalendarDays aria-hidden="true"/>{cuandoCorto(plan)}</span>
+        <span className="dato"><MapPin aria-hidden="true"/>{plan.lugarPublico}</span>
+        <span className="dato-suave">{plan.franja} · {quienPropone(plan)}</span>
+      </span>
+      <ChevronRight className="tarjeta-plan-flecha" aria-hidden="true"/>
+    </button>
+    {(plan.voy || plan.mio) && <span className="plan-voy">{plan.mio ? 'Lo propusiste tú' : 'Vas a ir'}</span>}
+  </li>;
+}
+
+export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, inicial = 'mapa' }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: () => void; inicial?: 'mapa' | 'lista' | 'vecinos' }) {
   const [planes, setPlanes] = useState<Plan[] | null>(null);
-  const [cartas, setCartas] = useState<Carta[]>([]);
   const [mapa, setMapa] = useState<Mapa | null>(null);
   const [modo, setModo] = useState(inicial);
-  // La hoja de postales: a media altura sobre el mapa, abierta con todos los planes o recogida para ver el mapa.
-  const [hoja, setHoja] = useState<'media' | 'abierta' | 'recogida'>('media');
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [conBrisa, setConBrisa] = useState(false); // la conversación con Brisa, sobre el barrio
   const usar = useCallback((r: Respuesta<Plan[]>) => { if (r.ok) { setPlanes(r.datos); setError(''); } else setError(r.error); }, []);
-  const usarCartas = useCallback((r: Respuesta<Carta[]>) => { if (r.ok) setCartas(r.datos); }, []);
   const lugarId = perfil.lugar?.id;
   useEffect(() => {
     if (!lugarId) return;
     void api.planes().then(usar);
-    void api.cartas().then(usarCartas);
     void api.mapa().then(r => setMapa(r.ok ? r.datos : { disponible: false }));
-  }, [api, lugarId, usar, usarCartas]);
+  }, [api, lugarId, usar]);
   const acciones = (id: string) => ({
-    onIr: () => void api.irAPlan(id).then(r => { usar(r); void api.cartas().then(usarCartas); }),
+    onIr: () => void api.irAPlan(id).then(usar),
     onNoIr: () => void api.noIrAPlan(id).then(usar),
-    onCancelar: () => void api.cancelarPlan(id).then(usar),
+    onCancelar: () => void api.cancelarPlan(id).then(r => { usar(r); setElegido(null); }),
   });
   const conMapa = mapa?.disponible === true;
-  const hora = new Date().getHours();
-  const luz = hora >= 6 && hora < 18 ? 'de-dia' : 'de-noche'; // decisión de Mateo: la luz sigue la hora
-  const mensajeBrisa = cartas[0]?.texto ?? (planes?.length ? 'Hay planes cerca esta semana. ¿Te cuento?' : 'Todavía no hay planes cerca. ¿Me cuentas qué tienes ganas de hacer?');
-  // Al elegir un sello en el mapa, su postal sube a la vista; al elegir una postal, su sello se resalta en el mapa.
-  const elegirDesdeMapa = (id: string) => {
-    setElegido(id);
-    if (hoja === 'recogida') setHoja('media');
-    requestAnimationFrame(() => document.getElementById(`postal-${id}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }));
-  };
-  const siguienteHoja = { media: 'abierta', abierta: 'recogida', recogida: 'media' } as const;
-  const textoHoja = { media: 'Ver todos los planes', abierta: 'Ver el mapa', recogida: 'Ver los planes' } as const;
+  const verMapa = modo === 'mapa' && conMapa;
+  const planElegido = planes?.find(p => p.id === elegido) ?? null;
+  const contar = <Button className="boton-principal barrio-contar" onClick={() => ir('/planes/nuevo')}><Plus aria-hidden="true"/>Contar qué voy a hacer</Button>;
 
-  return <div className={`comunidad barrio ${luz}`}>
+  return <div className={`comunidad barrio${verMapa ? ' con-escena' : ''}`}>
     <Barra ir={ir} onSalir={onSalir} actual="barrio"/>
+    {verMapa && <EscenaBarrio mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>}
     <div className="barrio-controles">
-      <h1 tabIndex={-1}>Mi barrio</h1>
+      <h1 className="solo-lectores" tabIndex={-1}>Mi barrio</h1>
       <SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambio}/>
       <div className="modo" role="group" aria-label="Ver">
-        <button type="button" aria-pressed={modo === 'planes'} onClick={() => setModo('planes')}>Planes</button>
+        {conMapa && <button type="button" aria-pressed={modo === 'mapa'} onClick={() => setModo('mapa')}>Mapa</button>}
+        <button type="button" aria-pressed={modo === 'lista' || (modo === 'mapa' && !conMapa && mapa !== null)} onClick={() => setModo('lista')}>Lista</button>
         <button type="button" aria-pressed={modo === 'vecinos'} onClick={() => setModo('vecinos')}>Vecinos</button>
       </div>
     </div>
 
-    {modo === 'vecinos' ? <main className="diario-contenido"><Vecinos api={api} ir={ir}/></main>
-    : <main className={`barrio-planes hoja-${conMapa ? hoja : 'sola'}`}>
-      {conMapa && <div className="barrio-mapa">
-        <MapaTinta mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={elegirDesdeMapa}/>
-        <button type="button" className="mapa-brisa" aria-expanded={conBrisa} aria-label={`Hablar con Brisa, una inteligencia artificial: ${mensajeBrisa}`} onClick={() => setConBrisa(true)}>
-          <OrbeBrisa/><span className="sello-ia mapa-sello-ia" title="Brisa es una inteligencia artificial">IA</span>
-        </button>
-      </div>}
-      {perfil.lugar && mapa === null && <p className="mapa-abriendo" role="status">Abriendo el mapa…</p>}
-
-      <section className="hoja" aria-labelledby="hoja-titulo">
-        <div className="hoja-cabeza">
-          <h2 id="hoja-titulo">Esta semana, cerca</h2>
-          {conMapa && <button type="button" className="hoja-alternar" onClick={() => setHoja(h => siguienteHoja[h])}>{textoHoja[hoja]}</button>}
-          <Button className="diario-boton principal hoja-contar" onClick={() => ir('/inicio?plan=1')}><Pencil aria-hidden="true"/>Tengo ganas de…</Button>
-        </div>
-        {!perfil.lugar && <div className="diario-aviso"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="diario-boton principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}
-        {perfil.lugar && mapa?.disponible === false && <p className="campo-ayuda">El mapa llega cuando tu lugar tiene barrio (por ahora, en Medellín). Mientras tanto, aquí están los planes.</p>}
-        {error && <p className="campo-error" role="alert">{error}</p>}
-        {perfil.lugar && planes === null && !error && <p role="status">Buscando planes…</p>}
-        {planes?.length === 0 && <p className="hoja-vacia">Aún no hay planes cerca. ¿Y si le cuentas a Brisa qué tienes ganas de hacer?</p>}
-        <ol className="postales">
-          {planes?.map(plan => <li key={plan.id} id={`postal-${plan.id}`} className={`postal ${claseDePlan(plan)}${elegido === plan.id ? ' elegida' : ''}`}>
-            <button type="button" className="postal-cara" aria-pressed={conMapa ? elegido === plan.id : undefined} onClick={() => conMapa ? setElegido(e => e === plan.id ? null : plan.id) : ir(`/planes/${plan.id}`)}>
-              <span className="postal-vineta"><Vineta tipo={plan.tipo}/></span>
-              <span className="postal-texto">
-                <strong>{plan.titulo}</strong>
-                <span className="postal-cuando">{cuandoCorto(plan)}</span>
-                <span>{plan.lugarPublico} · {plan.franja}</span>
-                <span className="postal-quien">{quienPropone(plan)}</span>
-              </span>
-            </button>
-            <Sello plan={plan}/>
-            <div className="postal-acciones">
-              <AccionesPlan plan={plan} {...acciones(plan.id)}/>
-              <button type="button" className="brisa-enlace" onClick={() => ir(`/planes/${plan.id}`)}>{plan.mio || plan.voy ? 'Hablar con quienes van' : 'Ver detalles'}</button>
-            </div>
-          </li>)}
-        </ol>
-        {/* Brisa solo aparece aquí si tiene algo que contar; para conversar está en la barra. */}
-        {cartas.length > 0 && <div className="hoja-brisa"><p className="brisa-quien"><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
-          <CartaBrisa carta={cartas[0]}
-            onListo={() => void api.cartaVista(cartas[0].clave).then(usarCartas)}
-            onRepetir={() => cartas[0].tipo === 'solo' && void api.repetirPlan(cartas[0].planId).then(r => { usar(r); void api.cartaVista(cartas[0].clave).then(usarCartas); })}
-            onSumarme={() => cartas[0].tipo === 'sugerencia' && void api.irAPlan(cartas[0].planId).then(r => { usar(r); void api.cartaVista(cartas[0].clave).then(usarCartas); })}
-            onGente={() => void api.cartaVista(cartas[0].clave).then(() => ir('/gente'))}/></div>}
-      </section>
-
-      {conBrisa && <aside className="panel-brisa vidrio flotante" aria-label="Conversación con Brisa">
-        <button type="button" className="panel-cerrar" aria-label="Cerrar la conversación" onClick={() => setConBrisa(false)}><X aria-hidden="true"/></button>
-        <ConversacionBrisa perfil={perfil} api={api} ir={ir}/>
-      </aside>}
+    {modo === 'vecinos' ? <main className="interna-contenido"><Vecinos api={api} ir={ir}/></main>
+    : perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el barrio…</p>
+    : verMapa ? <main className="barrio-sobre-escena">
+      <p className="escena-nota">Escenario ilustrado · no es el lugar exacto</p>
+      {planElegido ? <TarjetaElegida plan={planElegido} ir={ir} acciones={acciones(planElegido.id)} onCerrar={() => setElegido(null)}/>
+        : <div className="barrio-accion">{planes?.length === 0 && <p className="escena-vacia">Todavía no hay planes cerca. ¿Y si cuentas el tuyo?</p>}{contar}</div>}
+    </main>
+    : <main className="interna-contenido barrio-lista">
+      {!perfil.lugar && <div className="aviso-panel"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="boton-principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}
+      {perfil.lugar && mapa?.disponible === false && <p className="campo-ayuda">El mapa llega cuando tu lugar tiene barrio (por ahora, en Medellín). Mientras tanto, aquí están los planes.</p>}
+      <h2>Planes cerca de ti</h2>
+      {error && <p className="campo-error" role="alert">{error}</p>}
+      {perfil.lugar && planes === null && !error && <p role="status">Buscando planes…</p>}
+      {planes?.length === 0 && <p>Aún no hay planes cerca. ¿Y si cuentas qué vas a hacer?</p>}
+      <ul className="lista-planes">{planes?.map(plan => <TarjetaLista key={plan.id} plan={plan} ir={ir}/>)}</ul>
+      {perfil.lugar && contar}
     </main>}
   </div>;
 }
 
-// El plan y su conversación, solo para quien lo propuso y quienes se sumaron.
+// Reportar un plan entero (rediseño del 19 de octubre): el mismo cuidado que reportar a una persona.
+function ReportarPlan({ plan, api, onListo }: { plan: Plan; api: Api; onListo: () => void }) {
+  const [motivo, setMotivo] = useState<MotivoReporte | null>(null);
+  const [detalle, setDetalle] = useState('');
+  const [bloquear, setBloquear] = useState(false);
+  const [error, setError] = useState('');
+  const [hecho, setHecho] = useState('');
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    if (!motivo) { setError('Elige qué pasó.'); return; }
+    const r = await api.reportarPlan(plan.id, { motivo, detalle, bloquear });
+    if (r.ok) setHecho(`Gracias por contarnos. Lo revisa una persona del equipo; ${plan.autor} no sabrá que fuiste tú.`); else setError(r.error);
+  }
+  if (hecho) return <p className="aviso-panel" role="status">{hecho}</p>;
+  return <form className="panel formulario" onSubmit={e => void enviar(e)} noValidate>
+    <fieldset className="campo">
+      <legend>¿Qué pasa con este plan?</legend>
+      {motivosReporte.map(m => <label key={m.id} className="opcion"><input type="radio" name="motivo-plan" checked={motivo === m.id} onChange={() => { setMotivo(m.id); setError(''); }}/><span>{m.nombre}</span></label>)}
+    </fieldset>
+    {motivo === 'peligro' && <p className="aviso-panel">Si estás en peligro ahora, llama a la línea de emergencias <strong>123</strong>. MOAI no es un servicio de emergencias.</p>}
+    <Campo etiqueta="Cuéntanos un poco más (opcional)" ayuda="Lo lee una persona del equipo, que también ve el plan tal como se publicó.">{(id, d) =>
+      <textarea id={id} aria-describedby={d} className="cuenta-campo diario-textarea" maxLength={MAX_DETALLE_REPORTE} value={detalle} onChange={e => setDetalle(e.target.value)}/>}</Campo>
+    <label className="opcion"><input type="checkbox" checked={bloquear} onChange={e => setBloquear(e.target.checked)}/><span><strong>Bloquear también a {plan.autor}</strong> · ya no verás sus planes ni verá los tuyos</span></label>
+    {error && <p className="campo-error" role="alert">{error}</p>}
+    <div className="acciones-fila">
+      <Button type="submit" className="boton-principal">Enviar reporte</Button>
+      <Button type="button" className="boton-secundario" onClick={onListo}>Cancelar</Button>
+    </div>
+  </form>;
+}
+
+const nombreCosto = (c: Costo) => costos.find(x => x.id === c)?.nombre ?? 'Gratis';
+const inicial = (t: string) => t.trim().charAt(0).toLocaleUpperCase('es') || '·';
+
+// El plan: qué, cuándo, lugar público, distancia aproximada y costo; la acción para sumarse y su conversación.
 export function PlanDetalle({ id, api, ir, onSalir }: { id: string; api: Api; ir: Ir; onSalir: () => void }) {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [error, setError] = useState('');
@@ -191,31 +187,40 @@ export function PlanDetalle({ id, api, ir, onSalir }: { id: string; api: Api; ir
   useEffect(cargar, [cargar]);
   const puede = !!plan && (plan.mio || plan.voy);
   const despues = (r: Respuesta<Plan[]>) => { if (r.ok) cargar(); };
-  return <Diario titulo={plan?.titulo ?? (error ? 'Este plan ya no está' : 'Abriendo el plan…')} ir={ir} actual="barrio" volver={{ texto: 'Mi barrio', ruta: '/comunidad' }} onSalir={onSalir}>
-    {error && <><p>{error}</p><Button className="diario-boton" onClick={() => ir('/comunidad')}>Volver a Mi barrio</Button></>}
+  const volver = plan?.moai ? { texto: plan.moai.nombre, ruta: `/moais/${plan.moai.id}` } : { texto: 'Mi barrio', ruta: '/comunidad' };
+  return <Diario titulo={plan?.titulo ?? (error ? 'Este plan ya no está' : 'Abriendo el plan…')} imagen={plan ? imagenDePlan(plan) : 'plan'} ir={ir} actual="barrio" volver={volver} onSalir={onSalir}>
+    {error && <div className="panel"><p>{error}</p><Button className="boton-secundario" onClick={() => ir('/comunidad')}>Volver a Mi barrio</Button></div>}
     {plan && <>
-      <article className="plan"><DatosPlan plan={plan}/>
+      <section className="panel plan-ficha" aria-label="Datos del plan">
+        {plan.moai && <p className="etiqueta">Solo para tu Moai «{plan.moai.nombre}»</p>}
+        <p className="dato"><CalendarDays aria-hidden="true"/>{cuandoPlan(plan)}</p>
+        <p className="dato"><MapPin aria-hidden="true"/>{plan.lugarPublico}</p>
+        <p className="dato"><Navigation aria-hidden="true"/>{plan.franja}</p>
+        <p className="dato"><Coins aria-hidden="true"/>{nombreCosto(plan.costo)}</p>
+        {plan.descripcion && <p className="plan-descripcion">{plan.descripcion}</p>}
+        <p className="quien"><span className="inicial" aria-hidden="true">{inicial(plan.organizacion?.nombre ?? plan.autor)}</span>{quienPropone(plan)}</p>
+        {plan.mio && plan.asistentes && <p className="dato-suave">{plan.asistentes.length ? `Van: ${plan.asistentes.join(', ')}` : 'Si alguien se suma, te lo contaré aquí.'}</p>}
         <AccionesPlan plan={plan} onIr={() => void api.irAPlan(id).then(despues)} onNoIr={() => void api.noIrAPlan(id).then(despues)} onCancelar={() => void api.cancelarPlan(id).then(() => ir('/comunidad'))}/>
-        {plan.autorRef && <button type="button" className="brisa-enlace" aria-expanded={reportar} onClick={() => setReportar(r => !r)}>Reportar o bloquear a {plan.autor}</button>}
-        {plan.autorRef && reportar && <ReportarPersona referencia={plan.autorRef} nombre={plan.autor} api={api} onListo={g => { if (!g) setReportar(false); }}/>}
-      </article>
-      <section className="conversacion" aria-labelledby="conversacion-titulo">
-        <h2 id="conversacion-titulo">Conversación del plan</h2>
-        {!puede ? <p>Cuando te sumes, podrás hablar con quienes van: «llego 5 minutos tarde», «nos vemos en la entrada».</p> : <>
-          <Conversacion tipo="plan" id={id} api={api} nota="Solo la ven quienes van al plan. Antes de enviar, MOAI revisa que no haya frases que lastimen; nadie más la lee, salvo que alguien reporte un mensaje. Se borra a los 30 días."/>
-        </>}
       </section>
-      <Button className="diario-boton" onClick={() => ir('/comunidad')}>Volver a Mi barrio</Button>
+      <section className="panel" aria-labelledby="conversacion-titulo">
+        <h2 id="conversacion-titulo" className="titulo-icono"><MessagesSquare aria-hidden="true"/>Conversación del plan</h2>
+        {!puede ? <p>Al sumarte podrás coordinar el encuentro aquí: «llego 5 minutos tarde», «nos vemos en la entrada».</p>
+          : <Conversacion tipo="plan" id={id} api={api} nota="Solo la ven quienes van al plan. Antes de enviar, MOAI revisa que no haya frases que lastimen; nadie más la lee, salvo que alguien reporte un mensaje. Se borra a los 30 días."/>}
+      </section>
+      {!plan.mio && (reportar ? <ReportarPlan plan={plan} api={api} onListo={() => setReportar(false)}/>
+        : <button type="button" className="enlace-discreto" onClick={() => setReportar(true)}><Flag aria-hidden="true"/>Reportar este plan</button>)}
     </>}
   </Diario>;
 }
 
+// Mis lugares: los lugares guardados, cuál está activo y uno nuevo.
 export function MisLugares({ api, ir, onSalir, onCambio }: { api: Api; ir: Ir; onSalir: () => void; onCambio: () => void }) {
   const [lugares, setLugares] = useState<Lugar[] | null>(null);
   const [error, setError] = useState('');
   const [nuevo, setNuevo] = useState({ nombre: '', ciudad: '', barrio: '' });
   const [errores, setErrores] = useState<ErroresLugar>({});
   const [porBorrar, setPorBorrar] = useState<string | null>(null);
+  const [agregando, setAgregando] = useState(false);
   const usar = (r: Respuesta<Lugar[]>, despues?: () => void) => {
     if (r.ok) { setLugares(r.datos); setError(''); setErrores({}); despues?.(); onCambio(); }
     else { setErrores((r.errores ?? {}) as ErroresLugar); setError(r.errores ? '' : r.error); }
@@ -223,93 +228,142 @@ export function MisLugares({ api, ir, onSalir, onCambio }: { api: Api; ir: Ir; o
   useEffect(() => { void api.lugares().then(r => r.ok ? setLugares(r.datos) : setError(r.error)); }, [api]);
   async function agregar(e: FormEvent) {
     e.preventDefault();
-    usar(await api.crearLugar({ nombre: nuevo.nombre, ciudad: nuevo.ciudad, barrio: nuevo.barrio || null }), () => setNuevo({ nombre: '', ciudad: '', barrio: '' }));
+    usar(await api.crearLugar({ nombre: nuevo.nombre, ciudad: nuevo.ciudad, barrio: nuevo.barrio || null }), () => { setNuevo({ nombre: '', ciudad: '', barrio: '' }); setAgregando(false); });
   }
   const lleno = (lugares?.length ?? 0) >= MAX_LUGARES;
-  return <Diario titulo="Mis lugares" bajada="Como en Uber: guarda tu casa, la de tus papás o tu trabajo, y elige dónde estás. Nadie más ve tus lugares." ir={ir} onSalir={onSalir}>
+  return <Diario titulo="Mis lugares" bajada="Elige dónde quieres conectar. Guardamos tu zona, no tu dirección. Nadie más ve tus lugares." imagen="lugares" ir={ir} volver={{ texto: 'Volver', ruta: 'atras' }} onSalir={onSalir}>
     {error && <p className="campo-error" role="alert">{error}</p>}
-    <ul className="lugares">
-      {lugares?.map(l => <li key={l.id} className={l.activo ? 'activo' : undefined}>
-        <div><strong>{l.nombre}</strong><span>{l.zona}</span></div>
-        {l.activo ? <span className="plan-voy">Estás aquí</span> : <Button className="diario-boton" onClick={() => void api.activarLugar(l.id).then(r => usar(r))}>Estoy aquí</Button>}
-        {porBorrar === l.id
-          ? <><Button className="diario-boton" onClick={() => void api.borrarLugar(l.id).then(r => usar(r, () => setPorBorrar(null)))}>Sí, borrar</Button><Button className="diario-boton" onClick={() => setPorBorrar(null)}>No</Button></>
-          : <Button className="diario-boton" onClick={() => setPorBorrar(l.id)}>Borrar</Button>}
+    <ul className="lista-lugares">
+      {lugares?.map(l => <li key={l.id} className={`panel lugar${l.activo ? ' activo' : ''}`}>
+        <span className="lugar-icono" aria-hidden="true">{/casa/i.test(l.nombre) ? <Home/> : <Building2/>}</span>
+        <div className="lugar-texto">
+          <strong>{l.nombre}</strong><span>{l.zona}</span>
+          {l.activo ? <span className="plan-voy">Lugar activo</span>
+            : <Button className="boton-secundario" onClick={() => void api.activarLugar(l.id).then(r => usar(r))}>Usar este lugar</Button>}
+        </div>
+        <Imagen nombre={/casa/i.test(l.nombre) ? 'lugares' : 'crear'} clase="lugar-imagen"/>
+        <div className="lugar-borrar">
+          {porBorrar === l.id
+            ? <><span>¿Borrar «{l.nombre}»?</span><Button className="boton-secundario peligro" onClick={() => void api.borrarLugar(l.id).then(r => usar(r, () => setPorBorrar(null)))}>Sí, borrar</Button><Button className="boton-secundario" onClick={() => setPorBorrar(null)}>No</Button></>
+            : <button type="button" className="enlace-discreto" aria-label={`Borrar ${l.nombre}`} onClick={() => setPorBorrar(l.id)}><Trash2 aria-hidden="true"/>Borrar</button>}
+        </div>
       </li>)}
     </ul>
     {lugares?.length === 0 && <p>Todavía no tienes lugares. Empieza por tu casa.</p>}
-    {lleno ? <p>Tienes {MAX_LUGARES} lugares, el máximo. Borra uno para agregar otro.</p> : <form className="cuenta-form diario-form" onSubmit={agregar} noValidate>
+    {lleno ? <p className="dato-suave">Tienes {MAX_LUGARES} lugares, el máximo. Borra uno para agregar otro.</p>
+    : !agregando ? <Button className="boton-secundario ancho" onClick={() => setAgregando(true)}><Plus aria-hidden="true"/>Agregar un lugar</Button>
+    : <form className="panel formulario" onSubmit={agregar} noValidate>
       <h2>Agregar un lugar</h2>
       <Campo etiqueta="¿Cómo lo llamas?" error={errores.nombre}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={30} placeholder="Por ejemplo, Donde mis papás" value={nuevo.nombre} onChange={e => setNuevo(n => ({ ...n, nombre: e.target.value }))}/>}</Campo>
-      <div className="sugerencias">{nombresSugeridos.map(s => <button key={s} type="button" onClick={() => setNuevo(n => ({ ...n, nombre: s }))}>{s}</button>)}</div>
+      <div className="chips">{nombresSugeridos.map(s => <button key={s} type="button" className="chip" aria-pressed={nuevo.nombre === s} onClick={() => setNuevo(n => ({ ...n, nombre: s }))}>{s}</button>)}</div>
       <Ciudad key={`ciudad-${lugares?.length}`} valor={nuevo.ciudad} onValor={ciudad => setNuevo(n => ({ ...n, ciudad, barrio: '' }))} error={errores.ciudad}/>
       {hayBarrios(nuevo.ciudad) && <BarrioCampo key={`barrio-${lugares?.length}`} valor={nuevo.barrio} onValor={barrio => setNuevo(n => ({ ...n, barrio }))} error={errores.barrio} etiqueta="Barrio"/>}
-      <Button type="submit" className="diario-boton principal">Guardar lugar</Button>
+      <div className="acciones-fila">
+        <Button type="submit" className="boton-principal">Guardar lugar</Button>
+        <Button type="button" className="boton-secundario" onClick={() => setAgregando(false)}>Cancelar</Button>
+      </div>
     </form>}
   </Diario>;
 }
 
-// Contar qué voy a hacer: plantillas de tres toques y la opción de repetirlo cada semana.
+const ICONOS_TIPO: Record<string, typeof Footprints> = { caminar: Footprints, tinto: Coffee, huerta: Sprout, ajedrez: Puzzle, tejer: Scissors, mandados: ShoppingBag, voluntariado: HandHeart };
+
+// Crear plan («Contar qué voy a hacer»): la invitación, el día y la hora, el lugar público, la repetición y el costo.
+// Desde un Moai («Proponer un encuentro»), el plan es solo para sus miembros. Primero se revisa, después se publica.
 export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void }) {
-  const ciudadInicial = perfil.lugar?.ciudad ?? '';
-  const [plan, setPlan] = useState({ titulo: '', descripcion: '', dia: '', hora: '', lugarPublico: '', ciudad: ciudadInicial, barrio: '', alcance: 'cerca' as Alcance, cupo: '', tipo: 'otro' as Tipo, semanal: false, organizacion: '' });
+  const moaiId = new URLSearchParams(window.location.search).get('moai');
+  const [moai, setMoai] = useState<{ id: string; nombre: string } | null>(null);
+  useEffect(() => { if (moaiId) void api.gente().then(r => { const m = r.ok ? r.datos.moais.find(x => x.id === moaiId) : undefined; if (m) setMoai({ id: m.id, nombre: m.nombre }); }); }, [api, moaiId]);
+  const [plan, setPlan] = useState({ titulo: '', descripcion: '', dia: '', hora: '', lugarPublico: '', ciudad: perfil.lugar?.ciudad ?? '', barrio: perfil.lugar?.barrio ?? '', alcance: 'cerca' as Alcance, cupo: '', tipo: 'otro' as Tipo, semanal: false, costo: 'gratis' as Costo, organizacion: '' });
   const organizaciones = perfil.organizaciones ?? [];
   const convoca = organizaciones.find(o => o.id === plan.organizacion);
-  const [sugerenciaLugar, setSugerenciaLugar] = useState('Por ejemplo, Parque de los Deseos');
+  const [sugerenciaLugar, setSugerenciaLugar] = useState('Busca un parque, café o biblioteca');
   const [errores, setErrores] = useState<ErroresPlan>({});
   const [error, setError] = useState('');
+  const [revisando, setRevisando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const cambiar = (c: Partial<typeof plan>) => setPlan(p => ({ ...p, ...c }));
   const conBarrios = hayBarrios(plan.ciudad);
-  async function enviar(e: FormEvent) {
+  const volver = moai ? { texto: moai.nombre, ruta: `/moais/${moai.id}` } : { texto: 'Mi barrio', ruta: '/comunidad' };
+  function revisar(e: FormEvent) {
     e.preventDefault();
+    const faltan: ErroresPlan = {};
+    if (plan.titulo.trim().length < 3) faltan.titulo = 'Cuéntanos en pocas palabras qué quieres hacer.';
+    if (!plan.dia || !plan.hora) faltan.cuando = 'Elige el día y la hora.';
+    if (plan.lugarPublico.trim().length < 3) faltan.lugarPublico = 'Escribe un lugar público: un parque, una biblioteca, un café…';
+    setErrores(faltan);
+    if (!Object.keys(faltan).length) setRevisando(true);
+  }
+  async function publicar() {
     if (enviando) return;
-    const cuando = plan.dia && plan.hora ? new Date(`${plan.dia}T${plan.hora}`).toISOString() : '';
-    const entrada: EntradaPlan & { organizacion: string | null } = { titulo: plan.titulo, descripcion: plan.descripcion, cuando, lugarPublico: plan.lugarPublico, ciudad: plan.ciudad, barrio: plan.barrio || null,
-      alcance: conBarrios ? plan.alcance : 'ciudad', cupo: plan.cupo ? Number(plan.cupo) : null, tipo: plan.tipo, repite: plan.semanal ? 'semanal' : null, organizacion: convoca?.id ?? null };
+    const cuando = new Date(`${plan.dia}T${plan.hora}`).toISOString();
+    const entrada: EntradaPlan & { organizacion: string | null; moai: string | null } = { titulo: plan.titulo, descripcion: plan.descripcion, cuando, lugarPublico: plan.lugarPublico, ciudad: plan.ciudad, barrio: plan.barrio || null,
+      alcance: conBarrios ? plan.alcance : 'ciudad', cupo: plan.cupo ? Number(plan.cupo) : null, tipo: plan.tipo, repite: plan.semanal ? 'semanal' : null, costo: plan.costo, organizacion: convoca?.id ?? null, moai: moai?.id ?? null };
     setEnviando(true);
     const r = await api.crearPlan(entrada);
     setEnviando(false);
-    if (r.ok) ir('/comunidad'); else { setErrores((r.errores ?? {}) as ErroresPlan); setError(r.errores ? '' : r.error); }
+    if (r.ok) ir(volver.ruta); else { setErrores((r.errores ?? {}) as ErroresPlan); setError(r.errores ? '' : r.error); setRevisando(false); }
   }
-  return <Diario titulo={convoca ? `Convocar a nombre de ${convoca.nombre}` : 'Contar qué voy a hacer'} bajada={convoca ? 'Cuenta qué necesitan y cuántas personas buscan. Se verá con el nombre de la entidad.' : 'Algo que harías de todas formas, cerca y sin mucha logística. Si alguien se suma, mejor; si no, igual lo disfrutas.'} ir={ir} actual="barrio" volver={{ texto: 'Mi barrio', ruta: '/comunidad' }} onSalir={onSalir}>
-    <form className="cuenta-form diario-form" onSubmit={enviar} noValidate>
-      {organizaciones.length > 0 && <fieldset className="campo">
+  const cuandoLegible = plan.dia && plan.hora ? capital(new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }).format(new Date(`${plan.dia}T${plan.hora}`))) : '';
+
+  return <Diario titulo={convoca ? `Convocar a nombre de ${convoca.nombre}` : '¿Qué vas a hacer?'} bajada={convoca ? 'Cuenta qué necesitan y cuántas personas buscan. Se verá con el nombre de la entidad.' : moai ? `Un encuentro solo para tu Moai «${moai.nombre}».` : 'Algo sencillo puede ser una oportunidad para encontrarse.'}
+    imagen="crear" ir={ir} actual={moai ? 'gente' : 'barrio'} volver={volver} onSalir={onSalir}>
+    {revisando ? <section className="panel plan-ficha" aria-labelledby="revision-titulo">
+      <h2 id="revision-titulo">Así lo verán {moai ? `en «${moai.nombre}»` : 'tus vecinos'}</h2>
+      <p className="plan-titulo-revision">{plan.titulo}</p>
+      <p className="dato"><CalendarDays aria-hidden="true"/>{plan.semanal ? `Cada semana · desde el ${cuandoLegible.toLocaleLowerCase('es')}` : cuandoLegible}</p>
+      <p className="dato"><MapPin aria-hidden="true"/>{plan.lugarPublico}</p>
+      <p className="dato"><Coins aria-hidden="true"/>{nombreCosto(plan.costo)}</p>
+      {plan.descripcion && <p className="plan-descripcion">{plan.descripcion}</p>}
+      <div className="acciones-fila">
+        <Button className="boton-principal" disabled={enviando} onClick={() => void publicar()}>{enviando ? 'Publicando…' : 'Publicar'}</Button>
+        <Button className="boton-secundario" onClick={() => setRevisando(false)}>Cambiar algo</Button>
+      </div>
+    </section>
+    : <form className="panel formulario" onSubmit={revisar} noValidate>
+      {organizaciones.length > 0 && !moai && <fieldset className="campo">
         <legend>Publicar como</legend>
-        <label className="alcance"><input type="radio" name="publicar-como" checked={!convoca} onChange={() => cambiar({ organizacion: '' })}/><span><strong>Yo, {perfil.nombre.split(' ')[0]}</strong> · un plan entre vecinos</span></label>
-        {organizaciones.map(o => <label key={o.id} className="alcance"><input type="radio" name="publicar-como" checked={plan.organizacion === o.id} onChange={() => cambiar({ organizacion: o.id })}/><span><strong>{o.nombre}</strong> · {nombreTipoOrganizacion(o.tipo)}</span></label>)}
+        <label className="opcion"><input type="radio" name="publicar-como" checked={!convoca} onChange={() => cambiar({ organizacion: '' })}/><span><strong>Yo, {perfil.nombre.split(' ')[0]}</strong> · un plan entre vecinos</span></label>
+        {organizaciones.map(o => <label key={o.id} className="opcion"><input type="radio" name="publicar-como" checked={plan.organizacion === o.id} onChange={() => cambiar({ organizacion: o.id })}/><span><strong>{o.nombre}</strong> · {nombreTipoOrganizacion(o.tipo)}</span></label>)}
       </fieldset>}
       <fieldset className="campo">
-        <legend>Elige uno para empezar</legend>
-        <div className="sugerencias">{plantillas.map(p => <button key={p.tipo} type="button" aria-pressed={plan.tipo === p.tipo}
-          onClick={() => { cambiar({ tipo: p.tipo, titulo: p.titulo }); setSugerenciaLugar(`Por ejemplo, ${p.lugar.toLocaleLowerCase('es')}`); }}>{p.nombre}</button>)}</div>
+        <legend>Tipo de plan</legend>
+        <div className="chips">{plantillas.map(p => { const Icono = ICONOS_TIPO[p.tipo] ?? Sparkles; return <button key={p.tipo} type="button" className="chip" aria-pressed={plan.tipo === p.tipo}
+          onClick={() => { cambiar({ tipo: p.tipo, titulo: p.titulo }); setSugerenciaLugar(`Por ejemplo, ${p.lugar.toLocaleLowerCase('es')}`); }}><Icono aria-hidden="true"/>{p.nombre}</button>; })}</div>
       </fieldset>
-      <Campo etiqueta={convoca ? '¿Qué necesitan?' : '¿Qué vas a hacer?'} error={errores.titulo}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={80} placeholder={convoca ? 'Por ejemplo, buscamos 5 personas para sembrar árboles' : 'Por ejemplo, voy a caminar, ¿alguien viene?'} value={plan.titulo} onChange={e => cambiar({ titulo: e.target.value })}/>}</Campo>
-      <Campo etiqueta="Cuéntalo un poco más (opcional)" error={errores.descripcion}>{(id, d) => <textarea id={id} aria-describedby={d} className="cuenta-campo diario-textarea" maxLength={400} value={plan.descripcion} onChange={e => cambiar({ descripcion: e.target.value })}/>}</Campo>
-      <div className="telefono">
+      <Campo etiqueta={convoca ? '¿Qué necesitan?' : 'Tu invitación'} error={errores.titulo}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={80} placeholder={convoca ? 'Por ejemplo, buscamos 5 personas para sembrar árboles' : 'Voy a caminar, ¿alguien viene?'} value={plan.titulo} onChange={e => cambiar({ titulo: e.target.value })}/>}</Campo>
+      <div className="dos-campos">
         <Campo etiqueta="Día" error={errores.cuando}>{(id, d) => <input id={id} aria-describedby={d} type="date" className="cuenta-campo" value={plan.dia} onChange={e => cambiar({ dia: e.target.value })}/>}</Campo>
         <Campo etiqueta="Hora">{id => <input id={id} type="time" className="cuenta-campo" value={plan.hora} onChange={e => cambiar({ hora: e.target.value })}/>}</Campo>
       </div>
-      <label className="alcance"><input type="checkbox" checked={plan.semanal} onChange={e => cambiar({ semanal: e.target.checked })}/><span><strong>Repetir cada semana</strong> · los planes que se repiten suelen encontrar compañía</span></label>
-      <Campo etiqueta="¿Dónde? Un lugar público" error={errores.lugarPublico} ayuda="Un parque, una biblioteca, un café. Nunca la casa de nadie.">{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={80} placeholder={sugerenciaLugar} value={plan.lugarPublico} onChange={e => cambiar({ lugarPublico: e.target.value })}/>}</Campo>
-      <Ciudad valor={plan.ciudad} onValor={ciudad => cambiar({ ciudad, barrio: '' })} error={errores.ciudad}/>
-      {conBarrios && <BarrioCampo valor={plan.barrio} onValor={barrio => cambiar({ barrio })} error={errores.barrio} etiqueta="Barrio del lugar"/>}
+      <Campo etiqueta="Lugar público" error={errores.lugarPublico} ayuda="Un parque, una biblioteca, un café. Nunca la casa de nadie.">{(id, d) => <span className="campo-con-icono"><Search aria-hidden="true"/><input id={id} aria-describedby={d} className="cuenta-campo" maxLength={80} placeholder={sugerenciaLugar} value={plan.lugarPublico} onChange={e => cambiar({ lugarPublico: e.target.value })}/></span>}</Campo>
+      <Campo etiqueta="Repetición">{id => <span className="campo-con-icono"><Repeat aria-hidden="true"/><select id={id} className="cuenta-campo" value={plan.semanal ? 'semanal' : 'una'} onChange={e => cambiar({ semanal: e.target.value === 'semanal' })}>
+        <option value="una">Solo esta vez</option><option value="semanal">Cada semana</option></select></span>}</Campo>
       <fieldset className="campo">
-        <legend>¿Hasta dónde llega la invitación?</legend>
-        {(conBarrios ? alcances : alcances.filter(a => a.id === 'ciudad')).map(a => <label key={a.id} className="alcance">
-          <input type="radio" name="alcance" value={a.id} checked={(conBarrios ? plan.alcance : 'ciudad') === a.id} onChange={() => cambiar({ alcance: a.id })}/>
-          <span><strong>{a.nombre}</strong> · {a.detalle}</span>
-        </label>)}
-        {!conBarrios && <p className="campo-ayuda">En esta ciudad, por ahora, los planes llegan a toda la ciudad.</p>}
-        {errores.alcance && <p className="campo-error" role="alert">{errores.alcance}</p>}
+        <legend>Costo</legend>
+        <div className="segmentado">{costos.map(c => <label key={c.id} className={plan.costo === c.id ? 'elegido' : undefined}>
+          <input type="radio" name="costo" value={c.id} checked={plan.costo === c.id} onChange={() => cambiar({ costo: c.id })}/>{c.id === 'gratis' ? <Coins aria-hidden="true"/> : <Wallet aria-hidden="true"/>}{c.nombre}</label>)}</div>
+        <p className="campo-ayuda">MOAI no maneja dinero: si hay un gasto, cada quien paga lo suyo en el lugar.</p>
       </fieldset>
-      <Campo etiqueta="Cupo (opcional)" error={errores.cupo} ayuda={convoca ? `Cuántas personas buscan, hasta ${MAX_CUPO_CONVOCATORIA}. Si lo dejas vacío, puede ir quien quiera.` : 'Si lo dejas vacío, puede ir quien quiera.'}>{(id, d) => <input id={id} aria-describedby={d} type="number" min={2} max={convoca ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN} inputMode="numeric" className="cuenta-campo diario-corto" value={plan.cupo} onChange={e => cambiar({ cupo: e.target.value })}/>}</Campo>
+      <details className="mas-opciones">
+        <summary>Más opciones: barrio, alcance y cupo</summary>
+        <Campo etiqueta="Cuéntalo un poco más (opcional)" error={errores.descripcion}>{(id, d) => <textarea id={id} aria-describedby={d} className="cuenta-campo diario-textarea" maxLength={400} value={plan.descripcion} onChange={e => cambiar({ descripcion: e.target.value })}/>}</Campo>
+        <Ciudad valor={plan.ciudad} onValor={ciudad => cambiar({ ciudad, barrio: '' })} error={errores.ciudad}/>
+        {conBarrios && <BarrioCampo valor={plan.barrio} onValor={barrio => cambiar({ barrio })} error={errores.barrio} etiqueta="Barrio del lugar"/>}
+        {!moai && <fieldset className="campo">
+          <legend>¿Hasta dónde llega la invitación?</legend>
+          {(conBarrios ? alcances : alcances.filter(a => a.id === 'ciudad')).map(a => <label key={a.id} className="opcion">
+            <input type="radio" name="alcance" value={a.id} checked={(conBarrios ? plan.alcance : 'ciudad') === a.id} onChange={() => cambiar({ alcance: a.id })}/>
+            <span><strong>{a.nombre}</strong> · {a.detalle}</span>
+          </label>)}
+          {!conBarrios && <p className="campo-ayuda">En esta ciudad, por ahora, los planes llegan a toda la ciudad.</p>}
+          {errores.alcance && <p className="campo-error" role="alert">{errores.alcance}</p>}
+        </fieldset>}
+        <Campo etiqueta="Cupo (opcional)" error={errores.cupo} ayuda={convoca ? `Cuántas personas buscan, hasta ${MAX_CUPO_CONVOCATORIA}. Si lo dejas vacío, puede ir quien quiera.` : 'Si lo dejas vacío, puede ir quien quiera.'}>{(id, d) => <input id={id} aria-describedby={d} type="number" min={2} max={convoca ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN} inputMode="numeric" className="cuenta-campo diario-corto" value={plan.cupo} onChange={e => cambiar({ cupo: e.target.value })}/>}</Campo>
+      </details>
       {error && <p className="campo-error" role="alert">{error}</p>}
-      <div className="diario-acciones">
-        <Button type="submit" className="diario-boton principal" disabled={enviando}>{enviando ? 'Publicando…' : 'Publicar'}</Button>
-        <Button type="button" className="diario-boton" onClick={() => ir('/comunidad')}>Cancelar</Button>
-      </div>
-    </form>
+      <Button type="submit" className="boton-principal ancho">Revisar mi plan</Button>
+    </form>}
   </Diario>;
 }
 

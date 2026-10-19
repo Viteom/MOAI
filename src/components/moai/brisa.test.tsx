@@ -158,3 +158,26 @@ describe('Brisa conversa y recuerda (19 de octubre)', () => {
     expect(await screen.findByText(/Nadie ve tu dirección/)).toBeInTheDocument();
   });
 });
+
+describe('Las cartas de Brisa (antes en Mi barrio, ahora en el inicio)', () => {
+  it('cuenta sin culpas que fuiste por tu cuenta y ofrece repetirlo cada semana', async () => {
+    const repetirPlan = ok([]);
+    const cartaVista = ok([]);
+    const cartas = ok([{ clave: 'solo:p1', tipo: 'solo', planId: 'p1', repetir: true, texto: 'Esta vez fuiste por tu cuenta a «Voy a caminar». ¿Lo repetimos cada domingo?' }]);
+    render(<InicioBrisa perfil={perfil} api={api({ cartas, repetirPlan, cartaVista } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText(/Esta vez fuiste por tu cuenta/)).toBeInTheDocument();
+    await elegirCuandoAparezca('Sí, cada semana');
+    await vi.waitFor(() => expect(repetirPlan).toHaveBeenCalledWith('p1'));
+    await vi.waitFor(() => expect(cartaVista).toHaveBeenCalledWith('solo:p1'));
+  });
+
+  it('una recomendación siempre dice por qué la ves', async () => {
+    const plan = { id: 'p1', titulo: 'Voy a caminar', descripcion: '', cuando: '2026-10-25T13:00:00.000Z', lugarPublico: 'Parque de Laureles', zona: 'Laureles', franja: 'Muy cerca', alcance: 'cerca', tipo: 'caminar', repite: 'semanal', diaRepite: 'domingos', autor: 'Luis', mio: false, voy: false, lleno: false, costo: 'gratis' };
+    const cartas = ok([{ clave: 'sug:p1', tipo: 'sugerencia', planId: 'p1', plan, texto: 'Luis invita los domingos a las 8:00 a. m. en el Parque de Laureles: «Voy a caminar». ¿Te sumas?', motivo: 'Porque me pediste que te contara de planes de caminar.' }]);
+    render(<InicioBrisa perfil={perfil} api={api({ cartas } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText(/Luis invita los domingos/)).toBeInTheDocument();
+    expect(screen.queryByText(/Porque me pediste/)).toBeNull();
+    await elegirCuandoAparezca('¿Por qué veo esto?');
+    expect(screen.getByText('Porque me pediste que te contara de planes de caminar.')).toBeInTheDocument();
+  });
+});

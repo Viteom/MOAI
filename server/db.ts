@@ -227,6 +227,10 @@ create table if not exists moai_interno (
   creado_en timestamptz not null
 );
 alter table moai_interno add column if not exists familia boolean not null default false;
+alter table planes add column if not exists costo text not null default 'gratis';
+alter table planes add column if not exists moai_id uuid references moais(id) on delete cascade;
+alter table moais add column if not exists frase text not null default '';
+alter table reportes add column if not exists plan_id uuid references planes(id) on delete set null;
 create table if not exists brisa_mensajes (
   id bigserial primary key,
   cuenta_id uuid not null references cuentas(id) on delete cascade,

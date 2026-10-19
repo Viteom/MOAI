@@ -74,6 +74,7 @@ export const privacidad: Texto = {
       'La conversación de un plan: solo quienes van a ese plan. Ni Brisa ni el equipo la leen; el equipo solo ve un mensaje si alguien lo reporta.',
       'Tus respuestas a «¿Te viste con…?»: nadie más. Solo cuando las dos personas dicen que sí, cada una ve a la otra en «Mi gente».',
       'Tu Moai: sus miembros ven tu primer nombre y la conversación del Moai. Ni Brisa ni el equipo la leen; el equipo solo ve un mensaje si alguien lo reporta. Cuando votas para sumar a alguien, nadie sabe qué votaste.',
+      'Si propones un encuentro para tu Moai, solo lo ven sus miembros. Si reportas un plan, el equipo ve el plan tal como se publicó.',
       'Tus bloqueos y reportes: la persona no sabe que la bloqueaste ni quién la reportó. Los reportes los lee solo el equipo que revisa los casos, que ve tu primer nombre, lo que contaste, el texto del mensaje si reportaste un mensaje y el correo de la persona reportada, para poder escribirle.',
       'Si eres responsable de una entidad: el equipo de MOAI ve tu correo. Tus convocatorias se publican con el nombre de la entidad, no con el tuyo.',
       'El resultado del test de cuidado, tu Moai interno y tu conversación con Brisa: solo tú. Se guardan cifrados.',

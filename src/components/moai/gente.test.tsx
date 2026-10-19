@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MiGente } from './lazos';
+import { MoaiDetalle } from './gente';
 import type { Api, Gente, Lazos, Perfil } from '@/lib/api';
 
 const perfil: Perfil = { nombre: 'Rosa Pérez', nacimientoPendiente: false, comunidad: 'completed', lugar: null };
@@ -45,5 +46,34 @@ describe('Mi gente (con Mis lazos)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Proponer' }));
     await vi.waitFor(() => expect(proponerMoai).toHaveBeenCalledWith('r1', 'Los del parque'));
     expect(await screen.findByRole('button', { name: 'Reportar o bloquear' })).toBeInTheDocument();
+  });
+});
+
+describe('Un Moai por dentro (19 de octubre)', () => {
+  const moai = { id: 'm1', nombre: 'Tinto de los jueves', frase: 'Nuestro café de siempre', miembros: [{ ref: 'yo', nombre: 'Rosa', yo: true }, { ref: 'r1', nombre: 'Luis', yo: false }], esperando: [] };
+  const conMoai = (extra: Partial<Api> = {}) => api({ gente: ok({ ...sinNada, moais: [moai] }), mensajesMoai: ok([]), ...extra });
+
+  it('muestra quiénes están y propone un encuentro solo para el Moai', async () => {
+    const ir = vi.fn();
+    render(<MoaiDetalle id="m1" api={conMoai()} ir={ir} onSalir={vi.fn()}/>);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Tinto de los jueves' })).toBeInTheDocument();
+    expect(screen.getByText('Nuestro café de siempre')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Luis' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Proponer un encuentro' }));
+    expect(ir).toHaveBeenCalledWith('/planes/nuevo?moai=m1');
+  });
+
+  it('el nombre y la frase se cambian juntos, y salir del Moai pide confirmar', async () => {
+    const renombrarMoai = ok({ ...sinNada, moais: [{ ...moai, frase: 'Los jueves a las 9' }] });
+    const salirDeMoai = ok({ ...sinNada });
+    render(<MoaiDetalle id="m1" api={conMoai({ renombrarMoai, salirDeMoai } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cambiar el nombre o la frase' }));
+    fireEvent.change(screen.getByLabelText(/Una frase/), { target: { value: 'Los jueves a las 9' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+    expect(await screen.findByText('Los jueves a las 9')).toBeInTheDocument();
+    expect(renombrarMoai).toHaveBeenCalledWith('m1', 'Tinto de los jueves', 'Los jueves a las 9');
+    fireEvent.click(screen.getByRole('button', { name: 'Salir del Moai' }));
+    expect(salirDeMoai).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Sí, salir' })).toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 // Único punto del frontend que habla con la red, y solo con /api del mismo origen
 // (src/test/privacy.test.ts lo comprueba). Nada se guarda en el navegador: la sesión es una cookie httpOnly.
 import type { Canal, EntradaRegistro, Errores } from './registro';
-import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo } from './lugares';
+import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo, Costo } from './lugares';
 import type { MotivoReporte } from './moai';
 import type { TipoOrganizacion } from './organizaciones';
 import type { Letra } from './cuidado';
@@ -20,6 +20,7 @@ export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: 
 export type Plan = {
   id: string; titulo: string; descripcion: string; cuando: string; lugarPublico: string; zona: string; franja: string; alcance: Alcance;
   tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; autorRef?: string; organizacion?: { nombre: string; tipo: TipoOrganizacion }; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
+  costo: Costo; moai?: { id: string; nombre: string }; // `moai`: un encuentro propuesto solo para ese Moai
 };
 // `cuando` es la próxima ocurrencia (en los planes semanales, la de esta semana o la siguiente).
 export type Mensaje = { id: string; autor: string; autorRef?: string; mio: boolean; texto: string; creado: string };
@@ -50,7 +51,7 @@ export type Persona = { ref: string; nombre: string };
 export type Encuentro = { planId: string; titulo: string; ocurrencia: string; personas: Persona[] };
 // Personas con las que las dos confirmaron «Ya nos vimos».
 export type Conocido = Persona & { moaiComun: boolean; propuesta: boolean; puertaAbierta?: boolean };
-export type MoaiResumen = { id: string; nombre: string; miembros: (Persona & { yo: boolean })[]; esperando: string[] };
+export type MoaiResumen = { id: string; nombre: string; frase: string; miembros: (Persona & { yo: boolean })[]; esperando: string[] };
 export type Invitacion =
   | { id: string; tipo: 'nuevo'; de: string; nombre: string }
   | { id: string; tipo: 'entrar'; de: string; nombre: string; miembros: string[] }
@@ -102,7 +103,8 @@ export const api = {
   activarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}/activar`, {}),
   borrarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}`, undefined, 'DELETE'),
   planes: () => llamar<Plan[]>('planes'),
-  crearPlan: (plan: EntradaPlan & { organizacion?: string | null }) => llamar<Plan[]>('planes', plan),
+  crearPlan: (plan: EntradaPlan & { organizacion?: string | null; moai?: string | null }) => llamar<Plan[]>('planes', plan),
+  reportarPlan: (id: string, reporte: { motivo: MotivoReporte; detalle?: string; bloquear?: boolean }) => llamar<{ ok: true }>(`planes/${encodeURIComponent(id)}/reportar`, reporte),
   irAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/ir`, {}),
   noIrAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/no-ir`, {}),
   cancelarPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/cancelar`, {}),
@@ -120,7 +122,7 @@ export const api = {
   proponerMoai: (ref: string, nombre: string) => llamar<Gente>('moais', { ref, nombre }),
   invitarAMoai: (id: string, ref: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/invitar`, { ref }),
   responderInvitacion: (id: string, acepta: boolean) => llamar<Gente>(`invitaciones/${encodeURIComponent(id)}`, { acepta }),
-  renombrarMoai: (id: string, nombre: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/nombre`, { nombre }),
+  renombrarMoai: (id: string, nombre: string, frase?: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/nombre`, { nombre, frase }),
   salirDeMoai: (id: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/salir`, {}),
   mensajesMoai: (id: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`),
   enviarMensajeMoai: (id: string, texto: string, confirmado = false) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`, { texto, confirmado }),

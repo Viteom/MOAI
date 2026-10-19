@@ -3,13 +3,15 @@
 // nunca un número (regla 5). La familia (raíz) no se marchita: su hilo se mantiene firme y solo el punto recuerda.
 // En el teléfono, la misma red como lista. Al lado, un panel de vidrio: lo que espera respuesta (de a una cosa) y,
 // al tocar a alguien, lo que puedes hacer (saludar, formar un Moai, reportar, agregar a tu familia).
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Api, Gente, GrupoLazo, Lazos, Perfil, PersonaLazo, Respuesta } from '@/lib/api';
 import { textoDe } from '@/lib/lazos';
 import { MAX_MOAI } from '@/lib/moai';
 import { textoSaludo, type Saludo } from '@/lib/perfil';
 import { Barra, type Ir } from './diario';
+import { Cabecera, Fila } from './interna';
 import { Campo } from './cuenta';
 import { AgregarInterno, Pausa, ReportarPersona } from './gente';
 
@@ -166,7 +168,7 @@ export function MiGente({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api
 
   const persona = lazos?.personas.find(p => p.id === personaId) ?? null;
   const grupo = lazos?.grupos.find(g => g.id === (persona?.grupo ?? grupoId)) ?? null;
-  const red = ancho >= 760; // en pantallas angostas, la misma red como lista
+  const red = ancho >= 600; // en pantallas angostas, la misma red como lista
   const pendiente = !!gente && (gente.invitaciones.length > 0 || gente.encuentros.length > 0);
 
   // Geometría: centro a la izquierda, grupos en una columna y personas en un arco que se abre a la derecha.
@@ -186,7 +188,7 @@ export function MiGente({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api
   }, [lazos, ancho]);
 
   const hilo = (a: Posicion, b: Posicion, ancho0 = 96) => `M${a.x} ${a.y} C ${a.x + ancho0} ${a.y}, ${b.x - ancho0} ${b.y}, ${b.x} ${b.y}`;
-  const mirarPanel = () => { if (!red) aside.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }); };
+  const mirarPanel = () => {}; // en el teléfono el panel es una hoja fija: no hace falta desplazarse
   const elegirPersona = (id: string) => { setPersonaId(id); setGrupoId(null); setPanel({ tipo: 'nada' }); mirarPanel(); };
   const elegirGrupo = (id: string) => { setGrupoId(g => g === id ? null : id); setPersonaId(null); setPanel({ tipo: 'nada' }); mirarPanel(); };
   const agregar = (familia: boolean) => { setPanel({ tipo: 'agregar', familia }); setPersonaId(null); setGrupoId(null); mirarPanel(); };
@@ -194,18 +196,37 @@ export function MiGente({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api
   const activo = persona?.grupo ?? grupoId;
   const nadaElegido = !persona && !grupo;
 
-  return <div className="lazos">
+  const [vista, setVista] = useState<'lista' | 'red'>('lista');
+  const raiz = lazos?.grupos.filter(g => g.tipo === 'raiz') ?? [];
+  const tronco = lazos?.grupos.filter(g => g.tipo === 'interno') ?? [];
+  const moais = lazos?.grupos.filter(g => g.tipo === 'moai') ?? [];
+  const rama = lazos?.grupos.filter(g => g.tipo === 'rama') ?? [];
+  const personasDe = (g: GrupoLazo) => lazos?.personas.filter(p => p.grupo === g.id) ?? [];
+  const filasDe = (gs: GrupoLazo[]) => gs.flatMap(personasDe).map(p => <Fila key={p.id} punto={`estado-${p.estado}${p.puerta ? ' con-puerta' : ''}`}
+    detalle={p.puerta ? 'Dejó su puerta abierta' : textoDe(p.estado, p.grupo === 'raiz').split('.')[0]} onClick={() => elegirPersona(p.id)}>{p.nombre}</Fila>);
+  const grupoLista = (titulo: string, sub: string, gs: GrupoLazo[], filas: ReactNode) => gs.length > 0 && <section className="panel grupo-gente" aria-label={titulo}>
+    <h2>{titulo}<small>{sub}</small></h2><div className="filas">{filas}</div>
+  </section>;
+  const conPanel = panel.tipo === 'agregar' || !nadaElegido;
+
+  return <div className="lazos interna">
     <Barra ir={ir} onSalir={onSalir} actual="gente"/>
-    <main className="lazos-cuerpo">
-      <h1 className="solo-lectores" tabIndex={-1}>Mi gente</h1>
+    <Cabecera imagen="gente" titulo="Mi gente" bajada="Las personas con las que compartes la vida." ir={ir}/>
+    <main className={`lazos-cuerpo interna-contenido${conPanel ? ' con-panel' : ''}`}>
       <div className="lazos-red" ref={area}>
         {error && <p className="campo-error" role="alert">{error}</p>}
-        {lazos && !lazos.grupos.length && <div className="lazo-vacio vidrio">
+        {gente?.pausa && <Pausa/>}
+        {pendiente && gente && <div className="panel para-responder-panel"><ParaResponder gente={gente} api={api} usar={r => { usar(r); cargar(); }}/></div>}
+        {lazos && lazos.grupos.length > 0 && red && <div className="modo vista-gente" role="group" aria-label="Ver como">
+          <button type="button" aria-pressed={vista === 'lista'} onClick={() => setVista('lista')}>Lista</button>
+          <button type="button" aria-pressed={vista === 'red'} onClick={() => setVista('red')}>Red</button>
+        </div>}
+        {lazos && !lazos.grupos.length && <div className="panel lazo-vacio">
           <h2>Tu gente empieza aquí</h2>
           <p>Agrega a tu familia y a quienes te nutren, aunque no vivan cerca. Y cuando te veas con alguien en un plan, también aparecerá.</p>
-          <Button className="diario-boton principal" onClick={() => agregar(true)}>Agregar a mi familia</Button>
+          <Button className="boton-principal" onClick={() => agregar(true)}>Agregar a mi familia</Button>
         </div>}
-        {lazos && geo && lazos.grupos.length > 0 && (red ? <div className="red" style={{ height: geo.alto }}>
+        {lazos && geo && lazos.grupos.length > 0 && (red && vista === 'red' ? <div className="red" style={{ height: geo.alto }}>
           <svg className="red-hilos" width={ancho} height={geo.alto} aria-hidden="true">
             {lazos.grupos.map(g => <path key={g.id} d={hilo(geo.centro, geo.grupos.get(g.id)!, 80)} className={`hilo-centro${activo && activo !== g.id ? ' apagado' : ''}`}/>)}
             {geo.personas.map(p => {
@@ -224,24 +245,20 @@ export function MiGente({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api
           {geo.personas.map(p => { const q = geo.puntos.get(p.id)!; return <button key={p.id} type="button" className={`red-persona estado-${p.estado}${p.puerta ? ' con-puerta' : ''}`} aria-pressed={personaId === p.id}
             aria-label={`${p.nombre}: ${textoDe(p.estado, p.grupo === 'raiz')}${p.puerta ? '. Dejó su puerta abierta' : ''}`} style={{ left: q.x, top: q.y }} onClick={() => elegirPersona(p.id)}>
             <span className="punto" aria-hidden="true"/>{p.nombre}</button>; })}
-        </div> : <div className="red-lista">
-          <div className="red-centro lista"><span className="red-orbe" aria-hidden="true"/><strong>{perfil.nombre.split(' ')[0]}</strong></div>
-          {lazos.grupos.map(g => <section key={g.id} className={`red-rama vidrio tipo-${g.tipo}`} aria-label={g.nombre}>
-            <button type="button" className="red-rama-titulo" onClick={() => elegirGrupo(g.id)}><span>{rango[g.tipo]}</span>{g.nombre}</button>
-            <ul>{lazos.personas.filter(p => p.grupo === g.id).map(p => <li key={p.id}>
-              <button type="button" className={`red-persona lista estado-${p.estado}${p.puerta ? ' con-puerta' : ''}`} aria-pressed={personaId === p.id} onClick={() => elegirPersona(p.id)}>
-                <span className="punto" aria-hidden="true"/>{p.nombre}<small>{textoDe(p.estado, p.grupo === 'raiz').split('.')[0]}</small></button>
-            </li>)}</ul>
-          </section>)}
+        </div> : <div className="grupos-gente">
+          {grupoLista('Raíz', 'Familia', raiz, filasDe(raiz))}
+          {grupoLista('Tronco', 'Quienes me nutren', tronco, filasDe(tronco))}
+          {grupoLista('Mis Moais', 'Planes y encuentros', moais, moais.map(g => <Fila key={g.id} punto="estado-vivo"
+            detalle={personasDe(g).map(p => p.nombre).join(', ')} onClick={() => ir(`/moais/${g.moaiId}`)}>{g.nombre}</Fila>))}
+          {grupoLista('Rama', 'Con quienes te viste', rama, filasDe(rama))}
         </div>)}
+        {lazos && lazos.grupos.length > 0 && <Button className="boton-secundario ancho" onClick={() => agregar(true)}><Plus aria-hidden="true"/>Agregar a mi familia o a quien me nutre</Button>}
       </div>
-      {/* Sin red y sin nada pendiente, el panel sobra: la invitación a empezar ya está a la vista.
-          En el teléfono el panel sube cuando hay algo que responder o alguien elegido; si no, primero la red. */}
-      <aside className={`panel-lazo vidrio${pendiente || !nadaElegido || panel.tipo === 'agregar' ? ' arriba' : ''}`} aria-live="polite" ref={aside} hidden={panel.tipo === 'nada' && nadaElegido && !pendiente && !gente?.pausa && !!lazos && !lazos.grupos.length}>
-        {gente?.pausa && <Pausa/>}
+      {/* El panel de una persona: al lado en el escritorio; en el teléfono, una hoja que sube al elegir a alguien. */}
+      <aside className={`panel-lazo panel${conPanel ? ' abierto' : ''}`} aria-live="polite" ref={aside} hidden={!conPanel && !red}>
+        {conPanel && <button type="button" className="hoja-plan-cerrar" aria-label="Cerrar" onClick={() => { setPersonaId(null); setGrupoId(null); setPanel({ tipo: 'nada' }); }}><X aria-hidden="true"/></button>}
         {panel.tipo === 'agregar'
           ? <AgregarInterno api={api} familia={panel.familia} alListo={() => { setPanel({ tipo: 'nada' }); recargar(); }} alCancelar={() => setPanel({ tipo: 'nada' })}/>
-          : nadaElegido && pendiente && gente ? <ParaResponder gente={gente} api={api} usar={r => { usar(r); cargar(); }}/>
           : <Detalle persona={persona} grupo={grupo} gente={gente} api={api} ir={ir} alCambiar={recargar} usar={usar} agregar={agregar}/>}
       </aside>
     </main>

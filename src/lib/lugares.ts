@@ -63,7 +63,10 @@ export const nombreDeZona = (ciudad: string, barrio: string | null) => {
 };
 
 // Un plan: qué, cuándo, dónde (lugar público, nunca la casa de nadie) y hasta dónde llega.
-export type EntradaPlan = { titulo: string; descripcion?: string; cuando: string; lugarPublico: string; ciudad: string; barrio?: string | null; alcance: Alcance; cupo?: number | null; tipo?: Tipo; repite?: Repite };
+// Costo (rediseño del 19 de octubre): «Gratis» o «Cada quien paga lo suyo». MOAI nunca maneja dinero.
+export type Costo = 'gratis' | 'cada_quien';
+export const costos: { id: Costo; nombre: string }[] = [{ id: 'gratis', nombre: 'Gratis' }, { id: 'cada_quien', nombre: 'Cada quien paga lo suyo' }];
+export type EntradaPlan = { titulo: string; descripcion?: string; cuando: string; lugarPublico: string; ciudad: string; barrio?: string | null; alcance: Alcance; cupo?: number | null; tipo?: Tipo; repite?: Repite; costo?: Costo };
 export type ErroresPlan = Partial<Record<keyof EntradaPlan, string>>;
 const DIAS_MAXIMOS = 60;
 
@@ -92,8 +95,9 @@ export function validarPlan(entrada: Partial<EntradaPlan>, ahora: Date, { maxCup
   if (cupo !== null && (!Number.isInteger(cupo) || cupo < 2 || cupo > maxCupo)) errores.cupo = `El cupo va de 2 a ${maxCupo} personas.`;
   const tipo: Tipo = tipos.includes(entrada.tipo as Tipo) ? entrada.tipo as Tipo : 'otro';
   const repite: Repite = entrada.repite === 'semanal' ? 'semanal' : null;
+  const costo: Costo = entrada.costo === 'cada_quien' ? 'cada_quien' : 'gratis';
   if (Object.keys(errores).length) return { ok: false, errores };
-  return { ok: true, plan: { titulo, descripcion, cuando, lugarPublico, ciudad, barrio: barrio?.codigo ?? null, alcance, cupo, celda: barrio?.celda ?? null, tipo, repite } };
+  return { ok: true, plan: { titulo, descripcion, cuando, lugarPublico, ciudad, barrio: barrio?.codigo ?? null, alcance, cupo, celda: barrio?.celda ?? null, tipo, repite, costo } };
 }
 
 // ---- Planes de barrio (12 de octubre): cerca, gratis o casi, cortos y algo que harías igual ----

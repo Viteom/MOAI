@@ -112,7 +112,7 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     const privada = (() => {
       if (ruta === '/inicio') return <InicioBrisa key={window.location.search} perfil={perfil} api={api} ir={ir} onSalir={salir} empezar={(['plan', 'perfil', 'estado'] as const).find(e => new URLSearchParams(window.location.search).has(e))}/>;
       // Tres lugares: Brisa (/inicio), Mi barrio (/comunidad; /zona abre Vecinos) y Mi gente (/gente; /lazos, el nombre anterior).
-      if (ruta === '/comunidad' || ruta === '/zona') return <MiComunidad key={ruta} perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={refrescar} inicial={ruta === '/zona' ? 'vecinos' : 'planes'}/>;
+      if (ruta === '/comunidad' || ruta === '/zona') return <MiComunidad key={ruta} perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={refrescar} inicial={ruta === '/zona' ? 'vecinos' : 'mapa'}/>;
       if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
       if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
       if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;

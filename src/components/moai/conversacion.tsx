@@ -5,7 +5,11 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import type { Api, Mensaje, Respuesta } from '@/lib/api';
+import { SendHorizontal } from 'lucide-react';
 import { ReportarPersona } from './gente';
+import { Dictado } from './brisa';
+
+const horaDe = (iso: string) => new Intl.DateTimeFormat('es-CO', { hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
 
 export function Conversacion({ tipo, id, api, puedeEscribir = true, nota }: { tipo: 'plan' | 'moai'; id: string; api: Api; puedeEscribir?: boolean; nota: string }) {
   const [mensajes, setMensajes] = useState<Mensaje[] | null>(null);
@@ -39,7 +43,7 @@ export function Conversacion({ tipo, id, api, puedeEscribir = true, nota }: { ti
     <div className="mensajes" aria-live="polite">
       {mensajes?.length === 0 && <p>Todavía no hay mensajes. Puedes saludar o contar cómo te reconocen.</p>}
       {mensajes?.map(m => <div key={m.id} className={`mensaje${m.mio ? ' mio' : ''}`}>
-        <p><strong>{m.autor}</strong> {m.texto}</p>
+        <p><strong>{m.autor}</strong> {m.texto}{m.creado && <time dateTime={m.creado}>{horaDe(m.creado)}</time>}</p>
         {m.autorRef && reportando !== m.id && <button type="button" className="mensaje-reportar" onClick={() => setReportando(m.id)}>Reportar</button>}
         {m.autorRef && reportando === m.id && <ReportarPersona referencia={m.autorRef} nombre={m.autor} api={api} mensaje={{ tipo, id: m.id, texto: m.texto }}
           onListo={g => { if (!g) setReportando(null); }}/>}
@@ -48,8 +52,9 @@ export function Conversacion({ tipo, id, api, puedeEscribir = true, nota }: { ti
     </div>
     {puedeEscribir && <form className="mensaje-form" onSubmit={alEnviar}>
       <label htmlFor={`mensaje-${tipo}`} className="solo-lectores">Escribe un mensaje</label>
-      <input id={`mensaje-${tipo}`} className="cuenta-campo" maxLength={500} placeholder="Escribe un mensaje" value={texto} onChange={e => { setTexto(e.target.value); setAviso(''); }}/>
-      <Button type="submit" className="diario-boton principal">Enviar</Button>
+      <input id={`mensaje-${tipo}`} className="cuenta-campo" maxLength={500} placeholder="Escribe un mensaje…" value={texto} onChange={e => { setTexto(e.target.value); setAviso(''); }} autoComplete="off"/>
+      <Dictado alTexto={t => { setTexto(t); setAviso(''); }}/>
+      <button type="submit" className="boton-enviar" aria-label="Enviar"><SendHorizontal aria-hidden="true"/></button>
     </form>}
     {aviso && <div className="mensaje-aviso" role="alert">
       <p>{aviso}</p>
