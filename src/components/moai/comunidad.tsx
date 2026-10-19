@@ -4,7 +4,7 @@
 // Nunca se inventan planes, personas ni distancias; nada de contadores (regla 5).
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { alcances, costos, hayBarrios, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type Costo, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
+import { alcances, costos, hayBarrios, validarPlan, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type Costo, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
 import type { Api, Lugar, Mapa, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
 import { Building2, CalendarDays, ChevronDown, ChevronRight, Coffee, Coins, Flag, Footprints, HandHeart, Home, MapPin, MessagesSquare, Navigation, Plus, Puzzle, Repeat, Scissors, Search, ShoppingBag, Sparkles, Sprout, Trash2, Wallet, X } from 'lucide-react';
 import { claseDePlan, cuandoCorto, EscenaBarrio, imagenDePlan, quienPropone } from './barrio-escena';
@@ -273,7 +273,19 @@ const ICONOS_TIPO: Record<string, typeof Footprints> = { caminar: Footprints, ti
 export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void }) {
   const moaiId = new URLSearchParams(window.location.search).get('moai');
   const [moai, setMoai] = useState<{ id: string; nombre: string } | null>(null);
-  useEffect(() => { if (moaiId) void api.gente().then(r => { const m = r.ok ? r.datos.moais.find(x => x.id === moaiId) : undefined; if (m) setMoai({ id: m.id, nombre: m.nombre }); }); }, [api, moaiId]);
+  // Revisión de Codex: un encuentro pedido para un Moai nunca se vuelve público. Hasta confirmar el Moai, no hay formulario.
+  const [errorMoai, setErrorMoai] = useState('');
+  const cargarMoai = useCallback(() => {
+    if (!moaiId) return;
+    setErrorMoai('');
+    void api.gente().then(r => {
+      const m = r.ok ? r.datos.moais.find(x => x.id === moaiId) : undefined;
+      if (m) setMoai({ id: m.id, nombre: m.nombre });
+      else setErrorMoai(r.ok ? 'No encontramos ese Moai entre los tuyos. Puede que hayas salido de él.' : r.error);
+    });
+  }, [api, moaiId]);
+  useEffect(cargarMoai, [cargarMoai]);
+  const [masAbierto, setMasAbierto] = useState(false);
   const [plan, setPlan] = useState({ titulo: '', descripcion: '', dia: '', hora: '', lugarPublico: '', ciudad: perfil.lugar?.ciudad ?? '', barrio: perfil.lugar?.barrio ?? '', alcance: 'cerca' as Alcance, cupo: '', tipo: 'otro' as Tipo, semanal: false, costo: 'gratis' as Costo, organizacion: '' });
   const organizaciones = perfil.organizaciones ?? [];
   const convoca = organizaciones.find(o => o.id === plan.organizacion);
@@ -284,31 +296,36 @@ export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: A
   const [enviando, setEnviando] = useState(false);
   const cambiar = (c: Partial<typeof plan>) => setPlan(p => ({ ...p, ...c }));
   const conBarrios = hayBarrios(plan.ciudad);
-  const volver = moai ? { texto: moai.nombre, ruta: `/moais/${moai.id}` } : { texto: 'Mi barrio', ruta: '/comunidad' };
+  const volver = moaiId ? { texto: moai?.nombre ?? 'Mi gente', ruta: moai ? `/moais/${moai.id}` : '/gente' } : { texto: 'Mi barrio', ruta: '/comunidad' };
+  // Un encuentro de Moai lo ven solo sus miembros: el alcance por celdas no aplica y no exige barrio.
+  const entrada = (): EntradaPlan & { organizacion: string | null; moai: string | null } => ({ titulo: plan.titulo, descripcion: plan.descripcion,
+    cuando: plan.dia && plan.hora ? new Date(`${plan.dia}T${plan.hora}`).toISOString() : '', lugarPublico: plan.lugarPublico, ciudad: plan.ciudad, barrio: plan.barrio || null,
+    alcance: moaiId || !conBarrios ? 'ciudad' : plan.alcance, cupo: plan.cupo ? Number(plan.cupo) : null, tipo: plan.tipo, repite: plan.semanal ? 'semanal' : null, costo: plan.costo,
+    organizacion: moaiId ? null : convoca?.id ?? null, moai: moaiId });
+  const ocultos: (keyof ErroresPlan)[] = ['descripcion', 'ciudad', 'barrio', 'alcance', 'cupo'];
+  const usarErrores = (e: ErroresPlan) => { setErrores(e); if (ocultos.some(k => e[k])) setMasAbierto(true); };
   function revisar(e: FormEvent) {
     e.preventDefault();
-    const faltan: ErroresPlan = {};
-    if (plan.titulo.trim().length < 3) faltan.titulo = 'Cuéntanos en pocas palabras qué quieres hacer.';
-    if (!plan.dia || !plan.hora) faltan.cuando = 'Elige el día y la hora.';
-    if (plan.lugarPublico.trim().length < 3) faltan.lugarPublico = 'Escribe un lugar público: un parque, una biblioteca, un café…';
-    setErrores(faltan);
-    if (!Object.keys(faltan).length) setRevisando(true);
+    // Las mismas reglas que el servidor, antes de mostrar la revisión.
+    const r = validarPlan(entrada(), new Date(), { maxCupo: convoca ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN });
+    if (r.ok) { setErrores({}); setRevisando(true); } else usarErrores(r.errores);
   }
   async function publicar() {
-    if (enviando) return;
-    const cuando = new Date(`${plan.dia}T${plan.hora}`).toISOString();
-    const entrada: EntradaPlan & { organizacion: string | null; moai: string | null } = { titulo: plan.titulo, descripcion: plan.descripcion, cuando, lugarPublico: plan.lugarPublico, ciudad: plan.ciudad, barrio: plan.barrio || null,
-      alcance: conBarrios ? plan.alcance : 'ciudad', cupo: plan.cupo ? Number(plan.cupo) : null, tipo: plan.tipo, repite: plan.semanal ? 'semanal' : null, costo: plan.costo, organizacion: convoca?.id ?? null, moai: moai?.id ?? null };
+    if (enviando || (moaiId && !moai)) return;
     setEnviando(true);
-    const r = await api.crearPlan(entrada);
+    const r = await api.crearPlan(entrada());
     setEnviando(false);
-    if (r.ok) ir(volver.ruta); else { setErrores((r.errores ?? {}) as ErroresPlan); setError(r.errores ? '' : r.error); setRevisando(false); }
+    if (r.ok) ir(volver.ruta); else { usarErrores((r.errores ?? {}) as ErroresPlan); setError(r.errores ? '' : r.error); setRevisando(false); }
   }
   const cuandoLegible = plan.dia && plan.hora ? capital(new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }).format(new Date(`${plan.dia}T${plan.hora}`))) : '';
 
   return <Diario titulo={convoca ? `Convocar a nombre de ${convoca.nombre}` : '¿Qué vas a hacer?'} bajada={convoca ? 'Cuenta qué necesitan y cuántas personas buscan. Se verá con el nombre de la entidad.' : moai ? `Un encuentro solo para tu Moai «${moai.nombre}».` : 'Algo sencillo puede ser una oportunidad para encontrarse.'}
     imagen="crear" ir={ir} actual={moai ? 'gente' : 'barrio'} volver={volver} onSalir={onSalir}>
-    {revisando ? <section className="panel plan-ficha" aria-labelledby="revision-titulo">
+    {moaiId && !moai ? <div className="panel" role={errorMoai ? 'alert' : 'status'}>
+      {errorMoai ? <><p>{errorMoai}</p><div className="acciones-fila"><Button className="boton-principal" onClick={cargarMoai}>Intentar de nuevo</Button><Button className="boton-secundario" onClick={() => ir('/gente')}>Volver a Mi gente</Button></div></>
+        : <p>Abriendo tu Moai…</p>}
+    </div>
+    : revisando ? <section className="panel plan-ficha" aria-labelledby="revision-titulo">
       <h2 id="revision-titulo">Así lo verán {moai ? `en «${moai.nombre}»` : 'tus vecinos'}</h2>
       <p className="plan-titulo-revision">{plan.titulo}</p>
       <p className="dato"><CalendarDays aria-hidden="true"/>{plan.semanal ? `Cada semana · desde el ${cuandoLegible.toLocaleLowerCase('es')}` : cuandoLegible}</p>
@@ -321,7 +338,7 @@ export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: A
       </div>
     </section>
     : <form className="panel formulario" onSubmit={revisar} noValidate>
-      {organizaciones.length > 0 && !moai && <fieldset className="campo">
+      {organizaciones.length > 0 && !moaiId && <fieldset className="campo">
         <legend>Publicar como</legend>
         <label className="opcion"><input type="radio" name="publicar-como" checked={!convoca} onChange={() => cambiar({ organizacion: '' })}/><span><strong>Yo, {perfil.nombre.split(' ')[0]}</strong> · un plan entre vecinos</span></label>
         {organizaciones.map(o => <label key={o.id} className="opcion"><input type="radio" name="publicar-como" checked={plan.organizacion === o.id} onChange={() => cambiar({ organizacion: o.id })}/><span><strong>{o.nombre}</strong> · {nombreTipoOrganizacion(o.tipo)}</span></label>)}
@@ -345,12 +362,12 @@ export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: A
           <input type="radio" name="costo" value={c.id} checked={plan.costo === c.id} onChange={() => cambiar({ costo: c.id })}/>{c.id === 'gratis' ? <Coins aria-hidden="true"/> : <Wallet aria-hidden="true"/>}{c.nombre}</label>)}</div>
         <p className="campo-ayuda">MOAI no maneja dinero: si hay un gasto, cada quien paga lo suyo en el lugar.</p>
       </fieldset>
-      <details className="mas-opciones">
-        <summary>Más opciones: barrio, alcance y cupo</summary>
+      <details className="mas-opciones" open={masAbierto} onToggle={e => setMasAbierto(e.currentTarget.open)}>
+        <summary>{moaiId ? 'Más opciones: descripción, barrio y cupo' : 'Más opciones: barrio, alcance y cupo'}</summary>
         <Campo etiqueta="Cuéntalo un poco más (opcional)" error={errores.descripcion}>{(id, d) => <textarea id={id} aria-describedby={d} className="cuenta-campo diario-textarea" maxLength={400} value={plan.descripcion} onChange={e => cambiar({ descripcion: e.target.value })}/>}</Campo>
         <Ciudad valor={plan.ciudad} onValor={ciudad => cambiar({ ciudad, barrio: '' })} error={errores.ciudad}/>
         {conBarrios && <BarrioCampo valor={plan.barrio} onValor={barrio => cambiar({ barrio })} error={errores.barrio} etiqueta="Barrio del lugar"/>}
-        {!moai && <fieldset className="campo">
+        {!moaiId && <fieldset className="campo">
           <legend>¿Hasta dónde llega la invitación?</legend>
           {(conBarrios ? alcances : alcances.filter(a => a.id === 'ciudad')).map(a => <label key={a.id} className="opcion">
             <input type="radio" name="alcance" value={a.id} checked={(conBarrios ? plan.alcance : 'ciudad') === a.id} onChange={() => cambiar({ alcance: a.id })}/>
@@ -361,6 +378,7 @@ export function NuevoPlan({ perfil, api, ir, onSalir }: { perfil: Perfil; api: A
         </fieldset>}
         <Campo etiqueta="Cupo (opcional)" error={errores.cupo} ayuda={convoca ? `Cuántas personas buscan, hasta ${MAX_CUPO_CONVOCATORIA}. Si lo dejas vacío, puede ir quien quiera.` : 'Si lo dejas vacío, puede ir quien quiera.'}>{(id, d) => <input id={id} aria-describedby={d} type="number" min={2} max={convoca ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN} inputMode="numeric" className="cuenta-campo diario-corto" value={plan.cupo} onChange={e => cambiar({ cupo: e.target.value })}/>}</Campo>
       </details>
+      {ocultos.some(k => errores[k]) && <p className="campo-error" role="alert">Falta algo en «Más opciones». Lo abrimos para que lo veas.</p>}
       {error && <p className="campo-error" role="alert">{error}</p>}
       <Button type="submit" className="boton-principal ancho">Revisar mi plan</Button>
     </form>}

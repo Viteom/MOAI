@@ -13,6 +13,8 @@ const api = (extra: Partial<Api> = {}) => ({ planes: ok([caminata]), irAPlan: ok
 
 // Un tablero mínimo: tu zona en el centro y una celda vecina al norte con el plan de Luis.
 const hex = (x: number, y: number, anillo: number, barrio?: string) => ({ x, y, anillo, barrio, puntos: [[x - 500, y], [x - 250, y - 430], [x + 250, y - 430], [x + 500, y], [x + 250, y + 430], [x - 250, y + 430]] as [number, number][] });
+// Un día que siempre está por venir: el formulario valida igual que el servidor.
+const pasadoManana = () => { const d = new Date(Date.now() + 2 * 864e5); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const mapa = { disponible: true as const, celdas: [hex(0, 0, 0, 'Laureles'), hex(0, -860, 1, 'Lorena')], planes: [{ id: 'p1', x: 0, y: -860 }] };
 
 describe('Mi barrio', () => {
@@ -127,7 +129,7 @@ describe('Proponer un plan', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Caminar' }));
     expect(screen.getByLabelText('Tu invitación')).toHaveValue('Voy a caminar, ¿alguien viene?');
     fireEvent.change(screen.getByLabelText('Repetición'), { target: { value: 'semanal' } });
-    fireEvent.change(screen.getByLabelText('Día'), { target: { value: '2026-10-13' } });
+    fireEvent.change(screen.getByLabelText('Día'), { target: { value: pasadoManana() } });
     fireEvent.change(screen.getByLabelText('Hora'), { target: { value: '10:00' } });
     fireEvent.change(screen.getByLabelText('Lugar público'), { target: { value: 'Parque de los Deseos' } });
     expect(screen.getByRole('radio', { name: 'Gratis' })).toBeChecked();
@@ -148,14 +150,41 @@ describe('Proponer un plan', () => {
     render(<NuevoPlan perfil={perfil} api={api({ crearPlan, gente })} ir={ir} onSalir={vi.fn()}/>);
     expect(await screen.findByText('Un encuentro solo para tu Moai «Tinto de los jueves».')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Un tinto' }));
-    fireEvent.change(screen.getByLabelText('Día'), { target: { value: '2026-10-22' } });
+    fireEvent.change(screen.getByLabelText('Día'), { target: { value: pasadoManana() } });
     fireEvent.change(screen.getByLabelText('Hora'), { target: { value: '09:00' } });
     fireEvent.change(screen.getByLabelText('Lugar público'), { target: { value: 'Café del parque' } });
     fireEvent.click(screen.getByRole('button', { name: 'Revisar mi plan' }));
     fireEvent.click(screen.getByRole('button', { name: 'Publicar' }));
     await vi.waitFor(() => expect(ir).toHaveBeenCalledWith('/moais/m1'));
-    expect(crearPlan).toHaveBeenCalledWith(expect.objectContaining({ moai: 'm1' }));
+    expect(crearPlan).toHaveBeenCalledWith(expect.objectContaining({ moai: 'm1', alcance: 'ciudad', organizacion: null }));
     window.history.pushState({}, '', '/');
+  });
+
+  it('si el Moai no carga, no hay formulario: el encuentro nunca se vuelve público', async () => {
+    window.history.pushState({}, '', '/planes/nuevo?moai=m1');
+    const crearPlan = ok([caminata]);
+    const gente = vi.fn(async () => ({ ok: false as const, error: 'Sin conexión.', status: 0 }));
+    render(<NuevoPlan perfil={perfil} api={api({ crearPlan, gente } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText('Sin conexión.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Revisar mi plan' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Intentar de nuevo' })).toBeInTheDocument();
+    expect(crearPlan).not.toHaveBeenCalled();
+    window.history.pushState({}, '', '/');
+  });
+
+  it('en Medellín sin barrio, el error de «Más opciones» se ve antes de publicar', () => {
+    const crearPlan = ok([caminata]);
+    render(<NuevoPlan perfil={perfil} api={api({ crearPlan })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(screen.getByRole('button', { name: 'Caminar' }));
+    fireEvent.change(screen.getByLabelText('Día'), { target: { value: pasadoManana() } });
+    fireEvent.change(screen.getByLabelText('Hora'), { target: { value: '10:00' } });
+    fireEvent.change(screen.getByLabelText('Lugar público'), { target: { value: 'Parque de los Deseos' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Revisar mi plan' }));
+    expect(screen.getByText('Falta algo en «Más opciones». Lo abrimos para que lo veas.')).toBeInTheDocument();
+    expect(screen.getByText('Elige el barrio del lugar para que llegue a quienes viven cerca.')).toBeInTheDocument();
+    expect(document.querySelector('details.mas-opciones')).toHaveAttribute('open');
+    expect(screen.queryByRole('button', { name: 'Publicar' })).toBeNull();
+    expect(crearPlan).not.toHaveBeenCalled();
   });
 });
 
