@@ -19,6 +19,7 @@ async function leerLimitado(r: Response) {
     return JSON.parse(Buffer.concat(partes).toString('utf8')) as Record<string, unknown>;
   } finally { reader.releaseLock(); }
 }
+const pensarPoco = (modelo: string) => /^gemini-[12]\./.test(modelo) ? { thinkingBudget: 0 } : { thinkingLevel: 'low' };
 export function geminiDesdeEntorno(env: Record<string, string | undefined>, transporte: TransporteModelo = fetch): ProveedorBrisa | null {
   if (env.BRISA_GEMINI_BETA !== 'true') return null;
   const clave = env.GEMINI_API_KEY?.trim(), modelo = env.GEMINI_MODEL?.trim();
@@ -33,7 +34,9 @@ export function geminiDesdeEntorno(env: Record<string, string | undefined>, tran
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: instruccionesLenguaje }] },
             contents: [{ role: 'user', parts: [{ text: frase }] }],
-            generationConfig: { candidateCount: 1, maxOutputTokens: 600, temperature: 0, responseMimeType: 'application/json', responseJsonSchema: esquemaExtraccion },
+            // Pensar lo menos posible: si no, el razonamiento consume los tokens de salida y corta la respuesta (MAX_TOKENS),
+            // visto en la primera prueba real (20 de octubre). La familia 2.5 usa un presupuesto; las siguientes, un nivel.
+            generationConfig: { candidateCount: 1, maxOutputTokens: 600, temperature: 0, responseMimeType: 'application/json', responseJsonSchema: esquemaExtraccion, thinkingConfig: pensarPoco(modelo) },
           }),
         });
         if (!respuesta.ok) { await respuesta.body?.cancel(); throw new FalloGemini(); }

@@ -67,3 +67,14 @@ Los límites de MOAI acotan peticiones, no son un presupuesto monetario. **No se
 - Sin errores JavaScript, solicitudes externas del navegador ni desbordamiento horizontal; controles nuevos de 48 px y panel por encima de la navegación. Se corrigió la composición para que el botón principal preceda la ayuda y esta se cierre al interpretar.
 
 [18 capturas reales de la interfaz](gemini-beta.html), con la condición de simulación indicada en la galería y las [mediciones](capturas/gemini-beta/verificacion.json). Scripts de verificación temporales: `/tmp/moai-gemini-browser.mts` y `/tmp/playwright-test-gemini-beta.cjs`. No se incorporan datos de prueba al producto.
+
+## Primera llamada real (20 de octubre de 2026)
+
+Con la clave de Mateo en su `.env` local y `GEMINI_MODEL=gemini-flash-latest`, desde la cuenta de prueba y con frases inventadas:
+
+- Al principio fallaba: el modelo «pensaba» antes de responder y gastaba casi todo el límite de 600 tokens de salida (`finishReason: MAX_TOKENS`). Se corrigió pidiendo que piense lo menos posible (`thinkingConfig`: `thinkingBudget: 0` en la familia 2.x y `thinkingLevel: 'low'` en las siguientes; `minimal` no lo admite este modelo).
+- «Tengo libre el sábado y quisiera estirar las piernas con alguien» → «caminar el sábado». «quiero sembrar en la huerta este fin de semana» → «huerta esta semana el sábado el domingo». Unos 7 segundos por frase a través de MOAI.
+- Una de varias llamadas superó los 12 segundos y se cortó como estaba previsto: en la modalidad gratuita, la latencia de Google varía.
+- «me provoca un café el jueves, algo que no cueste» llegó bien a Gemini, pero MOAI la rechazó: «algo que no cueste» cuenta como restricción que esta versión no representa todavía.
+
+Diagnóstico sin exponer la clave ni el texto de la respuesta: `npx tsx --env-file=.env scripts/diagnostico-gemini.ts "frase inventada"` (muestra modelo, estado HTTP, `finishReason` y tokens).
