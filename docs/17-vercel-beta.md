@@ -9,7 +9,7 @@ La parte visual de Vite no ejecuta por sí sola `server/index.ts`. Este cambio a
 1. Abrir el proyecto **moai → Storage**. Revisar si aparece una base PostgreSQL conectada. Una base de tipo Blob o Redis no sustituye PostgreSQL.
 2. Si no existe, conectar una integración PostgreSQL desde **Storage / Marketplace**, por ejemplo Neon, revisando los límites, región y condiciones de su cuenta. No se ha contratado ni creado ningún recurso desde aquí; no se promete gratuidad permanente.
 3. Usar una base o rama **exclusiva de la beta**, con datos ficticios. Conectarla al entorno **Preview**. Nunca reutilizar la base de producción para previews de ramas.
-4. En **Settings → Environment Variables**, comprobar que existe **`DATABASE_URL`**. Algunas integraciones crean `POSTGRES_URL` u otro nombre: MOAI necesita `DATABASE_URL`, cuyo valor debe ser la conexión PostgreSQL agrupada que ofrece el proveedor. Introducirlo únicamente en Vercel o en el entorno privado de desarrollo; no en el chat, capturas, Git ni variables `VITE_`.
+4. En **Settings → Environment Variables** del proyecto **moai**, comprobar que existe **`DATABASE_URL`** o **`DATABASE_URL_DATABASE_URL`** para Preview. La captura de Mateo muestra el segundo nombre: la integración añadió un prefijo al nombre original. MOAI reconoce ambos en la función de Vercel, el servidor continuo y `db:prepare`; no hace falta copiar ni revelar el secreto para corregir el nombre. Si existen ambos, `DATABASE_URL` tiene prioridad. Otras integraciones pueden usar nombres diferentes: configurar en ese caso `DATABASE_URL` con la conexión PostgreSQL agrupada del proveedor, únicamente en el entorno privado; nunca en el chat, capturas, Git ni variables `VITE_`.
 
 Enlace del proyecto indicado por Mateo: <https://vercel.com/vasees/moai/settings/environment-variables>. Las etiquetas de la interfaz pueden variar.
 
@@ -19,7 +19,7 @@ Cada variable se añade por separado. El despliegue usa Node 24; fijar **Node.js
 
 | Variable | Uso |
 | --- | --- |
-| `DATABASE_URL` | Conexión PostgreSQL persistente de la beta, preferiblemente con pooler y TLS según el proveedor. No se desactiva la verificación del certificado. |
+| `DATABASE_URL` o `DATABASE_URL_DATABASE_URL` | Conexión PostgreSQL persistente de la beta, preferiblemente con pooler y TLS según el proveedor. El segundo nombre ya aparece en la integración de Mateo. No se desactiva la verificación del certificado. |
 | `CODIGO_SECRETO` | Secreto aleatorio de al menos 32 caracteres para cifrado y autenticación. Debe conservarse estable junto con las copias de la base. |
 | `RESEND_API_KEY` | Clave del proveedor de correo. No hay códigos de acceso en los registros de Vercel, tampoco en Preview. |
 | `CORREO_REMITENTE` | Remitente de un dominio verificado en Resend, por ejemplo `MOAI <hola@tu-dominio.co>`. |
@@ -35,7 +35,7 @@ Cada variable se añade por separado. El despliegue usa Node 24; fijar **Node.js
 
 ## Preparar el esquema antes de recibir visitas
 
-Desde un entorno de desarrollo de confianza que tenga acceso a **la base de Preview**, configurar de forma privada `DATABASE_URL` y ejecutar:
+Desde un entorno de desarrollo de confianza que tenga acceso a **la base de Preview**, configurar de forma privada `DATABASE_URL` o `DATABASE_URL_DATABASE_URL` y ejecutar:
 
 ```sh
 npm ci
@@ -81,6 +81,7 @@ La función tiene un máximo configurado de 60 segundos. El mantenimiento actual
 - Respuestas de API sin caché compartida, claves solo del servidor, errores de infraestructura sanitizados y correo obligatorio incluso en Preview. Se conservan límites, permisos, cifrado, sesiones y reglas de Brisa.
 - `server/vercel.test.ts`: solicitudes HTTP reales a la entrada de la función con PGlite aislado y transporte externo simulado: arranque concurrente, JSON POST, código de correo, cookie segura, sesión, interpretación con autorización sin ejecutar acciones, conservación de datos al preparar el esquema otra vez, tarea protegida, borrado de vencidos y recuperación de errores.
 - Verificación local: **283 pruebas en 38 archivos aprobadas**, `npm run build` aprobado y entrada `api/index.ts` compilada con esbuild para Node. Persiste el aviso previo de Vite por el paquete principal de más de 500 kB. No se añadieron dependencias.
+- Ajuste posterior al observar el nombre real generado por Neon: **10 pruebas del adaptador y configuración aprobadas** y nueva compilación aprobada. Incluyen prioridad de la variable explícita, rechazo de URL inválida y el recorrido HTTP usando solo `DATABASE_URL_DATABASE_URL`. Sin nueva conexión a un proveedor real.
 - **Sin conexión al panel de Vercel, PostgreSQL administrado, correo real ni Google real.** Las pruebas locales no demuestran el enrutamiento de la plataforma, TLS del proveedor, límites del plan, concurrencia entre procesos de PostgreSQL ni calidad real del modelo. Completar el recorrido de Preview de arriba antes de declarar operativo el despliegue.
 
 Patrón del adaptador contrastado con el ejemplo oficial `vercel/examples`, `starter/fastify/api/index.js` y `vercel.json`, revisión `de86723` (16 de octubre de 2026). Tipos y runtime de Node contrastados con `vercel/vercel`. La documentación web de Vercel no pudo consultarse desde este entorno por el proxy; estos repositorios oficiales sí fueron accesibles por Git.

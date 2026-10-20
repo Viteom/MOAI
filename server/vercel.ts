@@ -7,11 +7,13 @@ import { crearCifrador } from './cifrado';
 import { viasDesdeEntorno } from './envios';
 import { geminiDesdeEntorno } from './gemini';
 import { registrarTareasVercel } from './tareas-vercel';
+import { urlDbDesdeEntorno } from './entorno-db';
 
 export class ConfiguracionVercelIncompleta extends Error {
   constructor(readonly variables: string[]) { super('Falta configuración del servidor de MOAI.'); }
 }
-export function validarEntornoVercel(env: NodeJS.ProcessEnv) {
+export function validarEntornoVercel(entrada: NodeJS.ProcessEnv) {
+  const env: NodeJS.ProcessEnv = { ...entrada, DATABASE_URL: urlDbDesdeEntorno(entrada) };
   const necesarias = ['DATABASE_URL', 'CODIGO_SECRETO', 'RESEND_API_KEY', 'CORREO_REMITENTE', 'APP_URL', 'CRON_SECRET'];
   const faltantes = necesarias.filter(nombre => !env[nombre]?.trim());
   if (faltantes.length) throw new ConfiguracionVercelIncompleta(faltantes);
@@ -27,12 +29,12 @@ export function validarEntornoVercel(env: NodeJS.ProcessEnv) {
     if (!['postgres:', 'postgresql:'].includes(url.protocol) || !url.hostname) invalidas.push('DATABASE_URL');
   } catch { invalidas.push('DATABASE_URL'); }
   if (invalidas.length) throw new ConfiguracionVercelIncompleta(invalidas);
+  return env;
 }
 
 export async function iniciarVercel(env: NodeJS.ProcessEnv = process.env, abrir: typeof abrirDb = abrirDb) {
-  validarEntornoVercel(env);
   // También las previews usan cookies seguras y correo real: nunca códigos en registros de Vercel.
-  const entorno: NodeJS.ProcessEnv = { ...env, NODE_ENV: 'production' };
+  const entorno: NodeJS.ProcessEnv = { ...validarEntornoVercel(env), NODE_ENV: 'production' };
   const envios = viasDesdeEntorno(entorno);
   const modeloBrisa = geminiDesdeEntorno(entorno);
   const db = await abrir({ url: entorno.DATABASE_URL, inicializar: false, maxConexiones: 3 });

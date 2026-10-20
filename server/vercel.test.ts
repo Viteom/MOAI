@@ -6,6 +6,7 @@ import type { FastifyInstance } from 'fastify';
 import { abrirDb, prepararEsquema, type Db } from './db';
 import { ConfiguracionVercelIncompleta, crearManejadorVercel, iniciarVercel, validarEntornoVercel } from './vercel';
 import { VERSION_LENGUAJE } from '../src/lib/lenguaje-brisa';
+import { urlDbDesdeEntorno } from './entorno-db';
 
 const entorno: NodeJS.ProcessEnv = {
   DATABASE_URL: 'postgresql://prueba:clave-ficticia@base.invalid/moai?sslmode=require',
@@ -16,6 +17,18 @@ const entorno: NodeJS.ProcessEnv = {
 };
 
 describe('Configuración de Vercel', () => {
+  it('reconoce el nombre generado por Neon sin modificar el entorno original', () => {
+    const { DATABASE_URL, ...resto } = entorno;
+    const neon = { ...resto, DATABASE_URL_DATABASE_URL: ` ${DATABASE_URL} ` };
+    expect(validarEntornoVercel(neon).DATABASE_URL).toBe(DATABASE_URL);
+    expect(Object.hasOwn(neon, 'DATABASE_URL')).toBe(false);
+    expect(urlDbDesdeEntorno({ DATABASE_URL: ' ', DATABASE_URL_DATABASE_URL: DATABASE_URL })).toBe(DATABASE_URL);
+    expect(urlDbDesdeEntorno({ DATABASE_URL: ' ', DATABASE_URL_DATABASE_URL: ' ' })).toBeUndefined();
+  });
+  it('conserva la conexión explícita y no rescata una URL inválida con otra base de Neon', () => {
+    expect(urlDbDesdeEntorno({ ...entorno, DATABASE_URL_DATABASE_URL: 'postgresql://otra.invalid/beta' })).toBe(entorno.DATABASE_URL);
+    expect(() => validarEntornoVercel({ ...entorno, DATABASE_URL: 'file://base-invalida', DATABASE_URL_DATABASE_URL: entorno.DATABASE_URL })).toThrow(ConfiguracionVercelIncompleta);
+  });
   it('exige base persistente, cifrado, correo y autorización de tareas incluso en Preview', () => {
     expect(() => validarEntornoVercel({ NODE_ENV: 'development', VERCEL_ENV: 'preview' })).toThrow(ConfiguracionVercelIncompleta);
     try { validarEntornoVercel({}); } catch (e) {
@@ -72,7 +85,8 @@ describe('Entrada HTTP real de la función con base aislada y proveedores simula
       }
       throw new Error('No se permiten otras llamadas externas en esta prueba.');
     }));
-    iniciar.mockImplementation(async () => { app = await iniciarVercel(entorno, abrir); return app; });
+    const { DATABASE_URL, ...resto } = entorno;
+    iniciar.mockImplementation(async () => { app = await iniciarVercel({ ...resto, DATABASE_URL_DATABASE_URL: DATABASE_URL }, abrir); return app; });
     servidor = createServer(crearManejadorVercel(iniciar)); servidor.listen(0, '127.0.0.1'); await once(servidor, 'listening');
     puerto = (servidor.address() as import('node:net').AddressInfo).port;
   }, 60_000);
