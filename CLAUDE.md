@@ -68,6 +68,8 @@ Cambiar de lugar reinicia datos y selección del barrio y descarta respuestas an
 
 ## Reglas que no se negocian
 
+**Brisa: memoria e intenciones (20 de octubre de 2026, petición de Mateo):** primer recorrido real en `brisa-intenciones.tsx`, reglas compartidas en `src/lib/brisa-intenciones.ts` y rutas en `server/brisa-intenciones.ts`. Memoria de actividades/días/gratis cifrada, opcional y autorizada por 30 o 90 días, revisable/corregible/borrable en Brisa y Mi cuenta. Permiso separado y apagado para propuestas al abrir; invierno las pausa. Solo consulta/prepara; sumarse exige confirmación y revalidación con cupo compartido con la ruta normal (`server/asistencia.ts`). Nada se deduce del historial, mensajes, ánimo o notas privadas. Sin modelo externo (sigue pendiente proveedor/revisión jurídica). Documentación y capturas: `docs/15-brisa-memoria-intenciones.md`; revisión humana antes de fusionar.
+
 Antes de escribir código que toque datos de personas, lee `docs/` (en especial privacidad y consentimiento). Si una tarea contradice una de estas reglas, detente y pregunta.
 
 1. Nunca se guarda ubicación exacta ni historial de ubicaciones. Ninguna base de datos contiene coordenadas ni direcciones. Los lugares guardados de cada persona (hasta 5, privados) son celdas H3 de ~1 km sin historial; la distancia se muestra por franjas, nunca exacta. El Radar usa celdas aproximadas y etiquetas efímeras con caducidad. (Ajustada por Mateo el 12 de octubre de 2026; pendiente de revisión legal.)

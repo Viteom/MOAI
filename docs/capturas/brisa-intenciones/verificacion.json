@@ -1,0 +1,137 @@
+[
+  {
+    "tamano": "390x844",
+    "recorrido": "búsqueda→revisión→cancelar→confirmar→plan→memoria→anticipar→descartar→error→reintentar→cuenta→olvidar",
+    "errores": [],
+    "externas": [],
+    "geometria": {
+      "ancho": 390,
+      "contenido": 390,
+      "barra": 775,
+      "panel": 764
+    },
+    "controles": [
+      {
+        "texto": "Volver a la conversación",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Buscar planes",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Revisar para sumarme",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Abrir plan",
+        "alto": 48.296875
+      },
+      {
+        "texto": "No me interesa",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Actualizar memoria",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Olvidar preferencias",
+        "alto": 48.296875
+      }
+    ],
+    "persistenciaTrasRecarga": true,
+    "entradaDesdeChat": true,
+    "cambioCiudadSinDatosAnteriores": true
+  },
+  {
+    "tamano": "768x1024",
+    "recorrido": "búsqueda→revisión→cancelar→confirmar→plan→memoria→anticipar→descartar→error→reintentar→cuenta→olvidar",
+    "errores": [],
+    "externas": [],
+    "geometria": {
+      "ancho": 768,
+      "contenido": 768,
+      "barra": 940,
+      "panel": 920
+    },
+    "controles": [
+      {
+        "texto": "Volver a la conversación",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Buscar planes",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Revisar para sumarme",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Abrir plan",
+        "alto": 48.296875
+      },
+      {
+        "texto": "No me interesa",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Actualizar memoria",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Olvidar preferencias",
+        "alto": 48.296875
+      }
+    ],
+    "persistenciaTrasRecarga": true,
+    "entradaDesdeChat": true,
+    "cambioCiudadSinDatosAnteriores": true
+  },
+  {
+    "tamano": "1440x900",
+    "recorrido": "búsqueda→revisión→cancelar→confirmar→plan→memoria→anticipar→descartar→error→reintentar→cuenta→olvidar",
+    "errores": [],
+    "externas": [],
+    "geometria": {
+      "ancho": 1440,
+      "contenido": 1440,
+      "barra": 816,
+      "panel": 796
+    },
+    "controles": [
+      {
+        "texto": "Volver a la conversación",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Buscar planes",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Revisar para sumarme",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Abrir plan",
+        "alto": 48.296875
+      },
+      {
+        "texto": "No me interesa",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Actualizar memoria",
+        "alto": 48.296875
+      },
+      {
+        "texto": "Olvidar preferencias",
+        "alto": 48.296875
+      }
+    ],
+    "persistenciaTrasRecarga": true,
+    "entradaDesdeChat": true,
+    "cambioCiudadSinDatosAnteriores": true
+  }
+]

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOAI · Brisa, memoria e intenciones</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b211a;color:#e5eee6}*{box-sizing:border-box}body{margin:0}main{max-width:1240px;margin:auto;padding:24px 20px 60px}h1{font-size:clamp(28px,4vw,44px);max-width:24ch}p{line-height:1.6;max-width:75ch}a{color:#8be4d5}header>span{color:#cefa63}nav{display:flex;gap:24px;flex-wrap:wrap}nav a{display:flex;align-items:center;min-height:48px}.controles{display:flex;gap:18px;flex-wrap:wrap;padding:18px;border:1px solid #609a89;border-radius:18px;background:#133529}label{display:grid;gap:8px}select{font:inherit;color:inherit;min-height:48px;padding:10px;border-radius:12px;border:1px solid #609a89;background:#0d281e;max-width:100%}:focus-visible{outline:3px solid #cefa63;outline-offset:4px}figure{border:1px solid #609a89;border-radius:20px;padding:18px;margin:24px 0;background:#102c22}figcaption{margin-bottom:16px}img{display:block;max-width:100%;height:auto;margin:auto;max-height:1100px;border-radius:12px}.nota{padding:20px;border-left:3px solid #cefa63;background:#15392b}small{color:#bfd1c7}
+</style>
+<main>
+<header><span>MOAI · BRISA / IA</span><h1>Una intención, planes reales y tu decisión.</h1><p>Capturas reales de Chromium con servidor Fastify y una base de prueba aislada. Cuentas y planes ficticios usados solo para verificar; estas imágenes muestran el producto construido.</p></header>
+<nav><a href="15-brisa-memoria-intenciones.md">Implementación y límites</a><a href="capturas/brisa-intenciones/verificacion.json">Mediciones del navegador</a></nav>
+<p class="nota">La memoria es opcional. Las propuestas al abrir requieren otro permiso. Buscar prepara opciones; sumarse siempre exige confirmación. El primer motor usa reglas dentro de MOAI: no tiene un proveedor externo de lenguaje conectado.</p>
+<div class="controles"><label>Tamaño<select id="tamano"><option value="390x844">390 × 844 · móvil</option><option value="768x1024">768 × 1024 · tableta</option><option value="1440x900">1440 × 900 · escritorio</option></select></label><label>Paso del recorrido<select id="paso"><option value="propuestas">Planes encontrados</option><option value="confirmar">Confirmación antes de actuar</option><option value="confirmada">Acción confirmada</option><option value="autorizar">Autorización de memoria</option><option value="memoria">Propuestas con memoria autorizada</option><option value="cuenta">Memoria y comprobantes en Mi cuenta</option><option value="ciudad-vacia">Otra ciudad, sin coincidencias</option></select></label></div>
+<p role="status" id="estado"></p><figure><figcaption id="leyenda"></figcaption><a id="abrir"><img id="captura" alt=""></a></figure>
+<footer><small>Rama codex/brisa-memoria-intenciones. Comprobados: cancelar, confirmar, cupos, recarga, memoria, descarte, fallos de red, entrada desde chat y cambio de ciudad. La navegación inferior conserva su espacio. Pulsa la imagen para verla completa.</small></footer>
+</main>
+<script>
+const tamano=document.querySelector('#tamano'),paso=document.querySelector('#paso'),captura=document.querySelector('#captura'),abrir=document.querySelector('#abrir'),leyenda=document.querySelector('#leyenda');
+function mostrar(){const titulo=paso.selectedOptions[0].textContent+' · '+tamano.selectedOptions[0].textContent;const ruta='capturas/brisa-intenciones/'+tamano.value+'-'+paso.value+'.jpg';abrir.href=ruta;captura.src=ruta;captura.alt='Captura real: '+titulo;leyenda.textContent=titulo;document.querySelector('#estado').textContent='Mostrando '+titulo+'.';}
+tamano.addEventListener('change',mostrar);paso.addEventListener('change',mostrar);mostrar();
+</script>
+</html>
