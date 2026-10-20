@@ -1,0 +1,380 @@
+[
+  {
+    "size": {
+      "width": 390,
+      "height": 844
+    },
+    "joinCalls": 1,
+    "geometry": {
+      "overflow": false,
+      "nav": {
+        "x": 0,
+        "y": 771,
+        "width": 390,
+        "height": 73,
+        "bottom": 844
+      },
+      "action": {
+        "x": 16,
+        "y": 696,
+        "width": 358,
+        "height": 56,
+        "bottom": 752
+      },
+      "controls": [
+        {
+          "label": "Brisa",
+          "x": 9,
+          "y": 780,
+          "width": 91,
+          "height": 56,
+          "bottom": 836
+        },
+        {
+          "label": "Mi barrio",
+          "x": 104,
+          "y": 780,
+          "width": 91,
+          "height": 56,
+          "bottom": 836
+        },
+        {
+          "label": "Mi gente",
+          "x": 199,
+          "y": 780,
+          "width": 91,
+          "height": 56,
+          "bottom": 836
+        },
+        {
+          "label": "Más",
+          "x": 294,
+          "y": 780,
+          "width": 87,
+          "height": 56,
+          "bottom": 836
+        },
+        {
+          "label": "¿Caminamos por el parque?. Miércoles · 4:00 p. m.. Lo propone Ana",
+          "x": 98.2421875,
+          "y": 301.5,
+          "width": 56,
+          "height": 56,
+          "bottom": 357.5
+        },
+        {
+          "label": "Un tinto y una buena charla. Todos los jueves · 4:00 p. m.. Lo propone Luis",
+          "x": 235.7421875,
+          "y": 416.5,
+          "width": 56,
+          "height": 56,
+          "bottom": 472.5
+        },
+        {
+          "label": "Una tarde en la huerta. Miércoles · 4:00 p. m.. Lo propone Luz",
+          "x": 123.2421875,
+          "y": 554.5,
+          "width": 56,
+          "height": 56,
+          "bottom": 610.5
+        },
+        {
+          "label": "Estás en: Casa · Laureles",
+          "x": 16,
+          "y": 14,
+          "width": 298,
+          "height": 52,
+          "bottom": 66
+        },
+        {
+          "label": "Mapa",
+          "x": 21,
+          "y": 83,
+          "width": 109,
+          "height": 48,
+          "bottom": 131
+        },
+        {
+          "label": "Lista",
+          "x": 134,
+          "y": 83,
+          "width": 109,
+          "height": 48,
+          "bottom": 131
+        },
+        {
+          "label": "Vecinos",
+          "x": 326,
+          "y": 14,
+          "width": 48,
+          "height": 52,
+          "bottom": 66
+        },
+        {
+          "label": "Contar qué voy a hacer",
+          "x": 16,
+          "y": 696,
+          "width": 358,
+          "height": 56,
+          "bottom": 752
+        }
+      ],
+      "image": "http://127.0.0.1:5173/backgrounds/internas/barrio-1100.avif",
+      "pulse": "none"
+    },
+    "errors": [],
+    "external": []
+  },
+  {
+    "size": {
+      "width": 768,
+      "height": 1024
+    },
+    "joinCalls": 1,
+    "geometry": {
+      "overflow": false,
+      "nav": {
+        "x": 104,
+        "y": 940,
+        "width": 560,
+        "height": 70,
+        "bottom": 1010
+      },
+      "action": {
+        "x": 174,
+        "y": 862,
+        "width": 420,
+        "height": 56,
+        "bottom": 918
+      },
+      "controls": [
+        {
+          "label": "Brisa",
+          "x": 111,
+          "y": 947,
+          "width": 134.5,
+          "height": 56,
+          "bottom": 1003
+        },
+        {
+          "label": "Mi barrio",
+          "x": 249.5,
+          "y": 947,
+          "width": 134.5,
+          "height": 56,
+          "bottom": 1003
+        },
+        {
+          "label": "Mi gente",
+          "x": 388,
+          "y": 947,
+          "width": 134.5,
+          "height": 56,
+          "bottom": 1003
+        },
+        {
+          "label": "Más",
+          "x": 526.5,
+          "y": 947,
+          "width": 130.5,
+          "height": 56,
+          "bottom": 1003
+        },
+        {
+          "label": "¿Caminamos por el parque?. Miércoles · 4:00 p. m.. Lo propone Ana",
+          "x": 183.296875,
+          "y": 369,
+          "width": 56,
+          "height": 56,
+          "bottom": 425
+        },
+        {
+          "label": "Un tinto y una buena charla. Todos los jueves · 4:00 p. m.. Lo propone Luis",
+          "x": 528.6875,
+          "y": 499,
+          "width": 56,
+          "height": 56,
+          "bottom": 555
+        },
+        {
+          "label": "Una tarde en la huerta. Miércoles · 4:00 p. m.. Lo propone Luz",
+          "x": 246.09375,
+          "y": 655,
+          "width": 56,
+          "height": 56,
+          "bottom": 711
+        },
+        {
+          "label": "Estás en: Casa · Laureles",
+          "x": 23.03125,
+          "y": 21,
+          "width": 221.453125,
+          "height": 52,
+          "bottom": 73
+        },
+        {
+          "label": "Mapa",
+          "x": 372.921875,
+          "y": 23,
+          "width": 112,
+          "height": 48,
+          "bottom": 71
+        },
+        {
+          "label": "Lista",
+          "x": 488.921875,
+          "y": 23,
+          "width": 112,
+          "height": 48,
+          "bottom": 71
+        },
+        {
+          "label": "Vecinos",
+          "x": 617.921875,
+          "y": 21,
+          "width": 127.046875,
+          "height": 52,
+          "bottom": 73
+        },
+        {
+          "label": "Contar qué voy a hacer",
+          "x": 174,
+          "y": 862,
+          "width": 420,
+          "height": 56,
+          "bottom": 918
+        }
+      ],
+      "image": "http://127.0.0.1:5173/backgrounds/internas/barrio-1100.avif",
+      "pulse": "none"
+    },
+    "errors": [],
+    "external": []
+  },
+  {
+    "size": {
+      "width": 1440,
+      "height": 900
+    },
+    "joinCalls": 1,
+    "geometry": {
+      "overflow": false,
+      "nav": {
+        "x": 440,
+        "y": 816,
+        "width": 560,
+        "height": 70,
+        "bottom": 886
+      },
+      "action": {
+        "x": 510,
+        "y": 738,
+        "width": 420,
+        "height": 56,
+        "bottom": 794
+      },
+      "controls": [
+        {
+          "label": "Brisa",
+          "x": 447,
+          "y": 823,
+          "width": 134.5,
+          "height": 56,
+          "bottom": 879
+        },
+        {
+          "label": "Mi barrio",
+          "x": 585.5,
+          "y": 823,
+          "width": 134.5,
+          "height": 56,
+          "bottom": 879
+        },
+        {
+          "label": "Mi gente",
+          "x": 724,
+          "y": 823,
+          "width": 134.5,
+          "height": 56,
+          "bottom": 879
+        },
+        {
+          "label": "Más",
+          "x": 862.5,
+          "y": 823,
+          "width": 130.5,
+          "height": 56,
+          "bottom": 879
+        },
+        {
+          "label": "¿Caminamos por el parque?. Miércoles · 4:00 p. m.. Lo propone Ana",
+          "x": 450,
+          "y": 306.9921875,
+          "width": 56,
+          "height": 56,
+          "bottom": 362.9921875
+        },
+        {
+          "label": "Un tinto y una buena charla. Todos los jueves · 4:00 p. m.. Lo propone Luis",
+          "x": 934,
+          "y": 436.9921875,
+          "width": 56,
+          "height": 56,
+          "bottom": 492.9921875
+        },
+        {
+          "label": "Una tarde en la huerta. Miércoles · 4:00 p. m.. Lo propone Luz",
+          "x": 538,
+          "y": 592.9921875,
+          "width": 56,
+          "height": 56,
+          "bottom": 648.9921875
+        },
+        {
+          "label": "Estás en: Casa · Laureles",
+          "x": 40,
+          "y": 21,
+          "width": 221.453125,
+          "height": 52,
+          "bottom": 73
+        },
+        {
+          "label": "Mapa",
+          "x": 1027.953125,
+          "y": 23,
+          "width": 112,
+          "height": 48,
+          "bottom": 71
+        },
+        {
+          "label": "Lista",
+          "x": 1143.953125,
+          "y": 23,
+          "width": 112,
+          "height": 48,
+          "bottom": 71
+        },
+        {
+          "label": "Vecinos",
+          "x": 1272.953125,
+          "y": 21,
+          "width": 127.046875,
+          "height": 52,
+          "bottom": 73
+        },
+        {
+          "label": "Contar qué voy a hacer",
+          "x": 510,
+          "y": 738,
+          "width": 420,
+          "height": 56,
+          "bottom": 794
+        }
+      ],
+      "image": "http://127.0.0.1:5173/backgrounds/internas/barrio-1586.avif",
+      "pulse": "none"
+    },
+    "errors": [],
+    "external": []
+  }
+]

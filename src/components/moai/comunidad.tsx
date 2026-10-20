@@ -2,11 +2,11 @@
 // conversación y Avisos (docs/09, apartado 9).
 // Uso cotidiano: superficie más sobria que el bosque; lo importante es leer y actuar.
 // Nunca se inventan planes, personas ni distancias; nada de contadores (regla 5).
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { alcances, costos, hayBarrios, validarPlan, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type Costo, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
 import type { Api, Lugar, Mapa, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
-import { Building2, CalendarDays, ChevronDown, ChevronRight, Coffee, Coins, Flag, Footprints, HandHeart, Home, MapPin, MessagesSquare, Navigation, Plus, Puzzle, Repeat, Scissors, Search, ShoppingBag, Sparkles, Sprout, Trash2, Wallet, X } from 'lucide-react';
+import { Building2, CalendarDays, ChevronDown, ChevronRight, Coffee, Coins, Flag, Footprints, HandHeart, Home, List, Map, MapPin, MessagesSquare, Navigation, Plus, Puzzle, Repeat, Scissors, Search, ShoppingBag, Sparkles, Sprout, Trash2, Users, Wallet, X } from 'lucide-react';
 import { claseDePlan, cuandoCorto, EscenaBarrio, imagenDePlan, quienPropone } from './barrio-escena';
 import { Imagen } from './interna';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, nombreTipoOrganizacion } from '@/lib/organizaciones';
@@ -15,6 +15,7 @@ import { Barra, Diario, type Ir } from './diario';
 import { Vecinos } from './zona';
 import { MAX_DETALLE_REPORTE, motivosReporte, type MotivoReporte } from '@/lib/moai';
 import { Conversacion } from './conversacion';
+import './barrio.css';
 
 const capital = (texto: string) => texto.charAt(0).toLocaleUpperCase('es') + texto.slice(1);
 const fecha = (iso: string) => capital(new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }).format(new Date(iso)));
@@ -39,7 +40,7 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
   if (!perfil.lugar) return <button type="button" className="selector-lugar" onClick={() => ir('/lugares')}>Elige dónde estás</button>;
   return <div className="selector-lugar-caja">
     <button type="button" className="selector-lugar" aria-expanded={abierto} onClick={abrir}>
-      Estás en: <strong>{perfil.lugar.nombre} · {perfil.lugar.zona.split(',')[0]}</strong> <ChevronDown aria-hidden="true"/>
+      <Home aria-hidden="true"/><span className="solo-lectores">Estás en: </span><strong>{perfil.lugar.nombre} · {perfil.lugar.zona.split(',')[0]}</strong> <ChevronDown aria-hidden="true"/>
     </button>
     {abierto && <ul className="selector-lugar-lista">
       {lugares?.map(l => <li key={l.id}><button type="button" aria-current={l.activo || undefined}
@@ -52,19 +53,32 @@ function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api
 
 
 // La tarjeta de un plan elegido en el escenario: en el teléfono es una hoja inferior; en el escritorio, flota abajo.
-function TarjetaElegida({ plan, ir, acciones, onCerrar }: { plan: Plan; ir: Ir; acciones: { onIr: () => void; onNoIr: () => void; onCancelar: () => void }; onCerrar: () => void }) {
+function TarjetaElegida({ plan, ir, acciones, onCerrar, error }: { plan: Plan; ir: Ir; acciones: { onIr: () => void; onNoIr: () => void; onCancelar: () => void }; onCerrar: () => void; error: string }) {
+  const titulo = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    const anterior = document.activeElement;
+    titulo.current?.focus({ preventScroll: true });
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); onCerrar(); } };
+    document.addEventListener('keydown', tecla);
+    return () => {
+      document.removeEventListener('keydown', tecla);
+      if (anterior instanceof HTMLElement && anterior.isConnected) anterior.focus({ preventScroll: true });
+    };
+  }, [onCerrar]);
   return <section className="tarjeta-plan hoja-plan" aria-labelledby="plan-elegido">
     <button type="button" className="hoja-plan-cerrar" aria-label="Cerrar" onClick={onCerrar}><X aria-hidden="true"/></button>
+    <p className="hoja-plan-etiqueta">Un plan para encontrarse</p>
     <div className="tarjeta-plan-cuerpo">
       <Imagen nombre={imagenDePlan(plan)} clase="tarjeta-plan-imagen"/>
       <div className="tarjeta-plan-texto">
-        <h2 id="plan-elegido">{plan.titulo}</h2>
+        <h2 id="plan-elegido" ref={titulo} tabIndex={-1}>{plan.titulo}</h2>
         <p className="dato"><CalendarDays aria-hidden="true"/>{cuandoCorto(plan)}</p>
         <p className="dato"><MapPin aria-hidden="true"/>{plan.lugarPublico}</p>
         <p className="dato-suave">{plan.franja} · {quienPropone(plan)}</p>
       </div>
     </div>
-    <div className="tarjeta-plan-acciones">
+    {error && <p className="barrio-error" role="alert">{error}</p>}
+    <div className="tarjeta-plan-acciones" aria-live="polite">
       <AccionesPlan plan={plan} {...acciones}/>
       <Button className="boton-secundario" onClick={() => ir(`/planes/${plan.id}`)}>Ver plan</Button>
     </div>
@@ -94,6 +108,7 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, ini
   const [modo, setModo] = useState(inicial);
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const cerrarPlan = useCallback(() => setElegido(null), []);
   const usar = useCallback((r: Respuesta<Plan[]>) => { if (r.ok) { setPlanes(r.datos); setError(''); } else setError(r.error); }, []);
   const lugarId = perfil.lugar?.id;
   useEffect(() => {
@@ -114,22 +129,22 @@ export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, ini
   return <div className={`comunidad barrio${verMapa ? ' con-escena' : ''}`}>
     <Barra ir={ir} onSalir={onSalir} actual="barrio"/>
     {verMapa && <EscenaBarrio mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>}
-    <div className="barrio-controles">
+    <div className="barrio-controles" data-reserva-barrio>
       <h1 className="solo-lectores" tabIndex={-1}>Mi barrio</h1>
       <SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambio}/>
       <div className="modo" role="group" aria-label="Ver">
-        {conMapa && <button type="button" aria-pressed={modo === 'mapa'} onClick={() => setModo('mapa')}>Mapa</button>}
-        <button type="button" aria-pressed={modo === 'lista' || (modo === 'mapa' && !conMapa && mapa !== null)} onClick={() => setModo('lista')}>Lista</button>
-        <button type="button" aria-pressed={modo === 'vecinos'} onClick={() => setModo('vecinos')}>Vecinos</button>
+        {conMapa && <button type="button" aria-pressed={modo === 'mapa'} onClick={() => { cerrarPlan(); setModo('mapa'); }}><Map aria-hidden="true"/>Mapa</button>}
+        <button type="button" aria-pressed={modo === 'lista' || (modo === 'mapa' && !conMapa && mapa !== null)} onClick={() => { cerrarPlan(); setModo('lista'); }}><List aria-hidden="true"/>Lista</button>
       </div>
+      <button type="button" className="barrio-vecinos" aria-pressed={modo === 'vecinos'} onClick={() => { cerrarPlan(); setModo('vecinos'); }}><Users aria-hidden="true"/><span>Vecinos</span></button>
     </div>
 
     {modo === 'vecinos' ? <main className="interna-contenido"><Vecinos api={api} ir={ir}/></main>
     : perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el barrio…</p>
-    : verMapa ? <main className="barrio-sobre-escena">
+    : verMapa ? <main className="barrio-sobre-escena" data-reserva-barrio>
       <p className="escena-nota">Escenario ilustrado · no es el lugar exacto</p>
-      {planElegido ? <TarjetaElegida plan={planElegido} ir={ir} acciones={acciones(planElegido.id)} onCerrar={() => setElegido(null)}/>
-        : <div className="barrio-accion">{planes?.length === 0 && <p className="escena-vacia">Todavía no hay planes cerca. ¿Y si cuentas el tuyo?</p>}{contar}</div>}
+      {planElegido ? <TarjetaElegida key={planElegido.id} plan={planElegido} ir={ir} acciones={acciones(planElegido.id)} onCerrar={cerrarPlan} error={error}/>
+        : <div className="barrio-accion">{error && <p className="barrio-error" role="alert">{error}</p>}{planes?.length === 0 && <p className="escena-vacia">Todavía no hay planes cerca. ¿Y si cuentas el tuyo?</p>}{contar}</div>}
     </main>
     : <main className="interna-contenido barrio-lista">
       {!perfil.lugar && <div className="aviso-panel"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="boton-principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}

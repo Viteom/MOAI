@@ -4,7 +4,7 @@
 //   repartida dentro de una zona segura de la ilustración: indica cerca o lejos, no el lugar exacto.
 // - Las luces viven dentro del mismo lienzo que la imagen, así que quedan ancladas a ella en cualquier tamaño.
 // - Como mucho dos burbujas de invitación a la vez; al elegir un plan desaparecen y se abre su tarjeta.
-import { useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Mapa, Plan } from '@/lib/api';
 import { nombreTipoOrganizacion } from '@/lib/organizaciones';
 import type { NombreImagen } from './interna';
@@ -33,6 +33,7 @@ const MAX_BURBUJAS = 2;
 const posicion = (px: number, py: number) => ({ ['--px' as string]: px.toFixed(3), ['--py' as string]: py.toFixed(3) });
 
 export function EscenaBarrio({ mapa, planes, elegido, onElegir }: { mapa: Disponible; planes: Plan[]; elegido: string | null; onElegir: (id: string | null) => void }) {
+  const escena = useRef<HTMLDivElement>(null);
   const [fallo, setFallo] = useState(false);
   // De metros alrededor de tu zona a 0..1 dentro de la zona segura de la ilustración (la que se ve en todo tamaño).
   const radio = useMemo(() => Math.max(1, ...mapa.celdas.flatMap(c => c.puntos.map(([x, y]) => Math.max(Math.abs(x), Math.abs(y))))), [mapa]);
@@ -42,20 +43,48 @@ export function EscenaBarrio({ mapa, planes, elegido, onElegir }: { mapa: Dispon
   });
   const burbujas = elegido ? [] : luces.slice(0, MAX_BURBUJAS);
 
-  return <div className="escena-barrio" onClick={e => { if (e.target === e.currentTarget) onElegir(null); }}>
+  // Las invitaciones son decorativas: si no caben, se conserva la luz accesible.
+  // Se miden también los controles, para no taparlos con un título largo o al girar el teléfono.
+  useLayoutEffect(() => {
+    const el = escena.current;
+    if (!el) return;
+    const reservados = [...(el.closest('.barrio')?.querySelectorAll<HTMLElement>('[data-reserva-barrio], .barra') ?? [])];
+    const medir = () => {
+      const limite = el.getBoundingClientRect();
+      const ocupados = reservados.map(n => n.getBoundingClientRect());
+      const luces = [...el.querySelectorAll<HTMLElement>('.luz')];
+      const intersecta = (a: DOMRect, b: DOMRect) => a.left < b.right + 8 && a.right > b.left - 8 && a.top < b.bottom + 8 && a.bottom > b.top - 8;
+      el.querySelectorAll<HTMLElement>('.burbuja-invitacion').forEach(b => {
+        const r = b.getBoundingClientRect();
+        const otrasLuces = luces.filter(l => l.dataset.plan !== b.dataset.plan).map(l => l.getBoundingClientRect());
+        const noCabe = r.left < limite.left + 12 || r.right > limite.right - 12 || r.top < limite.top + 12 || r.bottom > limite.bottom - 12
+          || [...ocupados, ...otrasLuces].some(o => intersecta(r, o));
+        b.dataset.oculta = String(noCabe);
+        if (!noCabe) ocupados.push(r);
+      });
+    };
+    medir();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observador = new ResizeObserver(medir);
+    [el, ...reservados, ...el.querySelectorAll<HTMLElement>('.burbuja-invitacion')].forEach(n => observador.observe(n));
+    return () => observador.disconnect();
+  }, [elegido, mapa, planes]);
+
+  return <div className="escena-barrio" ref={escena} onClick={e => { if (e.target === e.currentTarget) onElegir(null); }}>
+    {fallo && <p className="barrio-imagen-error" role="status">No pudimos cargar la ilustración. Puedes consultar los planes en Lista.</p>}
     <div className="escena-lienzo" onClick={e => { if (e.target === e.currentTarget) onElegir(null); }}>
       {!fallo && <picture>
         <source type="image/avif" srcSet="/backgrounds/internas/barrio-1100.avif 1100w, /backgrounds/internas/barrio-1586.avif 1586w" sizes="(max-width: 899px) 1100px, 100vw"/>
         <img className="escena-imagen" src="/backgrounds/internas/barrio-1586.webp" srcSet="/backgrounds/internas/barrio-1100.webp 1100w, /backgrounds/internas/barrio-1586.webp 1586w"
           sizes="(max-width: 899px) 1100px, 100vw" alt="" width={IMAGEN.ancho} height={IMAGEN.alto} fetchPriority="high" decoding="async" onError={() => setFallo(true)}/>
       </picture>}
-      {luces.map(({ plan, px, py }) => <button key={plan.id} type="button" className={`luz ${claseDePlan(plan)}${elegido === plan.id ? ' elegida' : ''}`}
+      {!fallo && luces.map(({ plan, px, py }) => <button key={plan.id} type="button" data-plan={plan.id} className={`luz ${claseDePlan(plan)}${elegido === plan.id ? ' elegida' : ''}`}
         style={posicion(px, py)} aria-pressed={elegido === plan.id}
         aria-label={`${plan.titulo}. ${cuandoCorto(plan)}. ${quienPropone(plan)}`} onClick={() => onElegir(elegido === plan.id ? null : plan.id)}>
         <span aria-hidden="true"/>
       </button>)}
-      {burbujas.map(({ plan, px, py }) => <span key={`b${plan.id}`} aria-hidden="true"
-        className={`burbuja-invitacion ${claseDePlan(plan)}${py < 0.45 ? ' abajo' : ''}`} style={posicion(px, py)}>
+      {!fallo && burbujas.map(({ plan, px, py }, i) => <span key={`b${plan.id}`} aria-hidden="true" data-plan={plan.id}
+        className={`burbuja-invitacion ${claseDePlan(plan)}${i === 1 && py < 0.65 ? ' abajo' : ''}`} style={posicion(px, py)}>
         <strong>{plan.organizacion?.nombre ?? (plan.mio ? 'Tú' : plan.autor)}</strong>{plan.titulo}
       </span>)}
     </div>

@@ -1,0 +1,124 @@
+/* Solo Mi barrio. La ilustración es un recurso limpio del mismo origen;
+   las acciones son HTML y las luces representan exclusivamente planes de la API. */
+.comunidad.barrio {
+  --barra-arriba: 0px;
+  --barra-abajo: calc(88px + env(safe-area-inset-bottom));
+  --barrio-margen: clamp(16px, 3vw, 40px);
+  padding-top: 0;
+  isolation: isolate;
+}
+.comunidad.barrio:not(.con-escena) { display: flex; flex-direction: column; height: 100svh; padding-bottom: var(--barra-abajo); overflow: hidden; }
+.barrio:not(.con-escena) .barrio-controles { flex: none; }
+
+/* Encabezado compacto; Vecinos conserva su acceso fuera del selector Mapa / Lista. */
+.barrio .barrio-controles {
+  min-height: 88px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: max(18px, env(safe-area-inset-top)) var(--barrio-margen) 12px;
+}
+.barrio.con-escena .barrio-controles {
+  background: linear-gradient(#0c1f19e6, #0c1f1980 75%, transparent);
+}
+.barrio .barrio-controles .selector-lugar-caja { flex: 0 1 auto; min-width: 0; }
+.barrio .selector-lugar { min-height: 52px; gap: 10px; padding: 0 18px; background: #102b23f5; box-shadow: 0 4px 16px #06171026; }
+.barrio .selector-lugar strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.barrio .selector-lugar svg { width: 20px; height: 20px; flex: none; color: var(--int-cian); }
+.barrio .selector-lugar svg:last-child { width: 18px; }
+.barrio .selector-lugar-lista { z-index: 8; max-width: calc(100vw - 32px); max-height: min(440px, 60svh); overflow-y: auto; }
+.barrio .barrio-controles .modo { flex: 0 0 auto; max-width: none; margin-left: auto; gap: 4px; padding: 4px; background: #102b23f5; }
+.barrio .barrio-controles .modo button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; min-width: 112px; padding: 0 18px; border-radius: 999px; font-size: 16px; }
+.barrio .barrio-controles .modo button svg { width: 20px; height: 20px; }
+.barrio .barrio-controles .modo button[aria-pressed="true"] { background: #244d3c; color: #eaffd1; box-shadow: inset 0 0 0 1px #a8d98580; }
+.barrio .barrio-vecinos { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 48px; min-height: 52px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--int-borde); background: #102b23f5; color: var(--int-cian); font: 500 16px Inter, sans-serif; cursor: pointer; }
+.barrio .barrio-vecinos svg { width: 20px; height: 20px; }
+.barrio .barrio-vecinos[aria-pressed="true"] { color: var(--int-lima); border-color: var(--int-lima); }
+.barrio button:focus-visible { outline: 3px solid var(--int-cian); outline-offset: 3px; }
+
+/* Leve velo en los extremos; conserva la vegetación y el agua de la ilustración. */
+.barrio .escena-barrio::after { background: linear-gradient(180deg, #061b1933, transparent 24%, transparent 68%, #071d17c9); }
+.barrio .escena-lienzo { --ancho-zona: min(calc(100cqw - 140px), 880px); --alto-zona: min(calc(100cqh - 380px), 460px); --zona-dy: -12px; }
+.barrio .escena-lienzo > picture { display: block; width: 100%; height: 100%; }
+.barrio .luz { width: 56px; height: 56px; }
+.barrio .luz > span { inset: 18px; background: radial-gradient(circle at 40% 35%, #fff8df 0 12%, var(--c) 55%, transparent 100%); box-shadow: 0 0 12px 4px color-mix(in oklab, var(--c) 55%, transparent); }
+.barrio .luz::before { inset: 8px; border-width: 1px; }
+.barrio .luz::after { top: calc(100% - 17px); height: 20px; }
+.barrio .luz.elegida > span { inset: 14px; }
+.barrio .luz.elegida::before { inset: 3px; border-width: 2px; }
+.barrio .burbuja-invitacion { width: 210px; max-width: 210px; padding: 12px 16px; border-radius: 18px; background: #102b23f5; font-size: 16px; line-height: 1.4; transform: translate(-50%, calc(-100% - 32px)); overflow-wrap: anywhere; }
+.barrio .burbuja-invitacion strong { margin-bottom: 3px; font-size: 15px; font-weight: 600; color: var(--int-cian); }
+.barrio .burbuja-invitacion.abajo { transform: translate(-50%, 38px); }
+.barrio .burbuja-invitacion[data-oculta="true"] { visibility: hidden; }
+.barrio .barrio-imagen-error { position: absolute; z-index: 1; top: 40%; left: 24px; right: 24px; max-width: 480px; margin: auto; padding: 20px; border: 1px solid var(--int-borde); border-radius: 18px; background: var(--int-panel-solido); color: var(--int-texto); font-size: 18px; }
+
+/* Una acción por vez, separada de la navegación en todos los tamaños. */
+.barrio .barrio-sobre-escena { left: var(--barrio-margen); right: var(--barrio-margen); bottom: calc(var(--barra-abajo) + 18px); padding: 0; flex-direction: column; align-items: center; gap: 12px; }
+.barrio .barrio-sobre-escena .escena-nota { order: 0; align-self: center; padding: 5px 12px; color: #d2e3d8; font-size: 13px; line-height: 1.5; text-align: center; background: #0c241ee6; }
+.barrio .barrio-accion { width: min(100%, 420px); gap: 12px; }
+.barrio .barrio-contar { min-height: 56px; font-size: 18px; background: #cefa63; box-shadow: 0 6px 22px #071a1880; }
+.barrio .barrio-contar:hover { background: #d9fc85; }
+.barrio .barrio-error { max-width: 560px; margin: 0; padding: 12px 18px; border: 1px solid #ff8f7a80; border-radius: 16px; background: #2c211e; color: #ffcebf; font-size: 16px; }
+.barrio .escena-vacia { text-align: center; background: #102b23f5; border: 1px solid var(--int-borde); }
+
+/* La tarjeta es una región no modal: se puede seguir eligiendo otra luz.
+   Recibe foco al abrirse; Escape y Cerrar lo devuelven al control de origen. */
+.barrio .hoja-plan { position: relative; left: auto; right: auto; top: auto; bottom: auto; width: min(100%, 560px); margin: 0; padding: 22px; gap: 18px; max-height: calc(100svh - var(--barra-abajo) - 150px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border-radius: 24px; background: #102b23; border-color: #8be4d566; box-shadow: 0 12px 56px #06151099; }
+.barrio .hoja-plan-etiqueta { margin: 0; padding-right: 48px; color: var(--int-cian); font-size: 14px; font-weight: 500; }
+.barrio .hoja-plan-cerrar { top: 10px; right: 10px; width: 48px; height: 48px; background: #8be4d512; }
+.barrio .hoja-plan .tarjeta-plan-cuerpo { padding-right: 0; grid-template-columns: 88px minmax(0, 1fr); align-items: start; }
+.barrio .hoja-plan .tarjeta-plan-imagen, .barrio .hoja-plan .tarjeta-plan-imagen img { width: 88px; height: 104px; }
+.barrio .tarjeta-plan-texto h2 { font-size: 22px; line-height: 1.25; }
+.barrio .tarjeta-plan-texto { gap: 8px; overflow-wrap: anywhere; }
+.barrio .tarjeta-plan-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.barrio .tarjeta-plan-acciones .plan-acciones { display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin: 0; }
+.barrio .tarjeta-plan-acciones button { width: 100%; min-height: 52px; }
+.barrio .tarjeta-plan-acciones .plan-voy { align-self: center; }
+.barrio .barrio-lista { flex: 1; min-height: 0; width: 100%; max-width: 760px; overflow-y: auto; overscroll-behavior: contain; padding: 16px var(--barrio-margen) 24px; gap: 20px; }
+.barrio .interna-contenido:not(.barrio-lista) { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 24px; }
+.barrio .barrio-lista .barrio-contar { align-self: center; width: min(100%, 420px); }
+.barrio .barrio-lista .tarjeta-plan-enlace { min-height: 112px; }
+.barrio .barrio-lista .tarjeta-plan-texto strong { font-size: 20px; }
+.barrio .barrio-lista .dato { font-size: 16px; }
+.barrio .barrio-lista .tarjeta-plan { background: #102b23; }
+
+/* Barra inferior también en escritorio, sin cambiar la barra de otras pantallas. */
+.barrio .barra { top: auto; bottom: 14px; left: 50%; right: auto; transform: translateX(-50%); width: min(560px, calc(100% - 32px)); min-height: 64px; padding: 6px; border-radius: 24px; background: #0e241df5; box-shadow: 0 8px 30px #06151066; }
+.barrio .barra .diario-marca { display: none; }
+.barrio .barra-lugares { flex: 1; width: 100%; gap: 4px; margin: 0; }
+.barrio .barra-lugares > button, .barrio .barra-mas { flex: 1; min-width: 0; }
+.barrio .barra-lugares > button, .barrio .barra-mas > button { width: 100%; min-height: 56px; padding: 5px 2px; flex-direction: column; gap: 3px; border-radius: 18px; font-size: 13px; }
+.barrio .barra-lugares > button svg, .barrio .barra-mas > button svg { width: 22px; height: 22px; }
+.barrio .barra-lugares > button[aria-current="page"] { background: #cefa631a; box-shadow: inset 0 0 0 1px #cefa6338; }
+.barrio .barra-menu { top: auto; bottom: calc(100% + 12px); }
+
+@media (max-width: 599px) {
+  .comunidad.barrio { --barra-abajo: calc(78px + env(safe-area-inset-bottom)); }
+  .barrio .barrio-controles { display: grid; grid-template-columns: minmax(0, 1fr) 48px; gap: 12px; min-height: 132px; padding-top: max(14px, env(safe-area-inset-top)); }
+  .barrio .selector-lugar { width: 100%; max-width: 100%; font-size: 16px; padding: 0 14px; }
+  .barrio .selector-lugar svg:first-child { width: 18px; }
+  .barrio .selector-lugar svg:last-child { margin-left: auto; }
+  .barrio .barrio-vecinos { grid-column: 2; grid-row: 1; width: 48px; min-height: 52px; padding: 0; }
+  .barrio .barrio-vecinos > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .barrio .barrio-controles .modo { grid-column: 1 / -1; grid-row: 2; justify-self: start; width: 232px; margin: 0; }
+  .barrio .barrio-controles .modo button { min-width: 0; padding: 0 14px; }
+  .barrio .burbuja-invitacion { width: 176px; max-width: 176px; padding: 10px 14px; }
+  .barrio .barrio-sobre-escena { bottom: calc(var(--barra-abajo) + 14px); }
+  .barrio .hoja-plan { position: fixed; left: 0; right: 0; bottom: var(--barra-abajo); top: auto; width: 100%; max-height: calc(100svh - var(--barra-abajo) - 146px); padding: 20px 18px; border-radius: 26px 26px 0 0; }
+  .barrio .barrio-sobre-escena:has(.hoja-plan) .escena-nota { display: none; }
+  .barrio .hoja-plan .tarjeta-plan-cuerpo { grid-template-columns: 64px minmax(0, 1fr); gap: 12px; }
+  .barrio .hoja-plan .tarjeta-plan-imagen, .barrio .hoja-plan .tarjeta-plan-imagen img { width: 64px; height: 88px; }
+  .barrio .tarjeta-plan-texto h2 { font-size: 20px; }
+  .barrio .hoja-plan .dato { font-size: 16px; line-height: 1.4; }
+  .barrio .barra { bottom: 0; left: 0; right: 0; transform: none; width: 100%; border-radius: 24px 24px 0 0; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); }
+  .barrio .barra-menu { right: 0; max-width: calc(100vw - 32px); }
+}
+
+@media (min-width: 600px) {
+  .barrio .escena-lienzo { --alto-zona: min(calc(100cqh - 340px), 520px); --zona-dy: -24px; }
+  .barrio .barrio-sobre-escena:has(.hoja-plan) { align-items: flex-end; }
+  .barrio .barrio-sobre-escena:has(.hoja-plan) .escena-nota { align-self: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .barrio .luz::before { animation: none; }
+  .barrio button { transition: none; }
+}
