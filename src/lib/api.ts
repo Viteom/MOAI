@@ -8,6 +8,7 @@ import type { Letra } from './cuidado';
 import type { EntradaPerfil, Saludo } from './perfil';
 import type { EstadoLazo } from './lazos';
 import type { CategoriaVinculo, FichaPrivada } from './vinculos';
+import type { MemoriaBrisa, PreferenciasBrisa, ResultadoBrisa } from './brisa-intenciones';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
@@ -95,6 +96,13 @@ async function llamar<T>(ruta: string, cuerpo?: object, metodo?: 'DELETE'): Prom
 }
 
 export const api = {
+  memoriaBrisa: () => llamar<{ memoria: MemoriaBrisa | null }>('brisa/memoria'),
+  guardarMemoriaBrisa: (p: PreferenciasBrisa & { autorizo: true; version: string }) => llamar<{ memoria: MemoriaBrisa }>('brisa/memoria', p),
+  borrarMemoriaBrisa: () => llamar<{ memoria: null }>('brisa/memoria', undefined, 'DELETE'),
+  buscarConBrisa: (b: { texto: string; lugarId: string; usarMemoria: boolean; anticipar: boolean }) => llamar<ResultadoBrisa>('brisa/buscar', b),
+  confirmarPropuestaBrisa: (id: string) => llamar<{ hecha: true; planId: string }>(`brisa/propuestas/${encodeURIComponent(id)}/confirmar`, { confirmo: true }),
+  descartarPropuestaBrisa: (id: string) => llamar<{ ok: true }>(`brisa/propuestas/${encodeURIComponent(id)}/descartar`, {}),
+  accionesBrisa: () => llamar<{ accion: string; planId: string; cuando: string; motivo: string; confirmadaEn: string }[]>('brisa/acciones'),
   registrar: (entrada: EntradaRegistro) => llamar<Envio>('registro', entrada),
   pedirAcceso: (contacto: Contacto) => llamar<Envio>('acceso', contacto),
   verificar: (contacto: Contacto & { codigo: string }) => llamar<Perfil>('verificar', contacto),

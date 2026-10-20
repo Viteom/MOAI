@@ -93,6 +93,7 @@ export function reaccionar(pregunta: Pregunta | null, respuesta: string): string
 
 // Dudas sobre la plataforma. Respuestas escritas por el equipo; deben coincidir con lo que hace el código (regla 10).
 const DUDAS: [RegExp, string[]][] = [
+  [/memoria|recuerdas|recordar|autonomia|anticipa/, ['En «Buscar un plan» puedes autorizar qué actividades y días recordar durante 30 o 90 días. Puedes corregirlos u olvidarlos allí o en Mi cuenta.', 'Las propuestas al abrir vienen apagadas. Si las autorizas, preparo opciones con planes reales; para sumarte siempre tienes que confirmar. No deduzco tu ánimo ni leo tus mensajes o notas de vínculos para recomendar.']],
   [/emergencia|peligro|ambulancia|policia/, ['MOAI no es un servicio de emergencias. Si estás en peligro, llama a la línea 123 o a alguien de confianza.']],
   [/eres (una )?persona|eres real|eres (un )?robot|inteligencia artificial|\bia\b/, ['Soy una inteligencia artificial, no una persona. Converso con un guion que escribió el equipo de MOAI, así que todavía no entiendo todo.']],
   [/que es (un )?moai|moais|formar un grupo/, ['Un Moai es un grupo pequeño, de 2 a 5 personas, que se cuida y se ve seguido.', 'Nace con alguien con quien ya te viste en un plan: en Mi gente lo tocas y eliges «Formar un Moai». Para sumar a alguien más, todos tienen que estar de acuerdo.']],

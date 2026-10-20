@@ -9,7 +9,7 @@ import { DIAS_ENTRE_SALUDOS, DIAS_PUERTA, saludos, textoSaludo, validarPerfil, t
 import type { Tipo } from '../src/lib/lugares';
 import type { Carta, Estado, Vecino } from '../src/lib/api';
 import type { Cifrador } from './cifrado';
-import type { Db } from './db';
+import type { Consulta, Db } from './db';
 import { conocidosDe } from './moais';
 import { enPausa, hayBloqueo, type Refs } from './personas';
 
@@ -23,7 +23,7 @@ export async function perfilPublicoDe(db: Db, cuenta: string): Promise<EntradaPe
     ...(p.nombre_preferido ? { nombrePreferido: p.nombre_preferido } : {}), ...(p.visible_red ? { visibleEnRed: true } : {}) };
 }
 
-export async function enInvierno(db: Db, cifrador: Cifrador, cuenta: string): Promise<boolean> {
+export async function enInvierno(db: Consulta, cifrador: Cifrador, cuenta: string): Promise<boolean> {
   const [e] = await db.query<{ invierno: string }>('select invierno from estados where cuenta_id = $1', [cuenta]);
   return e ? JSON.parse(cifrador.descifrar(e.invierno) ?? '{}').activo === true : false;
 }
