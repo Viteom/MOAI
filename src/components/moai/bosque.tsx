@@ -53,9 +53,9 @@ export function FondoBosque({ onSinVideo }: { onSinVideo?: () => void }) {
 // Brisa pequeña: el mismo video, recortado alrededor de la esfera y con bordes difuminados.
 // Mientras no haya un asset limpio de la esfera sola, es la forma de que se mueva igual que en la bienvenida.
 export function OrbeBrisa() {
-  const [conVideo, setConVideo] = useState(true);
+  const [conVideo, setConVideo] = useState(() => !sinMovimiento());
   return <div className="orbe" aria-hidden="true">
-    {conVideo ? <VideoEnBucle onError={() => setConVideo(false)}/> : <div className="orbe-css"/>}
+    {conVideo ? <VideoEnBucle onError={() => setConVideo(false)}/> : <img className="orbe-estatica" src="/backgrounds/internas/luz-orbe.webp" alt=""/>}
   </div>;
 }
 

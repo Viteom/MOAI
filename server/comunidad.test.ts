@@ -53,6 +53,22 @@ describe('Lugares guardados', () => {
     expect(quedan).toEqual([expect.objectContaining({ nombre: 'Casa', activo: true })]);
   });
 
+  it('dos cambios simultáneos conservan exactamente un lugar activo y la sesión lo retoma', async () => {
+    const rosa = await persona('Rosa');
+    const [casa] = await rosa.json('POST', '/api/lugares', { nombre: 'Casa', ciudad: '05001' });
+    const lista = await rosa.json('POST', '/api/lugares', { nombre: 'Bogotá', ciudad: '11001' });
+    const bogota = lista.find((l: { ciudad: string }) => l.ciudad === '11001');
+    const respuestas = await Promise.all([
+      rosa.pedir('POST', `/api/lugares/${bogota.id}/activar`),
+      rosa.pedir('POST', `/api/lugares/${casa.id}/activar`),
+    ]);
+    expect(respuestas.map(r => r.statusCode)).toEqual([200, 200]);
+    const guardados = await rosa.json('GET', '/api/lugares');
+    const activos = guardados.filter((l: { activo: boolean }) => l.activo);
+    expect(activos).toHaveLength(1);
+    expect((await rosa.json('GET', '/api/sesion')).lugar.id).toBe(activos[0].id);
+  });
+
   it('hasta 5 lugares, con nombre y ciudad válidos', async () => {
     const rosa = await persona('Rosa');
     expect((await rosa.json('POST', '/api/lugares', { nombre: '', ciudad: '99999' })).errores).toMatchObject({ nombre: expect.any(String), ciudad: expect.any(String) });

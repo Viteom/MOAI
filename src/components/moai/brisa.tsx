@@ -14,6 +14,10 @@ import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
 import { conversacionAbierta, esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
 import { OrbeBrisa } from './bosque';
+import { FondoCiudad } from './fondo-ciudad';
+import { SelectorLugar } from './selector-lugar';
+import type { Lugar } from '@/lib/api';
+import { nombreCiudad } from '@/lib/fondos-ciudad';
 import { Barra, type Ir } from './diario';
 import { EscenaCuidado } from './escena';
 
@@ -584,7 +588,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
 // Brisa espera en una tarjeta pequeña con el saludo; la conversación se abre al tocar «Hablar con Brisa» y se cierra con
 // la X. Se abre sola solo la primera vez (Brisa se presenta como IA, regla 12) o cuando se llega a algo concreto.
 // Al cerrarla no se pierde: queda montada y oculta, así no saluda de nuevo en la misma visita.
-export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
+export function InicioBrisa({ perfil, api, ir, onSalir, empezar, onCambioLugar = () => {} }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado'; onCambioLugar?: (lugar: Lugar | null) => void }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [abierta, setAbierta] = useState(!perfil.presentada || !!empezar);
   const [montada, setMontada] = useState(abierta);
@@ -595,16 +599,14 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
   const abrir = () => { setMontada(true); setAbierta(true); requestAnimationFrame(() => titulo.current?.focus()); };
   const cerrar = () => { setAbierta(false); requestAnimationFrame(() => boton.current?.focus()); };
   return <div className="inicio-ciudad">
-    <picture className="inicio-fondo" aria-hidden="true">
-      <source type="image/avif" srcSet="/backgrounds/internas/barrio-1100.avif 1100w, /backgrounds/internas/barrio-1586.avif 1586w" sizes="100vw"/>
-      <img src="/backgrounds/internas/barrio-1586.webp" srcSet="/backgrounds/internas/barrio-1100.webp 1100w, /backgrounds/internas/barrio-1586.webp 1586w" sizes="100vw" alt="" fetchPriority="high" decoding="async"
-        onError={e => { e.currentTarget.style.display = 'none'; }}/>
-    </picture>
+    <FondoCiudad ciudad={perfil.lugar?.ciudad}/>
+    <div className="inicio-contexto"><SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambioLugar}/></div>
+    <p className="contexto-ciudad-aviso" role="status">Explorando {nombreCiudad(perfil.lugar)}</p>
     <Barra ir={ir} onSalir={onSalir} actual="brisa"/>
     {!abierta && <section className="brisa-espera" aria-labelledby="inicio-titulo-espera">
       <OrbeBrisa/>
       <p className="brisa-espera-quien"><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
-      <h1 id="inicio-titulo-espera">Hola, {nombre}</h1>
+      <h1 id="inicio-titulo-espera" tabIndex={-1}>Hola, {nombre}</h1>
       <p>{pendiente ? 'Tengo algo que contarte cuando quieras.' : saludoDeVuelta(new Date()).split('. ').slice(1).join('. ')}</p>
       <button ref={boton} type="button" className="boton-principal" onClick={abrir}><MessageCircle aria-hidden="true"/>Hablar con Brisa</button>
     </section>}

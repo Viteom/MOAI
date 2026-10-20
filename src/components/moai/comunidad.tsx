@@ -6,9 +6,12 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button';
 import { alcances, costos, hayBarrios, validarPlan, MAX_LUGARES, nombresSugeridos, plantillas, type Alcance, type Costo, type EntradaPlan, type ErroresLugar, type ErroresPlan, type Tipo } from '@/lib/lugares';
 import type { Api, Lugar, Mapa, Perfil, Plan, Preferencias, Respuesta } from '@/lib/api';
-import { Building2, CalendarDays, ChevronDown, ChevronRight, Coffee, Coins, Flag, Footprints, HandHeart, Home, List, Map, MapPin, MessagesSquare, Navigation, Plus, Puzzle, Repeat, Scissors, Search, ShoppingBag, Sparkles, Sprout, Trash2, Users, Wallet, X } from 'lucide-react';
+import { Building2, CalendarDays, ChevronRight, Coffee, Coins, Flag, Footprints, HandHeart, Home, List, Map, MapPin, MessagesSquare, Navigation, Plus, Puzzle, Repeat, Scissors, Search, ShoppingBag, Sparkles, Sprout, Trash2, Users, Wallet, X } from 'lucide-react';
 import { claseDePlan, cuandoCorto, EscenaBarrio, imagenDePlan, quienPropone } from './barrio-escena';
 import { Imagen } from './interna';
+import { FondoCiudad } from './fondo-ciudad';
+import { SelectorLugar } from './selector-lugar';
+import { nombreCiudad } from '@/lib/fondos-ciudad';
 import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, nombreTipoOrganizacion } from '@/lib/organizaciones';
 import { BarrioCampo, Campo, Ciudad } from './cuenta';
 import { Barra, Diario, type Ir } from './diario';
@@ -28,26 +31,6 @@ function AccionesPlan({ plan, onIr, onNoIr, onCancelar }: { plan: Plan; onIr: ()
       : plan.voy ? <><span className="plan-voy">Vas a ir</span><Button className="diario-boton" onClick={onNoIr}>Ya no voy</Button></>
       : plan.lleno ? <span className="plan-voy">Completo</span>
       : <Button className="diario-boton principal" onClick={onIr}>Me sumo</Button>}
-  </div>;
-}
-
-
-// «Estás en: Casa · Laureles ▾»: cambiar de lugar sin salir del mapa.
-function SelectorLugar({ perfil, api, ir, onCambio }: { perfil: Perfil; api: Api; ir: Ir; onCambio: () => void }) {
-  const [abierto, setAbierto] = useState(false);
-  const [lugares, setLugares] = useState<Lugar[] | null>(null);
-  const abrir = () => { setAbierto(a => !a); if (!lugares) void api.lugares().then(r => r.ok && setLugares(r.datos)); };
-  if (!perfil.lugar) return <button type="button" className="selector-lugar" onClick={() => ir('/lugares')}>Elige dónde estás</button>;
-  return <div className="selector-lugar-caja">
-    <button type="button" className="selector-lugar" aria-expanded={abierto} onClick={abrir}>
-      <Home aria-hidden="true"/><span className="solo-lectores">Estás en: </span><strong>{perfil.lugar.nombre} · {perfil.lugar.zona.split(',')[0]}</strong> <ChevronDown aria-hidden="true"/>
-    </button>
-    {abierto && <ul className="selector-lugar-lista">
-      {lugares?.map(l => <li key={l.id}><button type="button" aria-current={l.activo || undefined}
-        onClick={() => void api.activarLugar(l.id).then(r => { if (r.ok) { setLugares(r.datos); setAbierto(false); onCambio(); } })}>
-        <strong>{l.nombre}</strong><span>{l.zona}</span></button></li>)}
-      <li><button type="button" onClick={() => ir('/lugares')}>Administrar mis lugares</button></li>
-    </ul>}
   </div>;
 }
 
@@ -102,57 +85,90 @@ function TarjetaLista({ plan, ir }: { plan: Plan; ir: Ir }) {
   </li>;
 }
 
-export function MiComunidad({ perfil, api, ir, onSalir, onCambio = () => {}, inicial = 'mapa' }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: () => void; inicial?: 'mapa' | 'lista' | 'vecinos' }) {
+type PropsBarrio = { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onCambio?: (lugar: Lugar | null) => void; inicial?: 'mapa' | 'lista' | 'vecinos' };
+
+export function MiComunidad(props: PropsBarrio) {
+  const [modo, setModo] = useState(props.inicial ?? 'mapa');
+  const clave = `${props.perfil.lugar?.id ?? 'sin-lugar'}:${props.perfil.lugar?.ciudad ?? ''}`;
+  const anterior = useRef(clave);
+  useEffect(() => {
+    if (anterior.current !== clave) document.querySelector<HTMLButtonElement>('.barrio .selector-lugar')?.focus({ preventScroll: true });
+    anterior.current = clave;
+  }, [clave]);
+  // El contexto se reemplaza de forma completa: nunca se renderizan planes ni selección anteriores.
+  return <BarrioActual key={clave} {...props} modo={modo} setModo={setModo}/>;
+}
+
+function BarrioActual({ perfil, api, ir, onSalir, onCambio = () => {}, modo, setModo }: PropsBarrio & { modo: 'mapa' | 'lista' | 'vecinos'; setModo: (modo: 'mapa' | 'lista' | 'vecinos') => void }) {
   const [planes, setPlanes] = useState<Plan[] | null>(null);
   const [mapa, setMapa] = useState<Mapa | null>(null);
-  const [modo, setModo] = useState(inicial);
   const [elegido, setElegido] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [errorMapa, setErrorMapa] = useState('');
+  const [intento, setIntento] = useState(0);
+  const vivo = useRef(true);
+  const ciudad = nombreCiudad(perfil.lugar);
   const cerrarPlan = useCallback(() => setElegido(null), []);
-  const usar = useCallback((r: Respuesta<Plan[]>) => { if (r.ok) { setPlanes(r.datos); setError(''); } else setError(r.error); }, []);
+  const usar = useCallback((r: Respuesta<Plan[]>) => {
+    if (!vivo.current) return;
+    if (r.ok) { setPlanes(r.datos); setError(''); } else setError(r.error);
+  }, []);
   const lugarId = perfil.lugar?.id;
   useEffect(() => {
-    if (!lugarId) return;
-    void api.planes().then(usar);
-    void api.mapa().then(r => setMapa(r.ok ? r.datos : { disponible: false }));
-  }, [api, lugarId, usar]);
+    vivo.current = true;
+    let vigente = true;
+    if (lugarId) {
+      setPlanes(null); setMapa(null); setError(''); setErrorMapa(''); setElegido(null);
+      void api.planes().then(r => { if (vigente) usar(r); });
+      void api.mapa().then(r => { if (vigente) { if (r.ok) setMapa(r.datos); else setErrorMapa(r.error); } });
+    }
+    return () => { vigente = false; vivo.current = false; };
+  }, [api, lugarId, usar, intento]);
   const acciones = (id: string) => ({
     onIr: () => void api.irAPlan(id).then(usar),
     onNoIr: () => void api.noIrAPlan(id).then(usar),
-    onCancelar: () => void api.cancelarPlan(id).then(r => { usar(r); setElegido(null); }),
+    onCancelar: () => void api.cancelarPlan(id).then(r => { usar(r); if (vivo.current) setElegido(null); }),
   });
   const conMapa = mapa?.disponible === true;
-  const verMapa = modo === 'mapa' && conMapa;
+  const verMapa = modo === 'mapa' && !!perfil.lugar;
   const planElegido = planes?.find(p => p.id === elegido) ?? null;
   const contar = <Button className="boton-principal barrio-contar" onClick={() => ir('/planes/nuevo')}><Plus aria-hidden="true"/>Contar qué voy a hacer</Button>;
+  const cargando = !!perfil.lugar && (planes === null && !error || mapa === null && !errorMapa);
+  const errores = (error || errorMapa) && <div className="barrio-error"><p role="alert">{error || errorMapa}</p><button type="button" className="boton-secundario" onClick={() => setIntento(n => n + 1)}>Reintentar cargar planes y mapa</button></div>;
+  const sinMapa = mapa?.disponible === false;
 
-  return <div className={`comunidad barrio${verMapa ? ' con-escena' : ''}`}>
+  return <div className={`comunidad barrio${verMapa ? ' con-escena' : ''}${modo === 'lista' ? ' vista-lista' : ''}`}>
     <Barra ir={ir} onSalir={onSalir} actual="barrio"/>
-    {verMapa && <EscenaBarrio mapa={mapa} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>}
+    {verMapa ? <EscenaBarrio ciudad={perfil.lugar?.ciudad} mapa={conMapa ? mapa : undefined} planes={planes ?? []} elegido={elegido} onElegir={setElegido}/>
+      : perfil.lugar && <FondoCiudad ciudad={perfil.lugar.ciudad} clase="barrio-fondo-lista"/>}
     <div className="barrio-controles" data-reserva-barrio>
       <h1 className="solo-lectores" tabIndex={-1}>Mi barrio</h1>
       <SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambio}/>
       <div className="modo" role="group" aria-label="Ver">
-        {conMapa && <button type="button" aria-pressed={modo === 'mapa'} onClick={() => { cerrarPlan(); setModo('mapa'); }}><Map aria-hidden="true"/>Mapa</button>}
-        <button type="button" aria-pressed={modo === 'lista' || (modo === 'mapa' && !conMapa && mapa !== null)} onClick={() => { cerrarPlan(); setModo('lista'); }}><List aria-hidden="true"/>Lista</button>
+        {perfil.lugar && <button type="button" aria-pressed={modo === 'mapa'} onClick={() => { cerrarPlan(); setModo('mapa'); }}><Map aria-hidden="true"/>Mapa</button>}
+        <button type="button" aria-pressed={modo === 'lista' || !perfil.lugar && modo === 'mapa'} onClick={() => { cerrarPlan(); setModo('lista'); }}><List aria-hidden="true"/>Lista</button>
       </div>
       <button type="button" className="barrio-vecinos" aria-pressed={modo === 'vecinos'} onClick={() => { cerrarPlan(); setModo('vecinos'); }}><Users aria-hidden="true"/><span>Vecinos</span></button>
     </div>
-
-    {modo === 'vecinos' ? <main className="interna-contenido"><Vecinos api={api} ir={ir}/></main>
-    : perfil.lugar && mapa === null && modo === 'mapa' ? <p className="mapa-abriendo" role="status">Abriendo el barrio…</p>
-    : verMapa ? <main className="barrio-sobre-escena" data-reserva-barrio>
+    <p className="contexto-ciudad-aviso" role="status">Explorando {ciudad}</p>
+    {modo === 'vecinos' ? <main className="interna-contenido"><Vecinos key={lugarId} api={api} ir={ir}/></main>
+    : verMapa ? <main className="barrio-sobre-escena" data-reserva-barrio aria-busy={cargando}>
       <p className="escena-nota">Escenario ilustrado · no es el lugar exacto</p>
       {planElegido ? <TarjetaElegida key={planElegido.id} plan={planElegido} ir={ir} acciones={acciones(planElegido.id)} onCerrar={cerrarPlan} error={error}/>
-        : <div className="barrio-accion">{error && <p className="barrio-error" role="alert">{error}</p>}{planes?.length === 0 && <p className="escena-vacia">Todavía no hay planes cerca. ¿Y si cuentas el tuyo?</p>}{contar}</div>}
+        : <div className="barrio-accion">
+          {cargando && <p className="barrio-mensaje" role="status">Cargando planes de {ciudad}…</p>}
+          {errores}
+          {sinMapa && !error && <div className="barrio-mensaje"><p>Este escenario de {ciudad} es ilustrativo. Puedes consultar los planes en Lista.</p><button type="button" className="boton-secundario" onClick={() => setModo('lista')}>Ver planes en Lista</button></div>}
+          {!cargando && !sinMapa && planes?.length === 0 && !error && <p className="escena-vacia">Todavía no hay planes cerca. ¿Y si cuentas el tuyo?</p>}
+          {contar}
+        </div>}
     </main>
-    : <main className="interna-contenido barrio-lista">
+    : <main className="interna-contenido barrio-lista" aria-busy={cargando}>
       {!perfil.lugar && <div className="aviso-panel"><p>Elige dónde vives para ver planes cerca de ti.</p><Button className="boton-principal" onClick={() => ir('/lugares')}>Elegir mi lugar</Button></div>}
-      {perfil.lugar && mapa?.disponible === false && <p className="campo-ayuda">El mapa llega cuando tu lugar tiene barrio (por ahora, en Medellín). Mientras tanto, aquí están los planes.</p>}
       <h2>Planes cerca de ti</h2>
-      {error && <p className="campo-error" role="alert">{error}</p>}
-      {perfil.lugar && planes === null && !error && <p role="status">Buscando planes…</p>}
-      {planes?.length === 0 && <p>Aún no hay planes cerca. ¿Y si cuentas qué vas a hacer?</p>}
+      {errores}
+      {cargando && <p role="status">Cargando planes de {ciudad}…</p>}
+      {planes?.length === 0 && !cargando && !error && <p>Aún no hay planes cerca. ¿Y si cuentas qué vas a hacer?</p>}
       <ul className="lista-planes">{planes?.map(plan => <TarjetaLista key={plan.id} plan={plan} ir={ir}/>)}</ul>
       {perfil.lugar && contar}
     </main>}
@@ -229,15 +245,17 @@ export function PlanDetalle({ id, api, ir, onSalir }: { id: string; api: Api; ir
 }
 
 // Mis lugares: los lugares guardados, cuál está activo y uno nuevo.
-export function MisLugares({ api, ir, onSalir, onCambio }: { api: Api; ir: Ir; onSalir: () => void; onCambio: () => void }) {
+export function MisLugares({ api, ir, onSalir, onCambio }: { api: Api; ir: Ir; onSalir: () => void; onCambio: (lugar: Lugar | null) => void }) {
   const [lugares, setLugares] = useState<Lugar[] | null>(null);
   const [error, setError] = useState('');
   const [nuevo, setNuevo] = useState({ nombre: '', ciudad: '', barrio: '' });
   const [errores, setErrores] = useState<ErroresLugar>({});
   const [porBorrar, setPorBorrar] = useState<string | null>(null);
+  const [cambiando, setCambiando] = useState(false);
+  const bloqueoLugar = useRef(false);
   const [agregando, setAgregando] = useState(false);
   const usar = (r: Respuesta<Lugar[]>, despues?: () => void) => {
-    if (r.ok) { setLugares(r.datos); setError(''); setErrores({}); despues?.(); onCambio(); }
+    if (r.ok) { setLugares(r.datos); setError(''); setErrores({}); despues?.(); onCambio(r.datos.find(l => l.activo) ?? null); }
     else { setErrores((r.errores ?? {}) as ErroresLugar); setError(r.errores ? '' : r.error); }
   };
   useEffect(() => { void api.lugares().then(r => r.ok ? setLugares(r.datos) : setError(r.error)); }, [api]);
@@ -245,28 +263,34 @@ export function MisLugares({ api, ir, onSalir, onCambio }: { api: Api; ir: Ir; o
     e.preventDefault();
     usar(await api.crearLugar({ nombre: nuevo.nombre, ciudad: nuevo.ciudad, barrio: nuevo.barrio || null }), () => { setNuevo({ nombre: '', ciudad: '', barrio: '' }); setAgregando(false); });
   }
+  async function activarLugar(id: string) {
+    if (bloqueoLugar.current) return;
+    bloqueoLugar.current = true; setCambiando(true);
+    const r = await api.activarLugar(id);
+    bloqueoLugar.current = false; setCambiando(false); usar(r);
+  }
   const lleno = (lugares?.length ?? 0) >= MAX_LUGARES;
   return <Diario titulo="Mis lugares" bajada="Elige dónde quieres conectar. Guardamos tu zona, no tu dirección. Nadie más ve tus lugares." imagen="lugares" ir={ir} volver={{ texto: 'Volver', ruta: 'atras' }} onSalir={onSalir}>
     {error && <p className="campo-error" role="alert">{error}</p>}
-    <ul className="lista-lugares">
+    <ul className="lista-lugares" aria-busy={cambiando}>
       {lugares?.map(l => <li key={l.id} className={`panel lugar${l.activo ? ' activo' : ''}`}>
         <span className="lugar-icono" aria-hidden="true">{/casa/i.test(l.nombre) ? <Home/> : <Building2/>}</span>
         <div className="lugar-texto">
           <strong>{l.nombre}</strong><span>{l.zona}</span>
           {l.activo ? <span className="plan-voy">Lugar activo</span>
-            : <Button className="boton-secundario" onClick={() => void api.activarLugar(l.id).then(r => usar(r))}>Usar este lugar</Button>}
+            : <Button className="boton-secundario" disabled={cambiando} onClick={() => void activarLugar(l.id)}>Usar este lugar</Button>}
         </div>
         <Imagen nombre={/casa/i.test(l.nombre) ? 'lugares' : 'crear'} clase="lugar-imagen"/>
         <div className="lugar-borrar">
           {porBorrar === l.id
             ? <><span>¿Borrar «{l.nombre}»?</span><Button className="boton-secundario peligro" onClick={() => void api.borrarLugar(l.id).then(r => usar(r, () => setPorBorrar(null)))}>Sí, borrar</Button><Button className="boton-secundario" onClick={() => setPorBorrar(null)}>No</Button></>
-            : <button type="button" className="enlace-discreto" aria-label={`Borrar ${l.nombre}`} onClick={() => setPorBorrar(l.id)}><Trash2 aria-hidden="true"/>Borrar</button>}
+            : <button type="button" className="enlace-discreto" disabled={cambiando} aria-label={`Borrar ${l.nombre}`} onClick={() => setPorBorrar(l.id)}><Trash2 aria-hidden="true"/>Borrar</button>}
         </div>
       </li>)}
     </ul>
     {lugares?.length === 0 && <p>Todavía no tienes lugares. Empieza por tu casa.</p>}
     {lleno ? <p className="dato-suave">Tienes {MAX_LUGARES} lugares, el máximo. Borra uno para agregar otro.</p>
-    : !agregando ? <Button className="boton-secundario ancho" onClick={() => setAgregando(true)}><Plus aria-hidden="true"/>Agregar un lugar</Button>
+    : !agregando ? <Button className="boton-secundario ancho" disabled={cambiando} onClick={() => setAgregando(true)}><Plus aria-hidden="true"/>Agregar un lugar</Button>
     : <form className="panel formulario" onSubmit={agregar} noValidate>
       <h2>Agregar un lugar</h2>
       <Campo etiqueta="¿Cómo lo llamas?" error={errores.nombre}>{(id, d) => <input id={id} aria-describedby={d} className="cuenta-campo" maxLength={30} placeholder="Por ejemplo, Donde mis papás" value={nuevo.nombre} onChange={e => setNuevo(n => ({ ...n, nombre: e.target.value }))}/>}</Campo>

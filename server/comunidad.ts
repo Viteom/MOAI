@@ -176,10 +176,16 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
 
   app.post<{ Params: { lugar: string } }>('/api/lugares/:lugar/activar', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const [existe] = await db.query('select id from lugares where id = $1 and cuenta_id = $2', [request.params.lugar, id]);
+    // Cambiar de ciudad es atómico; dos pestañas no dejan un intervalo sin lugar activo.
+    const existe = await db.transaccion(async tx => {
+      await tx.query('select id from cuentas where id = $1 for update', [id]);
+      const [lugar] = await tx.query('select id from lugares where id = $1 and cuenta_id = $2', [request.params.lugar, id]);
+      if (!lugar) return false;
+      await tx.query('update lugares set activo = false where cuenta_id = $1 and activo', [id]);
+      await tx.query('update lugares set activo = true where id = $1 and cuenta_id = $2', [request.params.lugar, id]);
+      return true;
+    });
     if (!existe) return reply.code(404).send({ error: 'No encontramos ese lugar.' });
-    await db.query('update lugares set activo = false where cuenta_id = $1 and activo', [id]);
-    await db.query('update lugares set activo = true where id = $1', [request.params.lugar]);
     return lugaresDe(id);
   });
 

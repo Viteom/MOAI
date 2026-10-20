@@ -543,6 +543,7 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 .brisa-fondo video, .orbe video { opacity: 0; z-index: 0; transition: opacity 0s linear .9s; }
 .brisa-fondo video.visible, .orbe video.visible { opacity: 1; z-index: 1; transition: opacity .9s ease-in-out; }
 .orbe { background: transparent; }
+.orbe .orbe-estatica { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
 /* Mi zona: tarjetas de vecinos y puerta abierta. */
 .vecinos { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }

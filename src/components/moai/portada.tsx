@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { api as apiReal, type Api, type Contacto, type Envio, type Perfil, type Respuesta } from '@/lib/api';
+import { api as apiReal, type Api, type Lugar, type Contacto, type Envio, type Perfil, type Respuesta } from '@/lib/api';
 import { resolverRuta, rutaDeMoai, rutaDePlan, useRuta, type Sesion } from '@/lib/rutas';
 import type { EntradaRegistro } from '@/lib/registro';
 import { Acceso, Codigo, Menor, PasoComunidad, PasoNacimiento, Registro, TextoLegal, registroVacio } from './cuenta';
@@ -72,8 +72,17 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
     }
   }, [ruta, sesion, destino, desafio, navegar, menor]);
 
-  // Al cambiar de pantalla, el foco va al título (accesibilidad).
-  useEffect(() => { document.querySelector<HTMLElement>('main h1')?.focus(); }, [ruta, sesion.estado, menor]);
+  // Un cambio de lugar conserva el foco en el selector; una ruta nueva anuncia su título.
+  const lugarActual = sesion.estado === 'activa' ? sesion.perfil.lugar?.id : undefined;
+  const focoAnterior = useRef({ ruta, lugar: lugarActual });
+  useEffect(() => {
+    const cambioLugar = focoAnterior.current.ruta === ruta && focoAnterior.current.lugar !== undefined && focoAnterior.current.lugar !== lugarActual;
+    const selector = cambioLugar ? document.querySelector<HTMLButtonElement>('.selector-lugar') : null;
+    const titulo = [...document.querySelectorAll<HTMLElement>('h1')].find(h => !h.closest('[hidden], [aria-hidden="true"]'));
+    if (selector) selector.focus({ preventScroll: true });
+    else if (titulo) { titulo.tabIndex = -1; titulo.focus({ preventScroll: true }); }
+    focoAnterior.current = { ruta, lugar: lugarActual };
+  }, [ruta, sesion.estado, menor, lugarActual]);
 
   if (sesion.estado === 'cargando') return <Abriendo/>;
   if (sesion.estado === 'error') return <Abriendo onReintentar={consultar}/>;
@@ -108,12 +117,12 @@ export function Plataforma({ api = apiReal }: { api?: Api }) {
       if (!r.ok) { setErrorSalida('No pudimos cerrar tu sesión. Revisa tu conexión e inténtalo de nuevo.'); return; }
       setErrorSalida(''); setSesion({ estado: 'anonima' }); navegar('/', { reemplazar: true });
     };
-    const refrescar = () => void api.sesion().then(r => { if (r.ok) activa(r.datos); });
+    const actualizarLugar = (lugar: Lugar | null) => setSesion(s => s.estado === 'activa' ? { ...s, perfil: { ...s.perfil, lugar } } : s);
     const privada = (() => {
-      if (ruta === '/inicio') return <InicioBrisa key={window.location.search} perfil={perfil} api={api} ir={ir} onSalir={salir} empezar={(['plan', 'perfil', 'estado'] as const).find(e => new URLSearchParams(window.location.search).has(e))}/>;
+      if (ruta === '/inicio') return <InicioBrisa key={`${window.location.search}:${perfil.lugar?.id ?? 'sin-lugar'}`} onCambioLugar={actualizarLugar} perfil={perfil} api={api} ir={ir} onSalir={salir} empezar={(['plan', 'perfil', 'estado'] as const).find(e => new URLSearchParams(window.location.search).has(e))}/>;
       // Tres lugares: Brisa (/inicio), Mi barrio (/comunidad; /zona abre Vecinos) y Mi gente (/gente; /lazos, el nombre anterior).
-      if (ruta === '/comunidad' || ruta === '/zona') return <MiComunidad key={ruta} perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={refrescar} inicial={ruta === '/zona' ? 'vecinos' : 'mapa'}/>;
-      if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={() => void api.sesion().then(r => { if (r.ok) activa(r.datos); })}/>;
+      if (ruta === '/comunidad' || ruta === '/zona') return <MiComunidad key={ruta} perfil={perfil} api={api} ir={ir} onSalir={salir} onCambio={actualizarLugar} inicial={ruta === '/zona' ? 'vecinos' : 'mapa'}/>;
+      if (ruta === '/lugares') return <MisLugares api={api} ir={ir} onSalir={salir} onCambio={actualizarLugar}/>;
       if (ruta === '/planes/nuevo') return <NuevoPlan perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
       if (ruta === '/avisos') return <Avisos api={api} ir={ir} onSalir={salir}/>;
       if (ruta === '/gente' || ruta === '/lazos') return <MiGente perfil={perfil} api={api} ir={ir} onSalir={salir}/>;
