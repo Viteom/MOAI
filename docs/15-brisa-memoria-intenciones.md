@@ -1,5 +1,7 @@
 # Brisa: intención, memoria autorizada y acciones confirmadas
 
+> Evolución posterior: se preparó una ayuda opcional de Gemini **solo para frases ficticias y con autorización por envío**. No conecta el historial ni la memoria al modelo. Ver [16-gemini-beta.md](16-gemini-beta.md); las limitaciones de esta primera entrega se conservan aquí como referencia.
+
 20 de octubre de 2026 · Rama `codex/brisa-memoria-intenciones`, desde `f3c545c` de `codex/fondos-por-ciudad`. Sin dependencias nuevas.
 
 **Revisión humana antes de fusionar:** memoria personal, consentimiento, cifrado existente, descarga/borrado y asistencia a planes. Nada publicado. El proveedor y el marco legal de un modelo externo siguen pendientes; esta versión funciona con reglas dentro de MOAI, sin servicios externos de IA.

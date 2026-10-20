@@ -20,6 +20,7 @@ Los documentos viven como documentos de Claude. Para que Claude Code los lea, ex
 | Propuesta de fondos por ciudad y criterios de aceptación | En el repositorio | [13-fondos-por-ciudad.md](13-fondos-por-ciudad.md) |
 | Fondos de Medellín y Bogotá: implementación y capturas | En el repositorio | [14-fondos-ciudades-implementacion.md](14-fondos-ciudades-implementacion.md) |
 | Brisa: memoria autorizada, intenciones y acciones confirmadas | En el repositorio | [15-brisa-memoria-intenciones.md](15-brisa-memoria-intenciones.md) |
+| Gemini en beta: frases ficticias, permisos y activación | En el repositorio | [16-gemini-beta.md](16-gemini-beta.md) |
 
 Diseño en Figma: https://www.figma.com/design/ysY7rr3Nf7LOsPmekZwt3x
 

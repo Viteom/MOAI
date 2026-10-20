@@ -1,0 +1,59 @@
+[
+  {
+    "tamano": "390x844",
+    "transporteGemini": "simulado",
+    "llamadaRealGemini": false,
+    "servidorMOAI": "Fastify + PGlite aislado",
+    "recorrido": "autorizar→editar retira permiso→interpretar→revisar→buscar→confirmar→error de red→reautorizar→reintentar→desactivado",
+    "geometria": {
+      "ancho": 390,
+      "contenido": 390,
+      "panel": 764,
+      "barra": 775,
+      "botones": [
+        74,
+        48.296875
+      ]
+    },
+    "errores": [],
+    "externas": []
+  },
+  {
+    "tamano": "768x1024",
+    "transporteGemini": "simulado",
+    "llamadaRealGemini": false,
+    "servidorMOAI": "Fastify + PGlite aislado",
+    "recorrido": "autorizar→editar retira permiso→interpretar→revisar→buscar→confirmar→error de red→reautorizar→reintentar→desactivado",
+    "geometria": {
+      "ancho": 768,
+      "contenido": 768,
+      "panel": 920,
+      "barra": 940,
+      "botones": [
+        48,
+        48.296875
+      ]
+    },
+    "errores": [],
+    "externas": []
+  },
+  {
+    "tamano": "1440x900",
+    "transporteGemini": "simulado",
+    "llamadaRealGemini": false,
+    "servidorMOAI": "Fastify + PGlite aislado",
+    "recorrido": "autorizar→editar retira permiso→interpretar→revisar→buscar→confirmar→error de red→reautorizar→reintentar→desactivado",
+    "geometria": {
+      "ancho": 1440,
+      "contenido": 1440,
+      "panel": 796,
+      "barra": 816,
+      "botones": [
+        48,
+        48.296875
+      ]
+    },
+    "errores": [],
+    "externas": []
+  }
+]

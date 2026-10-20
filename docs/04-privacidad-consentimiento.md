@@ -8,6 +8,8 @@ Este documento fija qué dato recoge MOAI, dónde vive, quién lo ve y cuánto d
 
 ## Principios
 
+**Beta posterior, 20 de octubre:** Mateo eligió Gemini para interpretar únicamente frases ficticias con autorización por envío. No recibe memoria, perfiles ni conversaciones; la búsqueda y las acciones siguen en MOAI. Detalles y límites actuales en [16-gemini-beta.md](16-gemini-beta.md). Datos reales y condiciones del proveedor requieren revisión jurídica antes de ampliar este uso.
+
 - Mínimo necesario: si no hace falta, no se recoge.
 - Lo íntimo se queda en el dispositivo por defecto: el estado del día, el Modo Invierno, la red declarada y las luces de ancestros.
 - Todo permiso sensible se pide en el momento en que se usa, con palabras claras, y se puede retirar en un toque.
