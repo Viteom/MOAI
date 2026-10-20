@@ -698,8 +698,9 @@ select.cuenta-campo option { background: var(--bosque); color: var(--niebla); }
 @keyframes punto-brisa { 0%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: .9; transform: translateY(-3px); } }
 
 /* ==== Barra única (decisión de Mateo, 15 de octubre): Brisa · Mi barrio · Mi gente · Más ====
-   Arriba en el escritorio y abajo en el teléfono. --barra-arriba y --barra-abajo dicen cuánto espacio ocupa. */
-:root { --barra-arriba: 92px; --barra-abajo: 0px; }
+   Abajo en todos los tamaños (Mateo, 19 de octubre: así no cambia de lugar entre pantallas). --barra-abajo dice cuánto ocupa;
+   --barra-arriba queda en 0 y se conserva para no tocar cada pantalla. */
+:root { --barra-arriba: 0px; --barra-abajo: calc(96px + env(safe-area-inset-bottom)); }
 .barra { position: fixed; z-index: 40; top: 14px; left: 14px; right: 14px; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 10px 8px 22px; border-radius: 22px; }
 .barra .diario-marca { font-size: 15px; }
 .barra-lugares { display: flex; align-items: center; gap: 4px; margin-left: auto; }
@@ -1118,3 +1119,18 @@ button.chip.persona { cursor: pointer; }
 .luz.es-mio { --c: #c6f25a; }
 .luz.es-convocatoria { --c: #ff9d5c; }
 .luz.elegida::before { border-color: var(--c); }
+
+/* Barra abajo también en el escritorio (diseño de Codex para Mi barrio, extendido a todas las pantallas el 19 de octubre). */
+@media (min-width: 761px) {
+  .barra { top: auto; bottom: 14px; left: 50%; right: auto; transform: translateX(-50%); width: min(560px, calc(100% - 32px)); min-height: 64px; padding: 6px; gap: 0; border-radius: 24px; background: #0e241df5; box-shadow: 0 8px 30px #06151066; }
+  .barra .diario-marca { display: none; }
+  .barra-lugares { flex: 1; width: 100%; gap: 4px; margin: 0; }
+  .barra-lugares > button, .barra-mas { flex: 1; min-width: 0; }
+  .barra-lugares > button, .barra-mas > button { width: 100%; min-height: 56px; padding: 5px 2px; flex-direction: column; gap: 3px; border-radius: 18px; font-size: 13px; }
+  .barra-lugares > button svg, .barra-mas > button svg { width: 22px; height: 22px; }
+  .barra-lugares > button[aria-current="page"] { background: #cefa631a; box-shadow: inset 0 0 0 1px #cefa6338; }
+  .barra-menu { top: auto; bottom: calc(100% + 12px); }
+  .diario-contenido { padding-bottom: calc(var(--barra-abajo) + 32px); }
+  .panel-brisa, .panel-brisa.flotante { top: 24px; bottom: calc(var(--barra-abajo) + 8px); }
+  .brisa-espera { bottom: calc(var(--barra-abajo) + 14px); }
+}

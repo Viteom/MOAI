@@ -104,6 +104,28 @@ describe('Mi barrio sobre el escenario ilustrado (19 de octubre)', () => {
     expect(screen.getByText('Escenario ilustrado · no es el lugar exacto')).toBeInTheDocument();
   });
 
+  it('la hoja recibe foco y Escape lo devuelve a la luz que la abrió', async () => {
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    const luz = await screen.findByRole('button', { name: /^Caminata por el parque\. / });
+    luz.focus();
+    fireEvent.click(luz);
+    expect(screen.getByRole('heading', { name: caminata.titulo })).toHaveFocus();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('region', { name: caminata.titulo })).toBeNull();
+    expect(luz).toHaveFocus();
+  });
+
+  it('un error al sumarse se puede leer en la hoja del mapa sin perder las acciones', async () => {
+    const irAPlan = vi.fn(async () => ({ ok: false as const, error: 'El plan ya está completo.', status: 409 }));
+    render(<MiComunidad perfil={perfil} api={api({ mapa: ok(mapa), irAPlan })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    fireEvent.click(await screen.findByRole('button', { name: /^Caminata por el parque\. / }));
+    fireEvent.click(screen.getByRole('button', { name: 'Me sumo' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('El plan ya está completo.');
+    expect(screen.getByRole('region', { name: caminata.titulo })).toContainElement(screen.getByRole('alert'));
+    expect(screen.getByRole('button', { name: 'Ver plan' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Contar qué voy a hacer' })).toBeNull();
+  });
+
   it('sin barrio no hay escenario: quedan los planes en lista y lo explica', async () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
     expect(await screen.findByText(/El mapa llega cuando tu lugar tiene barrio/)).toBeInTheDocument();
