@@ -3,7 +3,6 @@
 // Regla 1: ninguna tabla guarda coordenadas; la ciudad es el código DIVIPOLA del municipio.
 import { mkdirSync } from 'node:fs';
 import pg from 'pg';
-import { PGlite } from '@electric-sql/pglite';
 
 export type Consulta = { query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]> };
 // `transaccion`: para lo que debe ocurrir todo o nada y sin carreras entre solicitudes simultáneas
@@ -281,10 +280,13 @@ create table if not exists brisa_interpretaciones (
 create index if not exists brisa_interpretaciones_fecha on brisa_interpretaciones (creado_en);
 `;
 
-export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {
+// En Vercel el esquema se prepara explícitamente, antes de recibir visitas.
+export async function abrirDb(opciones: { url?: string; carpeta?: string; inicializar?: boolean; maxConexiones?: number } = {}): Promise<Db> {
   let db: Db;
   if (opciones.url) {
-    const pool = new pg.Pool({ connectionString: opciones.url });
+    const pool = new pg.Pool({ connectionString: opciones.url, max: opciones.maxConexiones ?? 10,
+      connectionTimeoutMillis: 10_000, idleTimeoutMillis: 20_000, allowExitOnIdle: true });
+    pool.on('error', () => console.error('falló una conexión inactiva de PostgreSQL'));
     db = {
       query: async (sql, params) => (await pool.query(sql, params)).rows,
       async transaccion(fn) {
@@ -304,6 +306,7 @@ export async function abrirDb(opciones: { url?: string; carpeta?: string } = {})
       close: () => pool.end(),
     };
   } else {
+    const { PGlite } = await import('@electric-sql/pglite');
     if (opciones.carpeta) mkdirSync(opciones.carpeta, { recursive: true });
     const lite = new PGlite(opciones.carpeta);
     db = {
@@ -312,6 +315,17 @@ export async function abrirDb(opciones: { url?: string; carpeta?: string } = {})
       close: () => lite.close(),
     };
   }
-  for (const sentencia of esquema.split(';').map(s => s.trim()).filter(Boolean)) await db.query(sentencia);
+  if (opciones.inicializar !== false) {
+    try { await prepararEsquema(db); }
+    catch (error) { await db.close(); throw error; }
+  }
   return db;
+}
+
+export async function prepararEsquema(db: Db) {
+  // Dos despliegues no pueden modificar el esquema a la vez. Un error revierte todo.
+  await db.transaccion(async tx => {
+    await tx.query("select pg_advisory_xact_lock(hashtext('moai:esquema'))");
+    for (const sentencia of esquema.split(';').map(s => s.trim()).filter(Boolean)) await tx.query(sentencia);
+  });
 }

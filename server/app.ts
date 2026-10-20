@@ -1,6 +1,6 @@
 // API de cuentas: registro y acceso sin contraseña, con un código de 6 dígitos por correo o WhatsApp.
 // REVISIÓN HUMANA: datos personales, consentimiento y sesiones.
-import Fastify, { type FastifyRequest } from 'fastify';
+import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import cookie from '@fastify/cookie';
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import { codigoValido, enmascarar, normalizarDestino, validarNacimiento, validarRegistro, VERSION_TEXTOS, type Canal, type EntradaRegistro } from '../src/lib/registro';
@@ -29,7 +29,8 @@ const ENVIOS_POR_HORA = 5;
 const INTENTOS_POR_CODIGO = 5;
 
 // `equipo`: correos de las personas del equipo de MOAI que revisan reportes y dan de alta entidades (EQUIPO_CORREOS).
-type Opciones = { db: Db; vias: Vias; secreto: string; produccion?: boolean; ahora?: () => Date; equipo?: string[]; modeloBrisa?: ProveedorBrisa | null };
+type Opciones = { db: Db; vias: Vias; secreto: string; produccion?: boolean; ahora?: () => Date; equipo?: string[]; modeloBrisa?: ProveedorBrisa | null;
+  configurar?: (app: FastifyInstance) => void };
 type Cuenta = { id: string; nombre: string; verificada_en: string | null; suspendida_en: string | null };
 class Limite extends Error {}
 
@@ -43,8 +44,9 @@ const mensajes = {
   suspendida: `Tu cuenta está suspendida porque recibimos reportes sobre ella. Si crees que es un error, escríbenos a ${RESPONSABLE.correo}.`,
 };
 
-export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date(), equipo = [], modeloBrisa = null }: Opciones) {
+export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date(), equipo = [], modeloBrisa = null, configurar }: Opciones) {
   const app = Fastify({ logger: false, bodyLimit: 16 * 1024 });
+  configurar?.(app); // Adaptadores de despliegue: antes de registrar rutas y completar ready().
   await app.register(cookie);
   const hmac = (valor: string) => createHmac('sha256', secreto).update(valor).digest('hex');
   const sha = (valor: string) => createHash('sha256').update(valor).digest('hex');

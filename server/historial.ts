@@ -3,7 +3,7 @@
 // dice; nunca audio (el dictado ocurre en el navegador). Se puede borrar en Mi cuenta y sale en «Descargar mis datos».
 // REVISIÓN HUMANA: guarda lo que la persona le cuenta a Brisa.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { Db } from './db';
+import type { Consulta, Db } from './db';
 import type { Cifrador } from './cifrado';
 
 export const DIAS_HISTORIAL = 90;
@@ -20,7 +20,7 @@ export async function historialDe(db: Db, cifrador: Cifrador, cuenta: string, ah
   return filas.reverse().flatMap(f => { const t = cifrador.descifrar(f.texto); return t === null ? [] : [{ de: f.de, texto: t, fecha: new Date(f.creado_en).toISOString() }]; });
 }
 
-export const borrarHistorialViejo = (db: Db, ahora: Date) =>
+export const borrarHistorialViejo = (db: Consulta, ahora: Date) =>
   db.query(`delete from brisa_mensajes where creado_en < $1::timestamptz - make_interval(days => $2)`, [ahora, DIAS_HISTORIAL]);
 
 export function registrarHistorial(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, cifrador: Cifrador) {
