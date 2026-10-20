@@ -1,5 +1,7 @@
 # Auditoría UX/UI y fondos por ciudad
 
+Actualización: el cambio seguro de contexto, fondos propios de Medellín/Bogotá y foco de rutas se implementan posteriormente en [14-fondos-ciudades-implementacion.md](14-fondos-ciudades-implementacion.md). Este documento conserva la evidencia de la versión auditada.
+
 20 de octubre de 2026 · Rama `codex/auditoria-ux-ciudades`, basada en `codex/mi-gente-redesign` (`211000d`). Auditoría y propuesta; los defectos indicados siguen pendientes de implementación. Se conserva el código de la aplicación.
 
 ## Dictamen

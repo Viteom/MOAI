@@ -1,0 +1,440 @@
+[
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "activaciones": 9,
+    "solicitudes": 10,
+    "errores": [],
+    "imprevistas": [],
+    "externas": [],
+    "geometria": {
+      "overflow": false,
+      "scrollHeight": 844,
+      "viewportHeight": 844,
+      "controles": [
+        {
+          "texto": "Brisa",
+          "ancho": 93.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 7,
+          "y": 782
+        },
+        {
+          "texto": "Mi barrio",
+          "ancho": 93.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(206, 250, 99)",
+          "fondo": "rgba(206, 250, 99, 0.14)",
+          "x": 102.5,
+          "y": 782
+        },
+        {
+          "texto": "Mi gente",
+          "ancho": 93.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 198,
+          "y": 782
+        },
+        {
+          "texto": "Más",
+          "ancho": 89.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 293.5,
+          "y": 782
+        },
+        {
+          "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+          "ancho": 56,
+          "alto": 56,
+          "fuente": "16px",
+          "color": "rgb(238, 244, 236)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 179.5,
+          "y": 359
+        },
+        {
+          "texto": "Estás en: Casa · Laureles, Medellín",
+          "ancho": 298,
+          "alto": 60,
+          "fuente": "16px",
+          "color": "rgb(238, 244, 236)",
+          "fondo": "rgba(16, 43, 35, 0.96)",
+          "x": 16,
+          "y": 14
+        },
+        {
+          "texto": "Mapa",
+          "ancho": 109,
+          "alto": 48,
+          "fuente": "16px",
+          "color": "rgb(234, 255, 209)",
+          "fondo": "rgb(36, 77, 60)",
+          "x": 21,
+          "y": 91
+        },
+        {
+          "texto": "Lista",
+          "ancho": 109,
+          "alto": 48,
+          "fuente": "16px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 134,
+          "y": 91
+        },
+        {
+          "texto": "Vecinos",
+          "ancho": 48,
+          "alto": 52,
+          "fuente": "16px",
+          "color": "rgb(139, 228, 213)",
+          "fondo": "rgba(16, 43, 35, 0.96)",
+          "x": 326,
+          "y": 18
+        },
+        {
+          "texto": "Contar qué voy a hacer",
+          "ancho": 358,
+          "alto": 56,
+          "fuente": "18px",
+          "color": "rgb(18, 41, 31)",
+          "fondo": "rgb(206, 250, 99)",
+          "x": 16,
+          "y": 704
+        }
+      ],
+      "pequenos": [],
+      "nav": {
+        "y": 775,
+        "alto": 69
+      },
+      "imagenes": [
+        {
+          "src": "/backgrounds/ciudades/medellin-movil.avif",
+          "ok": true,
+          "ancho": 941,
+          "alto": 1672,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "ancho": 390,
+            "alto": 844,
+            "fraccionAnchoVisible": 1,
+            "fraccionAnchoFuenteVisible": 0.8210484963560999
+          }
+        }
+      ],
+      "videos": [],
+      "h1": [
+        {
+          "texto": "Mi barrio",
+          "fuente": "16px"
+        }
+      ]
+    }
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "activaciones": 9,
+    "solicitudes": 10,
+    "errores": [],
+    "imprevistas": [],
+    "externas": [],
+    "geometria": {
+      "overflow": false,
+      "scrollHeight": 1024,
+      "viewportHeight": 1024,
+      "controles": [
+        {
+          "texto": "Brisa",
+          "ancho": 134.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 111,
+          "y": 947
+        },
+        {
+          "texto": "Mi barrio",
+          "ancho": 134.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(206, 250, 99)",
+          "fondo": "rgba(206, 250, 99, 0.1)",
+          "x": 249.5,
+          "y": 947
+        },
+        {
+          "texto": "Mi gente",
+          "ancho": 134.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 388,
+          "y": 947
+        },
+        {
+          "texto": "Más",
+          "ancho": 130.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 526.5,
+          "y": 947
+        },
+        {
+          "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+          "ancho": 56,
+          "alto": 56,
+          "fuente": "16px",
+          "color": "rgb(238, 244, 236)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 387.390625,
+          "y": 434
+        },
+        {
+          "texto": "Estás en: Casa · Laureles, Medellín",
+          "ancho": 221.5,
+          "alto": 60,
+          "fuente": "17px",
+          "color": "rgb(238, 244, 236)",
+          "fondo": "rgba(16, 43, 35, 0.96)",
+          "x": 23.03125,
+          "y": 18
+        },
+        {
+          "texto": "Mapa",
+          "ancho": 112,
+          "alto": 48,
+          "fuente": "16px",
+          "color": "rgb(234, 255, 209)",
+          "fondo": "rgb(36, 77, 60)",
+          "x": 372.921875,
+          "y": 24
+        },
+        {
+          "texto": "Lista",
+          "ancho": 112,
+          "alto": 48,
+          "fuente": "16px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 488.921875,
+          "y": 24
+        },
+        {
+          "texto": "Vecinos",
+          "ancho": 127,
+          "alto": 52,
+          "fuente": "16px",
+          "color": "rgb(139, 228, 213)",
+          "fondo": "rgba(16, 43, 35, 0.96)",
+          "x": 617.921875,
+          "y": 22
+        },
+        {
+          "texto": "Contar qué voy a hacer",
+          "ancho": 420,
+          "alto": 56,
+          "fuente": "18px",
+          "color": "rgb(18, 41, 31)",
+          "fondo": "rgb(206, 250, 99)",
+          "x": 174,
+          "y": 854
+        }
+      ],
+      "pequenos": [],
+      "nav": {
+        "y": 940,
+        "alto": 70
+      },
+      "imagenes": [
+        {
+          "src": "/backgrounds/ciudades/medellin-movil.avif",
+          "ok": true,
+          "ancho": 941,
+          "alto": 1672,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "ancho": 768,
+            "alto": 1024,
+            "fraccionAnchoVisible": 1,
+            "fraccionAnchoFuenteVisible": 1
+          }
+        }
+      ],
+      "videos": [],
+      "h1": [
+        {
+          "texto": "Mi barrio",
+          "fuente": "16px"
+        }
+      ]
+    }
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "activaciones": 9,
+    "solicitudes": 10,
+    "errores": [],
+    "imprevistas": [],
+    "externas": [],
+    "geometria": {
+      "overflow": false,
+      "scrollHeight": 900,
+      "viewportHeight": 900,
+      "controles": [
+        {
+          "texto": "Brisa",
+          "ancho": 134.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 447,
+          "y": 823
+        },
+        {
+          "texto": "Mi barrio",
+          "ancho": 134.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(206, 250, 99)",
+          "fondo": "rgba(206, 250, 99, 0.1)",
+          "x": 585.5,
+          "y": 823
+        },
+        {
+          "texto": "Mi gente",
+          "ancho": 134.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 724,
+          "y": 823
+        },
+        {
+          "texto": "Más",
+          "ancho": 130.5,
+          "alto": 56,
+          "fuente": "13px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 862.5,
+          "y": 823
+        },
+        {
+          "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+          "ancho": 56,
+          "alto": 56,
+          "fuente": "16px",
+          "color": "rgb(238, 244, 236)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 736,
+          "y": 372
+        },
+        {
+          "texto": "Estás en: Casa · Laureles, Medellín",
+          "ancho": 221.5,
+          "alto": 60,
+          "fuente": "17px",
+          "color": "rgb(238, 244, 236)",
+          "fondo": "rgba(16, 43, 35, 0.96)",
+          "x": 40,
+          "y": 18
+        },
+        {
+          "texto": "Mapa",
+          "ancho": 112,
+          "alto": 48,
+          "fuente": "16px",
+          "color": "rgb(234, 255, 209)",
+          "fondo": "rgb(36, 77, 60)",
+          "x": 1027.953125,
+          "y": 24
+        },
+        {
+          "texto": "Lista",
+          "ancho": 112,
+          "alto": 48,
+          "fuente": "16px",
+          "color": "rgb(184, 205, 195)",
+          "fondo": "rgba(0, 0, 0, 0)",
+          "x": 1143.953125,
+          "y": 24
+        },
+        {
+          "texto": "Vecinos",
+          "ancho": 127,
+          "alto": 52,
+          "fuente": "16px",
+          "color": "rgb(139, 228, 213)",
+          "fondo": "rgba(16, 43, 35, 0.96)",
+          "x": 1272.953125,
+          "y": 22
+        },
+        {
+          "texto": "Contar qué voy a hacer",
+          "ancho": 420,
+          "alto": 56,
+          "fuente": "18px",
+          "color": "rgb(18, 41, 31)",
+          "fondo": "rgb(206, 250, 99)",
+          "x": 510,
+          "y": 730
+        }
+      ],
+      "pequenos": [],
+      "nav": {
+        "y": 816,
+        "alto": 70
+      },
+      "imagenes": [
+        {
+          "src": "/backgrounds/ciudades/medellin-escritorio.avif",
+          "ok": true,
+          "ancho": 1586,
+          "alto": 992,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "ancho": 1440,
+            "alto": 900,
+            "fraccionAnchoVisible": 1,
+            "fraccionAnchoFuenteVisible": 1
+          }
+        }
+      ],
+      "videos": [],
+      "h1": [
+        {
+          "texto": "Mi barrio",
+          "fuente": "16px"
+        }
+      ]
+    }
+  }
+]

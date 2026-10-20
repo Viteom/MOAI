@@ -1,5 +1,7 @@
 # Fondos por ciudad · especificación propuesta
 
+Primera implementación para Medellín y Bogotá: [resultado y verificación](14-fondos-ciudades-implementacion.md). La especificación se conserva como referencia; el informe distingue lo comprobado y los pendientes.
+
 Complemento de la [auditoría UX/UI](12-auditoria-ux-ciudades.md). No es una implementación ni un catálogo de ilustraciones ya disponibles.
 
 ## Fuente de verdad

@@ -60,6 +60,12 @@ La tarea de Mateo amplía exclusivamente `/gente`: Red orbital y Lista comparten
 
 Las notas de «Mi ficha personal» se guardan cifradas con el servicio existente, solo para su autor, en `fichas_vinculo`; nunca entran al perfil compartido. «Mi presentación» reutiliza `perfiles` con nombre preferido y permiso independiente `visible_red`, apagado por defecto. Compartir en Vecinos no lo activa. Se actualizaron Política y `VERSION_TEXTOS`. **Necesita revisión humana antes de fusionar** por datos personales, cifrado y consentimiento. Detalles, límites y capturas reales: `docs/11-mi-gente-orbital.md`.
 
+## Fondos por ciudad (20 de octubre de 2026)
+
+Inicio y Mi barrio usan `FondoCiudad` y el catálogo `src/lib/fondos-ciudad.ts`, a partir del código DIVIPOLA del lugar activo confirmado por la API. Medellín y Bogotá tienen composiciones vertical y horizontal propias; otras ciudades reciben un escenario identificado como genérico. La ilustración no depende de disponer de mapa H3. No se genera arte durante el uso ni se pide ubicación del dispositivo.
+
+Cambiar de lugar reinicia datos y selección del barrio y descarta respuestas anteriores. Selector compartido con errores/reintento; activación atómica en el servidor. El orbe usa imagen estática con movimiento reducido. Recursos y verificación real: `docs/14-fondos-ciudades-implementacion.md`. Revisión humana del flujo de lugares privados y revisión editorial del arte antes de fusionar/publicar; nada publicado desde aquí.
+
 ## Reglas que no se negocian
 
 Antes de escribir código que toque datos de personas, lee `docs/` (en especial privacidad y consentimiento). Si una tarea contradice una de estas reglas, detente y pregunta.
