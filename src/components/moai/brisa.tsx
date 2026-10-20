@@ -12,7 +12,7 @@ import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
-import { conversacionAbierta, esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
+import { conversacionAbierta, esDuda, esFamilia, limpiarNombre, sinRespuesta, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
 import { OrbeBrisa } from './bosque';
 import { FondoCiudad } from './fondo-ciudad';
 import { SelectorLugar } from './selector-lugar';
@@ -33,7 +33,7 @@ const pausaPara = (m: { contenido: ReactNode; nota?: boolean }) =>
   m.nota ? 250 : Math.min(1500, 500 + (typeof m.contenido === 'string' ? m.contenido.length : 80) * 10);
 const esperar = (ms: number) => new Promise(r => setTimeout(r, ms));
 type Borrador = { titulo: string; tipo: Tipo; dia?: Date; hora?: string; lugar?: string; semanal: boolean };
-type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla';
+type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla' | 'red-nombre' | 'red-relacion' | 'red-conocen' | 'red-comparten';
 
 const RIESGO = /(suicid|matarme|quitarme la vida|no quiero vivir|me quiero morir|hacerme daño|no aguanto más)/i;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -147,6 +147,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const conociendote = useRef(false);
   const tarjetaVisible = useRef(false);
   const ultimaVez = useRef<Date | null>(null);
+  const red = useRef({ nombre: '', relacion: '', conocen: '' });
 
   // Lo que se dice en texto se guarda (cifrado, 90 días) en lotes pequeños; las tarjetas y los planes no.
   const porGuardar = useRef<Previo[]>([]);
@@ -232,7 +233,40 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     if (!antes) decir(conversacionAbierta(new Date()));
     setOpciones([verOpciones]);
   }
+  // ---- Red de apoyo: quién es importante para ti, aunque no use MOAI (Mateo, 20 de octubre) ----
+  // Se guarda en tu Moai interno y, lo que cuentes de cómo se conocieron, en su ficha privada. Nadie más lo ve.
+  const ahoraNo: Opcion = { texto: 'Ahora no', hacer: () => conversar('Está bien. Cuando quieras me cuentas.') };
+  function preguntarRed(p?: Pregunta) {
+    if (p) hechas.current.add(p.clave);
+    preguntaActual.current = null;
+    paso.current = 'red-nombre';
+    if (p) { decir(p.texto); nota('Lo guardo cifrado y solo tú lo ves. No le escribo ni le aviso a nadie.'); }
+    else decir('¿Quién más? Dime su nombre.');
+    setOpciones([ahoraNo]);
+  }
+  function preguntarComparten() {
+    paso.current = 'red-comparten';
+    decir(`¿Hay algo que compartan o que les guste hacer juntos?`);
+    setOpciones([{ texto: 'Prefiero no decir', hacer: () => void guardarRed('') }]);
+  }
+  async function guardarRed(comparten: string) {
+    paso.current = 'libre';
+    const { nombre, relacion, conocen } = red.current;
+    const familia = esFamilia(relacion);
+    const r = await api.agregarInterno({ nombre, relacion, familia });
+    if (!r.ok) { decir(r.error); conversar(); return; }
+    const persona = r.datos.filter(x => x.nombre === nombre).at(-1);
+    if (persona && (conocen || comparten)) await api.guardarFichaVinculo?.(`interno:${persona.id}`, { comoNosConocemos: conocen, algoCompartimos: comparten, nota: '' });
+    decir(`Listo. Guardé a ${nombre} en tu red de apoyo, ${familia ? 'en Raíz, con tu familia' : 'en Tronco, con quienes te nutren'}. Lo ves en Mi gente, y lo puedes cambiar o borrar cuando quieras.`);
+    setOpciones([
+      { texto: 'Agregar a alguien más', hacer: () => preguntarRed() },
+      { texto: 'Ver Mi gente', hacer: () => ir('/gente') },
+      { texto: 'Seguir conversando', silencioso: true, hacer: () => conversar() },
+    ]);
+  }
+
   function preguntar(p: Pregunta) {
+    if (p.red) { preguntarRed(p); return; }
     hechas.current.add(p.clave);
     preguntaActual.current = p;
     paso.current = 'charla';
@@ -497,6 +531,20 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       case 'plan-hora': { const hora = entenderHora(t); if (hora && b) { b.hora = hora; preguntarLugar(); } else { decir('No te entendí la hora. Dime, por ejemplo, «7 am» o «4:30 pm».'); preguntarHora(); } return; }
       case 'plan-donde': if (b && t.length >= 3) { b.lugar = t.slice(0, 80); mostrarBorrador(); } else preguntarLugar(); return;
       case 'charla': if (!esDuda(t) || !responderDuda(t)) { responder(t); return; } break; // si responde con una duda, primero la duda
+      case 'red-nombre':
+        if (sinRespuesta(t)) { conversar('Está bien. Cuando quieras me cuentas.'); return; }
+        red.current = { nombre: limpiarNombre(t), relacion: '', conocen: '' };
+        paso.current = 'red-relacion';
+        decir(`¿Qué es ${red.current.nombre} para ti? Por ejemplo, tu hermana, una amiga o un vecino.`);
+        return;
+      case 'red-relacion':
+        red.current.relacion = t.slice(0, 60);
+        paso.current = 'red-conocen';
+        decir('¿Cómo se conocieron?');
+        setOpciones([{ texto: 'Prefiero no decir', hacer: () => preguntarComparten() }]);
+        return;
+      case 'red-conocen': red.current.conocen = sinRespuesta(t) ? '' : t.slice(0, 160); preguntarComparten(); return;
+      case 'red-comparten': void guardarRed(sinRespuesta(t) ? '' : t.slice(0, 160)); return;
     }
     // Dudas sobre la plataforma: respuestas escritas por el equipo.
     if (esDuda(t)) {

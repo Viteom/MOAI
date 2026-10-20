@@ -142,7 +142,7 @@ describe('Brisa conversa y recuerda (19 de octubre)', () => {
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial })} ir={vi.fn()} onSalir={vi.fn()}/>);
     abrirBrisa();
     expect(await screen.findByText('Voy a misa y almuerzo con mis nietos')).toBeInTheDocument();
-    expect(await screen.findByText('Cuando terminas tus cosas del día, ¿qué te gusta hacer?')).toBeInTheDocument();
+    expect(await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?')).toBeInTheDocument();
     expect(screen.getAllByText('¿Qué haces normalmente un domingo en la tarde?')).toHaveLength(1);
   });
 
@@ -212,5 +212,37 @@ describe('Brisa espera (19 de octubre)', () => {
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ cartas } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
     expect(await screen.findByText('Tengo algo que contarte cuando quieras.')).toBeInTheDocument();
     expect(screen.queryByText('Alguien te invitó a su Moai')).toBeNull();
+  });
+});
+
+describe('Brisa pregunta por la red de apoyo (20 de octubre)', () => {
+  const historial = ok([{ de: 'brisa' as const, texto: '¿Qué haces normalmente un domingo en la tarde?', fecha: '2026-10-18T15:00:00.000Z' }]);
+  it('guarda a la persona en el Moai interno y lo que cuentan en su ficha privada, una pregunta a la vez', async () => {
+    const agregarInterno = vi.fn(async () => ({ ok: true as const, datos: [{ id: 'i9', nombre: 'Ana', relacion: 'mi hermana', pendiente: false }] }));
+    const guardarFichaVinculo = vi.fn(async () => ({ ok: true as const, datos: {} }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, agregarInterno, guardarFichaVinculo } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    expect(await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?')).toBeInTheDocument();
+    expect(screen.getByText('Lo guardo cifrado y solo tú lo ves. No le escribo ni le aviso a nadie.')).toBeInTheDocument();
+    escribirABrisa('Se llama Ana');
+    expect(await screen.findByText('¿Qué es Ana para ti? Por ejemplo, tu hermana, una amiga o un vecino.')).toBeInTheDocument();
+    escribirABrisa('mi hermana');
+    expect(await screen.findByText('¿Cómo se conocieron?')).toBeInTheDocument();
+    escribirABrisa('Crecimos juntas');
+    expect(await screen.findByText('¿Hay algo que compartan o que les guste hacer juntos?')).toBeInTheDocument();
+    escribirABrisa('Cocinar los domingos');
+    expect(await screen.findByText(/Guardé a Ana en tu red de apoyo, en Raíz, con tu familia/)).toBeInTheDocument();
+    expect(agregarInterno).toHaveBeenCalledWith({ nombre: 'Ana', relacion: 'mi hermana', familia: true });
+    expect(guardarFichaVinculo).toHaveBeenCalledWith('interno:i9', { comoNosConocemos: 'Crecimos juntas', algoCompartimos: 'Cocinar los domingos', nota: '' });
+    expect(screen.getByRole('button', { name: 'Agregar a alguien más' })).toBeInTheDocument();
+  });
+
+  it('«Ahora no» no guarda nada', async () => {
+    const agregarInterno = vi.fn();
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, agregarInterno } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    await elegirCuandoAparezca('Ahora no');
+    expect(await screen.findByText('Está bien. Cuando quieras me cuentas.')).toBeInTheDocument();
+    expect(agregarInterno).not.toHaveBeenCalled();
   });
 });

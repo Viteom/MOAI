@@ -7,11 +7,14 @@ import type { Tipo } from './lugares';
 const plano = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 // `tarjeta`: a qué parte de la tarjeta puede ir la respuesta, si la persona quiere.
-export type Pregunta = { clave: string; texto: string; tarjeta?: 'gustos' | 'comparte' | 'aprender' | 'frase' };
+// `red`: abre la conversación para guardar a alguien de la red de apoyo (Moai interno y su ficha privada).
+export type Pregunta = { clave: string; texto: string; tarjeta?: 'gustos' | 'comparte' | 'aprender' | 'frase'; red?: true };
 
 // Primero las que ayudan a conocerse; después, temas de todos los días. Directas, sin opciones para elegir.
 export const PREGUNTAS: Pregunta[] = [
   { clave: 'domingo', texto: '¿Qué haces normalmente un domingo en la tarde?', tarjeta: 'gustos' },
+  // Al empezar (Mateo, 20 de octubre): las personas importantes de la red de apoyo, aunque no usen MOAI.
+  { clave: 'apoyo', texto: '¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?', red: true },
   { clave: 'despues', texto: 'Cuando terminas tus cosas del día, ¿qué te gusta hacer?', tarjeta: 'gustos' },
   { clave: 'sabes', texto: '¿Qué sabes hacer que le podrías enseñar a alguien?', tarjeta: 'comparte' },
   { clave: 'aprender', texto: '¿Qué te gustaría aprender, aunque sea por gusto?', tarjeta: 'aprender' },
@@ -35,13 +38,15 @@ export const PREGUNTAS: Pregunta[] = [
   { clave: 'receta', texto: '¿Hay alguna receta que te salga especialmente bien?', tarjeta: 'comparte' },
   { clave: 'leer', texto: '¿Qué estás leyendo, viendo o escuchando estos días?' },
   { clave: 'agradecer', texto: '¿A quién te gustaría agradecerle algo?' },
+  { clave: 'apoyo-mas', texto: '¿Hay alguien más de tu familia o de tus amigos que sea importante para ti?', red: true },
 ];
 
+const CONOCERSE = 6; // las de los primeros días, en orden
 // La pregunta del día: la primera que no se ha hecho; arranca en un punto distinto cada día para que no se repita el orden.
 export function preguntaDelDia(hechas: Set<string>, hoy: Date, desde = 0): Pregunta | null {
-  const conocerse = PREGUNTAS.slice(0, 5).filter(p => !hechas.has(p.clave));
+  const conocerse = PREGUNTAS.slice(0, CONOCERSE).filter(p => !hechas.has(p.clave));
   if (conocerse.length) return conocerse[0];
-  const resto = PREGUNTAS.slice(5);
+  const resto = PREGUNTAS.slice(CONOCERSE);
   const dia = Math.floor(hoy.getTime() / 864e5);
   for (let i = 0; i < resto.length; i++) {
     const p = resto[(dia + desde + i) % resto.length];
@@ -132,3 +137,14 @@ export function saludoDeVuelta(ahora: Date, ultima?: Date | null): string {
 }
 const ABIERTAS = ['Cuéntame lo que quieras, o pregúntame cualquier duda sobre MOAI.', 'Si algo te ronda, cuéntamelo. También respondo dudas sobre MOAI.', 'Aquí estoy para lo que quieras contar o preguntar.'];
 export const conversacionAbierta = (ahora: Date) => ABIERTAS[diaDelAnio(ahora) % ABIERTAS.length];
+
+// ---- Red de apoyo (20 de octubre) ----
+// Qué relación cuenta como familia (va a Raíz); el resto, a Tronco («quien me nutre»).
+export const esFamilia = (relacion: string) => /\b(mam[aá]|madre|pap[aá]|padre|herman[oa]|hij[oa]|t[ií][oa]|abuel[oa]|prim[oa]|sobrin[oa]|nieto|nieta|espos[oa]|esposo|pareja|marido|mujer|suegr[oa]|cu[ñn]ad[oa]|familia)/i.test(relacion);
+// «Se llama Ana.» → «Ana». Sin adivinar más: si no, se guarda lo que la persona escribió, corto.
+export const limpiarNombre = (texto: string) => {
+  const t = texto.trim().replace(/^(se llama|es|ella es|él es|el es)\s+/i, '').replace(/[.!¡?¿]+$/g, '').trim().slice(0, 40);
+  return t.charAt(0).toLocaleUpperCase('es') + t.slice(1);
+};
+// Respuestas que significan «no por ahora».
+export const sinRespuesta = (texto: string) => /^(no|nadie|ninguno|ninguna|ahora no|despues|después|luego|prefiero no( decir)?|no se|no sé|paso)\.?$/i.test(texto.trim());
