@@ -1,5 +1,7 @@
 # Gemini para probar la comprensión de Brisa
 
+Para ejecutar la API en Vercel, ver [17-vercel-beta.md](17-vercel-beta.md): guardar la clave no despliega por sí solo el servidor ni conecta la base.
+
 20 de octubre de 2026 · Rama `codex/brisa-modelos-beta`, desde `489f8ef` de `codex/brisa-memoria-intenciones`.
 
 Mateo eligió Gemini para probar la modalidad gratuita **con datos ficticios**. Se preparó un adaptador de servidor y una ayuda opcional en «Buscar un plan». No hay una clave configurada en este entorno: **no se ha realizado una llamada real a Gemini ni validado su calidad de interpretación**. Las verificaciones sustituyen únicamente el transporte de Google por respuestas de prueba; usan el servidor y las reglas reales de MOAI.

@@ -21,6 +21,7 @@ Los documentos viven como documentos de Claude. Para que Claude Code los lea, ex
 | Fondos de Medellín y Bogotá: implementación y capturas | En el repositorio | [14-fondos-ciudades-implementacion.md](14-fondos-ciudades-implementacion.md) |
 | Brisa: memoria autorizada, intenciones y acciones confirmadas | En el repositorio | [15-brisa-memoria-intenciones.md](15-brisa-memoria-intenciones.md) |
 | Gemini en beta: frases ficticias, permisos y activación | En el repositorio | [16-gemini-beta.md](16-gemini-beta.md) |
+| Servidor en Vercel: base de pruebas, variables y verificación | En el repositorio | [17-vercel-beta.md](17-vercel-beta.md) |
 
 Diseño en Figma: https://www.figma.com/design/ysY7rr3Nf7LOsPmekZwt3x
 
