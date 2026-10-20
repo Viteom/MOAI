@@ -6,13 +6,13 @@
 // Regla 12: el sello «IA» va siempre junto a su nombre, y la primera vez dice que no es una persona.
 // Regla 11: ante señales de riesgo, deriva a una persona y a la línea de emergencias.
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Mic, SendHorizontal } from 'lucide-react';
+import { MessageCircle, Mic, SendHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
-import { esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, type Pregunta } from '@/lib/conversacion';
+import { conversacionAbierta, esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
 import { OrbeBrisa } from './bosque';
 import { Barra, type Ir } from './diario';
 import { EscenaCuidado } from './escena';
@@ -114,7 +114,7 @@ function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
 }
 
 // La conversación con Brisa, sin marco: va en el panel de vidrio del inicio y en el del mapa.
-export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado'; titulo?: ReactNode }) {
+export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado'; titulo?: ReactNode; onCerrar?: () => void }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [opciones, setOpcionesVisibles] = useState<Opcion[]>([]);
@@ -142,6 +142,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil
   const secuencia = useRef<Pregunta[]>([]);
   const conociendote = useRef(false);
   const tarjetaVisible = useRef(false);
+  const ultimaVez = useRef<Date | null>(null);
 
   // Lo que se dice en texto se guarda (cifrado, 90 días) en lotes pequeños; las tarjetas y los planes no.
   const porGuardar = useRef<Previo[]>([]);
@@ -224,7 +225,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil
     const p = preguntasHoy.current < MAX_PREGUNTAS_DIA ? preguntaDelDia(hechas.current, new Date(), preguntasHoy.current) : null;
     if (p) { preguntasHoy.current++; preguntar(p); return; }
     paso.current = 'libre';
-    if (!antes) decir('Aquí sigo. Cuéntame lo que quieras, o pregúntame cualquier duda sobre MOAI.');
+    if (!antes) decir(conversacionAbierta(new Date()));
     setOpciones([verOpciones]);
   }
   function preguntar(p: Pregunta) {
@@ -517,6 +518,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil
     void Promise.all([api.historial?.() ?? Promise.resolve(null), api.perfilPublico?.() ?? Promise.resolve(null)]).then(([h, t]) => {
       const lineas = h?.ok ? h.datos : [];
       setPrevios(lineas.map(l => ({ de: l.de, texto: l.texto })));
+      ultimaVez.current = lineas.length ? new Date(lineas[lineas.length - 1].fecha) : null;
       hechas.current = preguntasHechas(lineas.filter(l => l.de === 'brisa').map(l => l.texto));
       const hoy = new Date().toDateString();
       preguntasHoy.current = PREGUNTAS.filter(p => lineas.some(l => l.de === 'brisa' && l.texto === p.texto && new Date(l.fecha).toDateString() === hoy)).length;
@@ -532,7 +534,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil
       nota('No soy una persona: soy una inteligencia artificial.');
       void api.cartaVista('brisa:presentada');
       decir('Estoy aquí para ayudarte a encontrar a tu gente, cerca de casa.');
-    } else decir('Qué bueno verte otra vez.');
+    } else decir(saludoDeVuelta(new Date(), ultimaVez.current));
     if (empezar === 'plan') { iniciarPlan(); return; }
     if (empezar === 'perfil') { void iniciarPerfil(); return; }
     if (empezar === 'estado') { void comoEstoy(); return; }
@@ -555,6 +557,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil
   }
 
   return <div className="brisa-chat">
+    {onCerrar && <button type="button" className="brisa-cerrar" aria-label="Cerrar la conversación" onClick={onCerrar}><X aria-hidden="true"/></button>}
     <div className="brisa-quien"><OrbeBrisa/><p><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p></div>
     {titulo}
     <div className="brisa-mensajes" aria-live="polite">
@@ -577,8 +580,20 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo }: { perfil
     </div>;
 }
 
-// Inicio: la ciudad ilustrada de fondo y Brisa en un panel de vidrio al lado (referente de Mateo, 15 de octubre).
+// Inicio: la ciudad ilustrada de fondo y Brisa. Rediseño del 19 de octubre (Mateo: «el chat no debería abrirse de una»):
+// Brisa espera en una tarjeta pequeña con el saludo; la conversación se abre al tocar «Hablar con Brisa» y se cierra con
+// la X. Se abre sola solo la primera vez (Brisa se presenta como IA, regla 12) o cuando se llega a algo concreto.
+// Al cerrarla no se pierde: queda montada y oculta, así no saluda de nuevo en la misma visita.
 export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
+  const nombre = perfil.nombre.split(' ')[0];
+  const [abierta, setAbierta] = useState(!perfil.presentada || !!empezar);
+  const [montada, setMontada] = useState(abierta);
+  const [pendiente, setPendiente] = useState(false);
+  const titulo = useRef<HTMLHeadingElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (!abierta) void api.cartas().then(r => setPendiente(r.ok && r.datos.length > 0)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const abrir = () => { setMontada(true); setAbierta(true); requestAnimationFrame(() => titulo.current?.focus()); };
+  const cerrar = () => { setAbierta(false); requestAnimationFrame(() => boton.current?.focus()); };
   return <div className="inicio-ciudad">
     <picture className="inicio-fondo" aria-hidden="true">
       <source type="image/avif" srcSet="/backgrounds/internas/barrio-1100.avif 1100w, /backgrounds/internas/barrio-1586.avif 1586w" sizes="100vw"/>
@@ -586,9 +601,16 @@ export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Per
         onError={e => { e.currentTarget.style.display = 'none'; }}/>
     </picture>
     <Barra ir={ir} onSalir={onSalir} actual="brisa"/>
-    <aside className="panel-brisa" aria-labelledby="inicio-titulo">
-      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar} titulo={<h1 id="inicio-titulo" tabIndex={-1}>Hola, {perfil.nombre.split(' ')[0]}</h1>}/>
-    </aside>
+    {!abierta && <section className="brisa-espera" aria-labelledby="inicio-titulo-espera">
+      <OrbeBrisa/>
+      <p className="brisa-espera-quien"><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
+      <h1 id="inicio-titulo-espera">Hola, {nombre}</h1>
+      <p>{pendiente ? 'Tengo algo que contarte cuando quieras.' : saludoDeVuelta(new Date()).split('. ').slice(1).join('. ')}</p>
+      <button ref={boton} type="button" className="boton-principal" onClick={abrir}><MessageCircle aria-hidden="true"/>Hablar con Brisa</button>
+    </section>}
+    {montada && <aside className="panel-brisa" aria-labelledby="inicio-titulo" hidden={!abierta}>
+      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar} onCerrar={cerrar} titulo={<h1 id="inicio-titulo" ref={titulo} tabIndex={-1}>Hola, {nombre}</h1>}/>
+    </aside>}
   </div>;
 }
 

@@ -115,3 +115,20 @@ export function responderDuda(texto: string): string[] | null {
   const t = plano(texto);
   return DUDAS.find(([re]) => re.test(t))?.[1] ?? null;
 }
+
+// ---- Saludos (19 de octubre, Mateo: «cada vez es el mismo saludo») ----
+// Según la hora y cuánto hace que hablaron. Cambia de un día a otro, pero no al recargar: nada de azar.
+const franja = (h: number) => h < 5 ? 'Buenas noches' : h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+const diaDelAnio = (d: Date) => Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 864e5);
+const VUELTAS = ['Qué bueno verte otra vez.', 'Me alegra que pases por aquí.', '¿Cómo va todo?', 'Aquí estoy, cuando quieras.', '¿Qué tal tu día?'];
+export function saludoDeVuelta(ahora: Date, ultima?: Date | null): string {
+  const hola = franja(ahora.getHours());
+  if (!ultima) return `${hola}. ${VUELTAS[diaDelAnio(ahora) % VUELTAS.length]}`;
+  const dias = Math.floor((new Date(ahora.toDateString()).getTime() - new Date(ultima.toDateString()).getTime()) / 864e5);
+  if (dias <= 0) return `${hola} de nuevo. Aquí sigo.`;
+  if (dias === 1) return `${hola}. Qué bueno verte otra vez, desde ayer.`;
+  if (dias >= 7) return `${hola}. Hacía días no hablábamos; me alegra verte.`;
+  return `${hola}. ${VUELTAS[diaDelAnio(ahora) % VUELTAS.length]}`;
+}
+const ABIERTAS = ['Cuéntame lo que quieras, o pregúntame cualquier duda sobre MOAI.', 'Si algo te ronda, cuéntamelo. También respondo dudas sobre MOAI.', 'Aquí estoy para lo que quieras contar o preguntar.'];
+export const conversacionAbierta = (ahora: Date) => ABIERTAS[diaDelAnio(ahora) % ABIERTAS.length];

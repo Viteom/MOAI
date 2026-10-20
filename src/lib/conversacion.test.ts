@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda } from './conversacion';
+import { esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta } from './conversacion';
 
 describe('Matriz conversacional de Brisa', () => {
   it('primero las preguntas para conocerse, en orden; después rota sin repetir', () => {
@@ -31,5 +31,16 @@ describe('Matriz conversacional de Brisa', () => {
     expect(responderDuda('¿Eres una persona?')?.[0]).toMatch(/inteligencia artificial/);
     expect(responderDuda('¿Cómo borro mi cuenta?')?.[0]).toMatch(/Mi cuenta/);
     expect(responderDuda('¿Cuál es la capital de Francia?')).toBeNull();
+  });
+});
+
+describe('saludos de vuelta', () => {
+  it('cambian con la hora y con el tiempo sin hablar, y no se repiten al recargar', () => {
+    const tarde = new Date(2026, 9, 19, 16);
+    expect(saludoDeVuelta(tarde, new Date(2026, 9, 19, 9))).toBe('Buenas tardes de nuevo. Aquí sigo.');
+    expect(saludoDeVuelta(new Date(2026, 9, 19, 8), new Date(2026, 9, 18, 20))).toMatch(/^Buenos días\. .*desde ayer/);
+    expect(saludoDeVuelta(new Date(2026, 9, 19, 21), new Date(2026, 9, 1))).toMatch(/^Buenas noches\. Hacía días/);
+    expect(saludoDeVuelta(tarde)).toBe(saludoDeVuelta(tarde));
+    expect(saludoDeVuelta(tarde)).not.toBe(saludoDeVuelta(new Date(2026, 9, 20, 16)));
   });
 });

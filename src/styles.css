@@ -1083,3 +1083,24 @@ button.chip.persona { cursor: pointer; }
 .panel-brisa .brisa-mensajes { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px); mask-image: linear-gradient(to bottom, transparent 0, #000 28px); padding-top: 18px; }
 .vista-gente { align-self: flex-start; }
 @media (max-width: 760px) { .panel-brisa, .panel-brisa.flotante { top: 12svh; } .panel-brisa .brisa-quien .orbe { --tam: 68px; } }
+
+/* Brisa espera (19 de octubre): una tarjeta pequeña sobre el barrio; la conversación se abre al tocarla y se cierra con la X. */
+.panel-brisa[hidden] { display: none; }
+.brisa-chat { position: relative; }
+.brisa-cerrar { position: absolute; z-index: 2; top: -4px; right: -4px; display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: rgb(255 255 255 / .08); color: var(--int-texto); cursor: pointer; }
+.brisa-cerrar:hover { background: rgb(255 255 255 / .14); }
+.brisa-cerrar:focus-visible { outline: 3px solid var(--int-cian); outline-offset: 2px; }
+.brisa-cerrar svg { width: 24px; height: 24px; }
+.brisa-espera { position: fixed; z-index: 9; right: 20px; bottom: 24px; width: min(380px, calc(100vw - 40px)); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 22px 20px; text-align: center;
+  background: rgb(12 32 26 / .9); border: 1px solid var(--int-borde); border-radius: 28px; box-shadow: 0 20px 50px -20px rgb(0 0 0 / .7); color: var(--int-texto); animation: burbuja-entra .32s ease-out both; }
+.brisa-espera .orbe { position: relative; top: auto; left: auto; transform: none; --tam: 72px; --k: .36; }
+.brisa-espera-quien { margin: 0; font-size: 16px; color: var(--int-suave); }
+.brisa-espera-quien .sello-ia { font-size: 13px; }
+.brisa-espera h1 { margin: 2px 0 0; font: 700 30px/1.1 Inter, system-ui, sans-serif; color: #fff; }
+.brisa-espera h1 + p { margin: 0 0 10px; font-size: 18px; color: var(--int-suave); }
+.brisa-espera .boton-principal { width: 100%; }
+.brisa-espera .boton-principal svg { width: 22px; height: 22px; }
+@media (max-width: 760px) {
+  .brisa-espera { left: 12px; right: 12px; width: auto; bottom: calc(var(--barra-abajo) + 14px); }
+}
+@media (prefers-reduced-motion: reduce) { .brisa-espera { animation: none; } }
