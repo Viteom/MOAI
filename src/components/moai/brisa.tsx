@@ -203,7 +203,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const nota = useCallback((c: ReactNode) => encolar([{ id: siguiente.current++, de: 'brisa', contenido: c, nota: true }]), [encolar]);
   const hablo = useRef(false); // si la persona ya tomó la palabra, el saludo no la interrumpe con más cartas
   const yo = useCallback((t: string) => { hablo.current = true; setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]); registrar('yo', t); }, [registrar]);
-  useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes]);
+  useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes, opciones]); // también al aparecer las opciones, que achican el espacio
 
   // ---- Menú principal ----
   // La primera vez, lo primero es contar de ti; después, lo de todos los días. El resto, detrás de «Otra cosa».
