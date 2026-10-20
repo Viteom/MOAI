@@ -1,0 +1,6255 @@
+[
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "inicio-medellin",
+    "ruta": "/inicio",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Hablar con Brisa",
+        "ancho": 320,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 35,
+        "y": 687
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 390,
+        "alto": 243,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 844,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.28791469194312796
+        }
+      }
+    ],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Hola, Sol",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "barrio-medellin",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 179.4921875,
+        "y": 359
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Lista",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 134,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 358,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 16,
+        "y": 704
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 1100,
+        "alto": 688,
+        "rect": {
+          "x": -479.7734375,
+          "y": -0.046875,
+          "ancho": 1349.546875,
+          "alto": 844.09375,
+          "fraccionAnchoVisible": 0.28898588646652235,
+          "fraccionAnchoFuenteVisible": 0.28898125679437
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "plan-abierto",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 179.4921875,
+        "y": 359
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Lista",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 134,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Cerrar",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(139, 228, 213, 0.07)",
+        "x": 331,
+        "y": 452.71875
+      },
+      {
+        "texto": "Ya no voy",
+        "ancho": 170,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(139, 228, 213, 0.1)",
+        "x": 19,
+        "y": 701
+      },
+      {
+        "texto": "Ver plan",
+        "ancho": 170,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 201,
+        "y": 681
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 1100,
+        "alto": 688,
+        "rect": {
+          "x": -479.7734375,
+          "y": -0.046875,
+          "ancho": 1349.546875,
+          "alto": 844.09375,
+          "fraccionAnchoVisible": 0.28898588646652235,
+          "fraccionAnchoFuenteVisible": 0.28898125679437
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 19,
+          "y": 501.71875,
+          "ancho": 64,
+          "alto": 88,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.2909090909090909
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "barrio-lista",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Lista",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 134,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?\nJueves · 4:30 p. m.\nEntrada del parque\nA menos de 2 km · Lo propone Luis",
+        "ancho": 328,
+        "alto": 189,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 31,
+        "y": 243
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 358,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 16,
+        "y": 511
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 31,
+          "y": 299.5,
+          "ancho": 76,
+          "alto": 76,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "gente",
+    "ruta": "/gente",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Lista",
+        "ancho": 64.3,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(208, 224, 221)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 21,
+        "y": 153.375
+      },
+      {
+        "texto": "Red",
+        "ancho": 60,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 89.3125,
+        "y": 153.375
+      },
+      {
+        "texto": "Agregar a mi red",
+        "ancho": 178.9,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(228, 244, 238)",
+        "fondo": "rgba(16, 51, 60, 0.9)",
+        "x": 195.09375,
+        "y": 151.375
+      },
+      {
+        "texto": "Buscar por nombre",
+        "ancho": 189.5,
+        "alto": 50,
+        "fuente": "17px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 61,
+        "y": 219.375
+      },
+      {
+        "texto": "Mostrar filtros",
+        "ancho": 100.5,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(217, 233, 229)",
+        "fondo": "rgba(14, 43, 53, 0.93)",
+        "x": 273.53125,
+        "y": 218.375
+      },
+      {
+        "texto": "Recorrer hacia arriba",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 169.796875,
+        "y": 288.375
+      },
+      {
+        "texto": "Centrar",
+        "ancho": 100.2,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 221.796875,
+        "y": 288.375
+      },
+      {
+        "texto": "Recorrer hacia abajo",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 326,
+        "y": 288.375
+      },
+      {
+        "texto": "Mi presentación: Sol",
+        "ancho": 172,
+        "alto": 128.4,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 109,
+        "y": 462.375
+      },
+      {
+        "texto": "Teresita\nContacto reciente registrado\nRaíz",
+        "ancho": 220,
+        "alto": 84,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(17, 49, 60, 0.925)",
+        "x": 65,
+        "y": 362.375
+      },
+      {
+        "texto": "Luis\nHace un tiempo desde el último contacto registrado\nRamas\nMoai compartido",
+        "ancho": 220,
+        "alto": 96.7,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(17, 49, 60, 0.925)",
+        "x": 105,
+        "y": 604.0078125
+      },
+      {
+        "texto": "Tinto de los jueves\nMoai que compartimos",
+        "ancho": 220,
+        "alto": 120,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(35, 55, 73, 0.96)",
+        "x": 65,
+        "y": 214.375
+      },
+      {
+        "texto": "Cómo leer mi red",
+        "ancho": 175.7,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(201, 221, 223)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 16,
+        "y": 708
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-gente.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 360,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.43333333333333335
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi gente",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "lugares",
+    "ruta": "/lugares",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Borrar Casa",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 259.625,
+        "y": 339
+      },
+      {
+        "texto": "Usar este lugar",
+        "ancho": 169.1,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 83,
+        "y": 531
+      },
+      {
+        "texto": "Borrar Donde mi hermana",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 259.625,
+        "y": 583
+      },
+      {
+        "texto": "Agregar un lugar",
+        "ancho": 358,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 16,
+        "y": 662
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Borrar Casa",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 259.625,
+        "y": 339
+      },
+      {
+        "texto": "Borrar Donde mi hermana",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 259.625,
+        "y": 583
+      }
+    ],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-lugares.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 250,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.624
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-lugares.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 265,
+          "y": 237,
+          "ancho": 88,
+          "alto": 80,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.44
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-crear.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 265,
+          "y": 435,
+          "ancho": 88,
+          "alto": 80,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.44
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mis lugares",
+        "fuente": "32px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "cuenta",
+    "ruta": "/cuenta",
+    "overflow": false,
+    "scrollHeight": 1103,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Descargar mis datos",
+        "ancho": 344,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23,
+        "y": 409.390625
+      },
+      {
+        "texto": "Borrar conversación",
+        "ancho": 344,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23,
+        "y": 590.78125
+      },
+      {
+        "texto": "Avisos",
+        "ancho": 344,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23,
+        "y": 676.78125
+      },
+      {
+        "texto": "Privacidad y términos",
+        "ancho": 344,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23,
+        "y": 736.78125
+      },
+      {
+        "texto": "Cerrar sesión",
+        "ancho": 344,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23,
+        "y": 822.78125
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      }
+    ],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-cuenta.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 250,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.624
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi cuenta",
+        "fuente": "32px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "crear-plan",
+    "ruta": "/planes/nuevo",
+    "overflow": false,
+    "scrollHeight": 1463,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 128.7,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Caminar",
+        "ancho": 133,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 37,
+        "y": 262.5
+      },
+      {
+        "texto": "Un tinto",
+        "ancho": 128.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 179.96875,
+        "y": 262.5
+      },
+      {
+        "texto": "La huerta",
+        "ancho": 141.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 37,
+        "y": 320.5
+      },
+      {
+        "texto": "Ajedrez o parqués",
+        "ancho": 212.7,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 37,
+        "y": 378.5
+      },
+      {
+        "texto": "Tejer",
+        "ancho": 106,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 37,
+        "y": 436.5
+      },
+      {
+        "texto": "Mandados",
+        "ancho": 150.5,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 153,
+        "y": 436.5
+      },
+      {
+        "texto": "Echar una mano",
+        "ancho": 195.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 37,
+        "y": 494.5
+      },
+      {
+        "texto": "Voy a caminar, ¿alguien viene?",
+        "ancho": 316,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 37,
+        "y": 594
+      },
+      {
+        "texto": "date",
+        "ancho": 153,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 37,
+        "y": 697.5
+      },
+      {
+        "texto": "time",
+        "ancho": 153,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 200,
+        "y": 697.5
+      },
+      {
+        "texto": "Busca un parque, café o biblioteca",
+        "ancho": 316,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 37,
+        "y": 801
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Mi barrio",
+        "ancho": 128.7,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      }
+    ],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-crear.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 250,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.624
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "¿Qué vas a hacer?",
+        "fuente": "32px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "barrio-bogota",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Estás en:\nDonde mi hermana · Bogotá",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Lista",
+        "ancho": 222,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 358,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 16,
+        "y": 384
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "inicio-bogota",
+    "ruta": "/inicio",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Hablar con Brisa",
+        "ancho": 320,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 35,
+        "y": 687
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 390,
+        "alto": 243,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 844,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.28791469194312796
+        }
+      }
+    ],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Hola, Sol",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "portada",
+    "ruta": "/",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Crear cuenta",
+        "ancho": 342,
+        "alto": 64,
+        "fuente": "19px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 24,
+        "y": 624
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 342,
+        "alto": 64,
+        "fuente": "19px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 24,
+        "y": 708
+      }
+    ],
+    "pequenos": [],
+    "nav": null,
+    "imagenes": [
+      {
+        "src": "/backgrounds/portada.jpg",
+        "ok": true,
+        "ancho": 836,
+        "alto": 941,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 390,
+          "alto": 844,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.5201223383750199
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "MOAI",
+        "fuente": "88px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "registro",
+    "ruta": "/registro",
+    "overflow": false,
+    "scrollHeight": 933,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Volver",
+        "ancho": 111.8,
+        "alto": 48,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 16,
+        "y": 20
+      },
+      {
+        "texto": "Escribe tu nombre",
+        "ancho": 308,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 41,
+        "y": 366.53125
+      },
+      {
+        "texto": "nombre@correo.com",
+        "ancho": 308,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 41,
+        "y": 504.03125
+      },
+      {
+        "texto": "checkbox",
+        "ancho": 264,
+        "alto": 24.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 85,
+        "y": 582.03125
+      },
+      {
+        "texto": "Términos de uso",
+        "ancho": 133.5,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 175.203125,
+        "y": 584.03125
+      },
+      {
+        "texto": "checkbox",
+        "ancho": 264,
+        "alto": 98.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 85,
+        "y": 622.03125
+      },
+      {
+        "texto": "Política de tratamiento de datos",
+        "ancho": 253.8,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 85,
+        "y": 673.3125
+      },
+      {
+        "texto": "Crear mi cuenta",
+        "ancho": 308,
+        "alto": 60,
+        "fuente": "21px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 41,
+        "y": 742.59375
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 111.7,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 221.21875,
+        "y": 824.59375
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "checkbox",
+        "ancho": 264,
+        "alto": 24.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 85,
+        "y": 582.03125
+      },
+      {
+        "texto": "Términos de uso",
+        "ancho": 133.5,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 175.203125,
+        "y": 584.03125
+      },
+      {
+        "texto": "Política de tratamiento de datos",
+        "ancho": 253.8,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 85,
+        "y": 673.3125
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 111.7,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 221.21875,
+        "y": 824.59375
+      }
+    ],
+    "nav": null,
+    "imagenes": [],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Empecemos por conocernos",
+        "fuente": "34px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "acceso",
+    "ruta": "/acceso",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Volver",
+        "ancho": 111.8,
+        "alto": 48,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 16,
+        "y": 20
+      },
+      {
+        "texto": "nombre@correo.com",
+        "ancho": 308,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 41,
+        "y": 366.53125
+      },
+      {
+        "texto": "Enviar código",
+        "ancho": 308,
+        "alto": 60,
+        "fuente": "21px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 41,
+        "y": 444.53125
+      },
+      {
+        "texto": "Crear cuenta",
+        "ancho": 110.4,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 225.265625,
+        "y": 526.53125
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Crear cuenta",
+        "ancho": 110.4,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 225.265625,
+        "y": 526.53125
+      }
+    ],
+    "nav": null,
+    "imagenes": [],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Qué bueno verte de nuevo",
+        "fuente": "34px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "barrio-error",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Lista",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 134,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 358,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 16,
+        "y": 704
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 1100,
+        "alto": 688,
+        "rect": {
+          "x": -479.7734375,
+          "y": -0.046875,
+          "ancho": 1349.546875,
+          "alto": 844.09375,
+          "fraccionAnchoVisible": 0.28898588646652235,
+          "fraccionAnchoFuenteVisible": 0.28898125679437
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "comprobacion": "foco-tras-navegar",
+    "foco": {
+      "etiqueta": "BODY",
+      "texto": "BODY"
+    }
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "cambio-ciudad-error",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 179.4921875,
+        "y": 359
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Casa\nLaureles, Medellín",
+        "ancho": 246,
+        "alto": 61,
+        "fuente": "16px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.8246 -0.0910319 0.150828 / 0.16)",
+        "x": 23,
+        "y": 81
+      },
+      {
+        "texto": "Donde mi hermana\nBogotá, D.C.",
+        "ancho": 246,
+        "alto": 61,
+        "fuente": "16px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.8246 -0.0910319 0.150828 / 0.16)",
+        "x": 23,
+        "y": 142
+      },
+      {
+        "texto": "Administrar mis lugares",
+        "ancho": 246,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23,
+        "y": 203
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Lista",
+        "ancho": 109,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 134,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 358,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 16,
+        "y": 704
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 1100,
+        "alto": 688,
+        "rect": {
+          "x": -479.7734375,
+          "y": -0.046875,
+          "ancho": 1349.546875,
+          "alto": 844.09375,
+          "fraccionAnchoVisible": 0.28898588646652235,
+          "fraccionAnchoFuenteVisible": 0.28898125679437
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "comprobacion": "activacion-fallida",
+    "alertas": 0,
+    "selectorAbierto": "true"
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "pantalla": "cambio-ciudad-datos-anteriores",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 844,
+    "viewportHeight": 844,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 7,
+        "y": 782
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.14)",
+        "x": 102.5,
+        "y": 782
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 93.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 198,
+        "y": 782
+      },
+      {
+        "texto": "Más",
+        "ancho": 89.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 293.5,
+        "y": 782
+      },
+      {
+        "texto": "Estás en:\nDonde mi hermana · Bogotá",
+        "ancho": 298,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 16,
+        "y": 14
+      },
+      {
+        "texto": "Lista",
+        "ancho": 222,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 21,
+        "y": 83
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 48,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 326,
+        "y": 14
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?\nJueves · 4:30 p. m.\nEntrada del parque\nA menos de 2 km · Lo propone Luis",
+        "ancho": 328,
+        "alto": 189,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 31,
+        "y": 305
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 358,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 16,
+        "y": 573
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 775,
+      "alto": 69
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 31,
+          "y": 361.5,
+          "ancho": 76,
+          "alto": 76,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "comprobacion": "datos-anteriores-durante-carga",
+    "ciudad": "Bogotá",
+    "planAnterior": "Voy a caminar por el parque, ¿alguien se suma?"
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "comprobacion": "fin",
+    "errors": [],
+    "imprevistos": [],
+    "activaciones": 2,
+    "externas": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "inicio-medellin",
+    "ruta": "/inicio",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Hablar con Brisa",
+        "ancho": 334,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 391,
+        "y": 841
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 768,
+        "alto": 480,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 1024,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.46875
+        }
+      }
+    ],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Hola, Sol",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "barrio-medellin",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 387.390625,
+        "y": 434
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 221.5,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 23.03125,
+        "y": 21
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 372.921875,
+        "y": 23
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 488.921875,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 617.921875,
+        "y": 21
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 420,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 174,
+        "y": 854
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 1100,
+        "alto": 688,
+        "rect": {
+          "x": -434.6875,
+          "y": -0.0625,
+          "ancho": 1637.375,
+          "alto": 1024.125,
+          "fraccionAnchoVisible": 0.4690434384304145,
+          "fraccionAnchoFuenteVisible": 0.46903365400619157
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "plan-abierto",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 387.390625,
+        "y": 434
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 221.5,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 23.03125,
+        "y": 21
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 372.921875,
+        "y": 23
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 488.921875,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 617.921875,
+        "y": 21
+      },
+      {
+        "texto": "Cerrar",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(139, 228, 213, 0.07)",
+        "x": 685.96875,
+        "y": 573.5
+      },
+      {
+        "texto": "Ya no voy",
+        "ancho": 251,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(139, 228, 213, 0.1)",
+        "x": 207.96875,
+        "y": 835
+      },
+      {
+        "texto": "Ver plan",
+        "ancho": 251,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 470.96875,
+        "y": 815
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 1100,
+        "alto": 688,
+        "rect": {
+          "x": -434.6875,
+          "y": -0.0625,
+          "ancho": 1637.375,
+          "alto": 1024.125,
+          "fraccionAnchoVisible": 0.4690434384304145,
+          "fraccionAnchoFuenteVisible": 0.46903365400619157
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 207.96875,
+          "y": 624.5,
+          "ancho": 88,
+          "alto": 104,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.3384615384615385
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "barrio-lista",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 221.5,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 23.03125,
+        "y": 21
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 372.921875,
+        "y": 23
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 488.921875,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 617.921875,
+        "y": 21
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?\nJueves · 4:30 p. m.\nEntrada del parque\nA menos de 2 km · Lo propone Luis",
+        "ancho": 683.9,
+        "alto": 118.5,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 42.03125,
+        "y": 183
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 420,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 174,
+        "y": 380.5
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 42.03125,
+          "y": 204.25,
+          "ancho": 76,
+          "alto": 76,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "gente",
+    "ruta": "/gente",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Lista",
+        "ancho": 74.6,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(208, 224, 221)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 371.578125,
+        "y": 60.5
+      },
+      {
+        "texto": "Red",
+        "ancho": 72,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 450.15625,
+        "y": 60.5
+      },
+      {
+        "texto": "Agregar a mi red",
+        "ancho": 204.8,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(228, 244, 238)",
+        "fondo": "rgba(16, 51, 60, 0.9)",
+        "x": 539.15625,
+        "y": 58.5
+      },
+      {
+        "texto": "Buscar por nombre",
+        "ancho": 178,
+        "alto": 50,
+        "fuente": "17px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 69,
+        "y": 169
+      },
+      {
+        "texto": "Pertenencia compartida",
+        "ancho": 222,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(228, 240, 237)",
+        "fondo": "rgba(14, 43, 53, 0.93)",
+        "x": 274,
+        "y": 168
+      },
+      {
+        "texto": "Categoría del vínculo",
+        "ancho": 236,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(228, 240, 237)",
+        "fondo": "rgba(14, 43, 53, 0.93)",
+        "x": 508,
+        "y": 168
+      },
+      {
+        "texto": "Recorrer a la izquierda",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 535.796875,
+        "y": 244
+      },
+      {
+        "texto": "Centrar",
+        "ancho": 104.2,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 587.796875,
+        "y": 244
+      },
+      {
+        "texto": "Recorrer a la derecha",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 696,
+        "y": 244
+      },
+      {
+        "texto": "Mi presentación: Sol",
+        "ancho": 172,
+        "alto": 128.4,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 298,
+        "y": 547
+      },
+      {
+        "texto": "Teresita\nContacto reciente registrado\nRaíz",
+        "ancho": 220,
+        "alto": 84,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(17, 49, 60, 0.925)",
+        "x": 83.140625,
+        "y": 414.90625
+      },
+      {
+        "texto": "Luis\nHace un tiempo desde el último contacto registrado\nRamas\nMoai compartido",
+        "ancho": 220,
+        "alto": 96.7,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(17, 49, 60, 0.925)",
+        "x": 274,
+        "y": 694.6328125
+      },
+      {
+        "texto": "Tinto de los jueves\nMoai que compartimos",
+        "ancho": 220,
+        "alto": 120,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(35, 55, 73, 0.96)",
+        "x": 744,
+        "y": 523
+      },
+      {
+        "texto": "Cómo leer mi red",
+        "ancho": 175.7,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(201, 221, 223)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 24,
+        "y": 874
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-gente.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 360,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.8533333333333334
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi gente",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "lugares",
+    "ruta": "/lugares",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Borrar Casa",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 633.625,
+        "y": 429
+      },
+      {
+        "texto": "Usar este lugar",
+        "ancho": 169.1,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 91,
+        "y": 591
+      },
+      {
+        "texto": "Borrar Donde mi hermana",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 633.625,
+        "y": 643
+      },
+      {
+        "texto": "Agregar un lugar",
+        "ancho": 728,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 20,
+        "y": 722
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Borrar Casa",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 633.625,
+        "y": 429
+      },
+      {
+        "texto": "Borrar Donde mi hermana",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 633.625,
+        "y": 643
+      }
+    ],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-lugares.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 340,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.9035294117647059
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-lugares.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 615,
+          "y": 327,
+          "ancho": 112,
+          "alto": 96,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4666666666666667
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-crear.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 615,
+          "y": 525,
+          "ancho": 112,
+          "alto": 96,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4666666666666667
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mis lugares",
+        "fuente": "42px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "cuenta",
+    "ruta": "/cuenta",
+    "overflow": false,
+    "scrollHeight": 1178,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Descargar mis datos",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 27,
+        "y": 481.390625
+      },
+      {
+        "texto": "Borrar conversación",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 27,
+        "y": 640.28125
+      },
+      {
+        "texto": "Avisos",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 27,
+        "y": 726.28125
+      },
+      {
+        "texto": "Privacidad y términos",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 27,
+        "y": 786.28125
+      },
+      {
+        "texto": "Cerrar sesión",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 27,
+        "y": 872.28125
+      },
+      {
+        "texto": "Eliminar mi cuenta",
+        "ancho": 728,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(255, 143, 122)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 20,
+        "y": 990.28125
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      }
+    ],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-cuenta.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 340,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.9035294117647059
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi cuenta",
+        "fuente": "42px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "crear-plan",
+    "ruta": "/planes/nuevo",
+    "overflow": false,
+    "scrollHeight": 1333,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 128.7,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Caminar",
+        "ancho": 133,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 41,
+        "y": 352.5
+      },
+      {
+        "texto": "Un tinto",
+        "ancho": 128.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 183.96875,
+        "y": 352.5
+      },
+      {
+        "texto": "La huerta",
+        "ancho": 141.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 322.765625,
+        "y": 352.5
+      },
+      {
+        "texto": "Ajedrez o parqués",
+        "ancho": 212.7,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 474.578125,
+        "y": 352.5
+      },
+      {
+        "texto": "Tejer",
+        "ancho": 106,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 41,
+        "y": 410.5
+      },
+      {
+        "texto": "Mandados",
+        "ancho": 150.5,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 157,
+        "y": 410.5
+      },
+      {
+        "texto": "Echar una mano",
+        "ancho": 195.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 317.484375,
+        "y": 410.5
+      },
+      {
+        "texto": "Voy a caminar, ¿alguien viene?",
+        "ancho": 686,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 41,
+        "y": 510
+      },
+      {
+        "texto": "date",
+        "ancho": 337,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 41,
+        "y": 613.5
+      },
+      {
+        "texto": "time",
+        "ancho": 337,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 390,
+        "y": 613.5
+      },
+      {
+        "texto": "Busca un parque, café o biblioteca",
+        "ancho": 686,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 41,
+        "y": 717
+      },
+      {
+        "texto": "Solo esta vez\nCada semana",
+        "ancho": 686,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 41,
+        "y": 851
+      },
+      {
+        "texto": "radio",
+        "ancho": 338,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 41,
+        "y": 946.5
+      },
+      {
+        "texto": "radio",
+        "ancho": 338,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 389,
+        "y": 946.5
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Mi barrio",
+        "ancho": 128.7,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      }
+    ],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-crear.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 340,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.9035294117647059
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "¿Qué vas a hacer?",
+        "fuente": "42px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "barrio-bogota",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Estás en:\nDonde mi hermana · Bogotá",
+        "ancho": 323,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 23.03125,
+        "y": 21
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 488.921875,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 617.921875,
+        "y": 21
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 420,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 174,
+        "y": 276
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "inicio-bogota",
+    "ruta": "/inicio",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 111,
+        "y": 947
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 249.5,
+        "y": 947
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 388,
+        "y": 947
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 526.5,
+        "y": 947
+      },
+      {
+        "texto": "Hablar con Brisa",
+        "ancho": 334,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 391,
+        "y": 841
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 940,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1100.avif",
+        "ok": true,
+        "ancho": 768,
+        "alto": 480,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 1024,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.46875
+        }
+      }
+    ],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Hola, Sol",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "portada",
+    "ruta": "/",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Crear cuenta",
+        "ancho": 327.9,
+        "alto": 64,
+        "fuente": "19px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 46.078125,
+        "y": 888
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 327.9,
+        "alto": 64,
+        "fuente": "19px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 394,
+        "y": 888
+      }
+    ],
+    "pequenos": [],
+    "nav": null,
+    "imagenes": [
+      {
+        "src": "/backgrounds/portada.jpg",
+        "ok": true,
+        "ancho": 836,
+        "alto": 941,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 768,
+          "alto": 1024,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.8441985645933016
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "MOAI",
+        "fuente": "88px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "registro",
+    "ruta": "/registro",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Volver",
+        "ancho": 117.8,
+        "alto": 48,
+        "fuente": "20px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23.03125,
+        "y": 28
+      },
+      {
+        "texto": "Escribe tu nombre",
+        "ancho": 505.8,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 131.109375,
+        "y": 318.265625
+      },
+      {
+        "texto": "nombre@correo.com",
+        "ancho": 505.8,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 131.109375,
+        "y": 455.765625
+      },
+      {
+        "texto": "checkbox",
+        "ancho": 461.8,
+        "alto": 24.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 175.109375,
+        "y": 533.765625
+      },
+      {
+        "texto": "Términos de uso",
+        "ancho": 133.5,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 265.3125,
+        "y": 535.765625
+      },
+      {
+        "texto": "checkbox",
+        "ancho": 461.8,
+        "alto": 49.3,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 175.109375,
+        "y": 573.765625
+      },
+      {
+        "texto": "Política de tratamiento de datos",
+        "ancho": 253.8,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 175.109375,
+        "y": 600.40625
+      },
+      {
+        "texto": "Crear mi cuenta",
+        "ancho": 505.8,
+        "alto": 60,
+        "fuente": "21px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 131.109375,
+        "y": 645.046875
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 111.7,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 410.21875,
+        "y": 727.046875
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "checkbox",
+        "ancho": 461.8,
+        "alto": 24.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 175.109375,
+        "y": 533.765625
+      },
+      {
+        "texto": "Términos de uso",
+        "ancho": 133.5,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 265.3125,
+        "y": 535.765625
+      },
+      {
+        "texto": "Política de tratamiento de datos",
+        "ancho": 253.8,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 175.109375,
+        "y": 600.40625
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 111.7,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 410.21875,
+        "y": 727.046875
+      }
+    ],
+    "nav": null,
+    "imagenes": [],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Empecemos por conocernos",
+        "fuente": "34px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "pantalla": "acceso",
+    "ruta": "/acceso",
+    "overflow": false,
+    "scrollHeight": 1024,
+    "viewportHeight": 1024,
+    "controles": [
+      {
+        "texto": "Volver",
+        "ancho": 117.8,
+        "alto": 48,
+        "fuente": "20px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 23.03125,
+        "y": 28
+      },
+      {
+        "texto": "nombre@correo.com",
+        "ancho": 505.8,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 131.109375,
+        "y": 318.265625
+      },
+      {
+        "texto": "Enviar código",
+        "ancho": 505.8,
+        "alto": 60,
+        "fuente": "21px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 131.109375,
+        "y": 396.265625
+      },
+      {
+        "texto": "Crear cuenta",
+        "ancho": 110.4,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 414.265625,
+        "y": 478.265625
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Crear cuenta",
+        "ancho": 110.4,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 414.265625,
+        "y": 478.265625
+      }
+    ],
+    "nav": null,
+    "imagenes": [],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Qué bueno verte de nuevo",
+        "fuente": "34px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "comprobacion": "fin",
+    "errors": [],
+    "imprevistos": [],
+    "activaciones": 1,
+    "externas": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "inicio-medellin",
+    "ruta": "/inicio",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Hablar con Brisa",
+        "ancho": 334,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 1063,
+        "y": 717
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1586.avif",
+        "ok": true,
+        "ancho": 1440,
+        "alto": 900,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 1440,
+          "alto": 900,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      }
+    ],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Hola, Sol",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "barrio-medellin",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 736,
+        "y": 371.9921875
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 221.5,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 40,
+        "y": 21
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 1027.953125,
+        "y": 23
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 1143.953125,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 1272.953125,
+        "y": 21
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 420,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 510,
+        "y": 730
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1586.avif",
+        "ok": true,
+        "ancho": 1440,
+        "alto": 900,
+        "rect": {
+          "x": 0,
+          "y": -0.3359375,
+          "ancho": 1440,
+          "alto": 900.671875,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.9992540291102129
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "plan-abierto",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?. Jueves · 4:30 p. m.. Lo propone Luis",
+        "ancho": 56,
+        "alto": 56,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 736,
+        "y": 371.9921875
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 221.5,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 40,
+        "y": 21
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 1027.953125,
+        "y": 23
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 1143.953125,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 1272.953125,
+        "y": 21
+      },
+      {
+        "texto": "Cerrar",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(139, 228, 213, 0.07)",
+        "x": 1341,
+        "y": 449.5
+      },
+      {
+        "texto": "Ya no voy",
+        "ancho": 251,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(139, 228, 213, 0.1)",
+        "x": 863,
+        "y": 711
+      },
+      {
+        "texto": "Ver plan",
+        "ancho": 251,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 1126,
+        "y": 691
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1586.avif",
+        "ok": true,
+        "ancho": 1440,
+        "alto": 900,
+        "rect": {
+          "x": 0,
+          "y": -0.3359375,
+          "ancho": 1440,
+          "alto": 900.671875,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.9992540291102129
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 863,
+          "y": 500.5,
+          "ancho": 88,
+          "alto": 104,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.3384615384615385
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "barrio-lista",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Estás en:\nCasa · Laureles",
+        "ancho": 221.5,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 40,
+        "y": 21
+      },
+      {
+        "texto": "Mapa",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 1027.953125,
+        "y": 23
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 1143.953125,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 1272.953125,
+        "y": 21
+      },
+      {
+        "texto": "Voy a caminar por el parque, ¿alguien se suma?\nJueves · 4:30 p. m.\nEntrada del parque\nA menos de 2 km · Lo propone Luis",
+        "ancho": 650,
+        "alto": 118.5,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 395,
+        "y": 183
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 420,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 510,
+        "y": 380.5
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-plan.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 395,
+          "y": 184.25,
+          "ancho": 116,
+          "alto": 116,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "gente",
+    "ruta": "/gente",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Lista",
+        "ancho": 74.6,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(208, 224, 221)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 907.578125,
+        "y": 79.1875
+      },
+      {
+        "texto": "Red",
+        "ancho": 72,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 986.15625,
+        "y": 79.1875
+      },
+      {
+        "texto": "Agregar a mi red",
+        "ancho": 204.8,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(228, 244, 238)",
+        "fondo": "rgba(16, 51, 60, 0.9)",
+        "x": 1075.15625,
+        "y": 77.1875
+      },
+      {
+        "texto": "Buscar por nombre",
+        "ancho": 556,
+        "alto": 50,
+        "fuente": "17px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 205,
+        "y": 151.1875
+      },
+      {
+        "texto": "Pertenencia compartida",
+        "ancho": 244,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(228, 240, 237)",
+        "fondo": "rgba(14, 43, 53, 0.93)",
+        "x": 788,
+        "y": 150.1875
+      },
+      {
+        "texto": "Categoría del vínculo",
+        "ancho": 236,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(228, 240, 237)",
+        "fondo": "rgba(14, 43, 53, 0.93)",
+        "x": 1044,
+        "y": 150.1875
+      },
+      {
+        "texto": "Recorrer a la izquierda",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 1151.796875,
+        "y": 226.1875
+      },
+      {
+        "texto": "Centrar",
+        "ancho": 104.2,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 1203.796875,
+        "y": 226.1875
+      },
+      {
+        "texto": "Recorrer a la derecha",
+        "ancho": 48,
+        "alto": 48,
+        "fuente": "15px",
+        "color": "rgb(216, 236, 231)",
+        "fondo": "rgba(14, 43, 53, 0.9)",
+        "x": 1312,
+        "y": 226.1875
+      },
+      {
+        "texto": "Mi presentación: Sol",
+        "ancho": 172,
+        "alto": 128.4,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 634,
+        "y": 476.1875
+      },
+      {
+        "texto": "Teresita\nContacto reciente registrado\nRaíz",
+        "ancho": 220,
+        "alto": 84,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(17, 49, 60, 0.925)",
+        "x": 419.140625,
+        "y": 344.09375
+      },
+      {
+        "texto": "Luis\nHace un tiempo desde el último contacto registrado\nRamas\nMoai compartido",
+        "ancho": 220,
+        "alto": 96.7,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(17, 49, 60, 0.925)",
+        "x": 610,
+        "y": 623.8203125
+      },
+      {
+        "texto": "Tinto de los jueves\nMoai que compartimos",
+        "ancho": 220,
+        "alto": 120,
+        "fuente": "18px",
+        "color": "rgb(238, 245, 243)",
+        "fondo": "rgba(35, 55, 73, 0.96)",
+        "x": 1080,
+        "y": 452.1875
+      },
+      {
+        "texto": "Cómo leer mi red",
+        "ancho": 175.7,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(201, 221, 223)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 80,
+        "y": 750
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-gente.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 1440,
+          "alto": 360,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi gente",
+        "fuente": "38px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "lugares",
+    "ruta": "/lugares",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Borrar Casa",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 969.625,
+        "y": 395
+      },
+      {
+        "texto": "Usar este lugar",
+        "ancho": 169.1,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 427,
+        "y": 557
+      },
+      {
+        "texto": "Borrar Donde mi hermana",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 969.625,
+        "y": 609
+      },
+      {
+        "texto": "Agregar un lugar",
+        "ancho": 728,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 356,
+        "y": 688
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Borrar Casa",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 969.625,
+        "y": 395
+      },
+      {
+        "texto": "Borrar Donde mi hermana",
+        "ancho": 93.4,
+        "alto": 44,
+        "fuente": "16px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 969.625,
+        "y": 609
+      }
+    ],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-lugares.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 1440,
+          "alto": 306,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-lugares.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 951,
+          "y": 293,
+          "ancho": 112,
+          "alto": 96,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4666666666666667
+        }
+      },
+      {
+        "src": "/backgrounds/internas/cabecera-crear.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 951,
+          "y": 491,
+          "ancho": 112,
+          "alto": 96,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 0.4666666666666667
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mis lugares",
+        "fuente": "42px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "cuenta",
+    "ruta": "/cuenta",
+    "overflow": false,
+    "scrollHeight": 1144,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Descargar mis datos",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 363,
+        "y": 447.390625
+      },
+      {
+        "texto": "Borrar conversación",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 363,
+        "y": 606.28125
+      },
+      {
+        "texto": "Avisos",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 363,
+        "y": 692.28125
+      },
+      {
+        "texto": "Privacidad y términos",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 363,
+        "y": 752.28125
+      },
+      {
+        "texto": "Cerrar sesión",
+        "ancho": 714,
+        "alto": 60,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 363,
+        "y": 838.28125
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Volver",
+        "ancho": 107.8,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      }
+    ],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-cuenta.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 1440,
+          "alto": 306,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi cuenta",
+        "fuente": "42px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "crear-plan",
+    "ruta": "/planes/nuevo",
+    "overflow": false,
+    "scrollHeight": 1299,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 128.7,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "texto": "Caminar",
+        "ancho": 133,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 377,
+        "y": 318.5
+      },
+      {
+        "texto": "Un tinto",
+        "ancho": 128.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 519.96875,
+        "y": 318.5
+      },
+      {
+        "texto": "La huerta",
+        "ancho": 141.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 658.765625,
+        "y": 318.5
+      },
+      {
+        "texto": "Ajedrez o parqués",
+        "ancho": 212.7,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 810.578125,
+        "y": 318.5
+      },
+      {
+        "texto": "Tejer",
+        "ancho": 106,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 377,
+        "y": 376.5
+      },
+      {
+        "texto": "Mandados",
+        "ancho": 150.5,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 493,
+        "y": 376.5
+      },
+      {
+        "texto": "Echar una mano",
+        "ancho": 195.8,
+        "alto": 48,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 653.484375,
+        "y": 376.5
+      },
+      {
+        "texto": "Voy a caminar, ¿alguien viene?",
+        "ancho": 686,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 377,
+        "y": 476
+      },
+      {
+        "texto": "date",
+        "ancho": 337,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 377,
+        "y": 579.5
+      },
+      {
+        "texto": "time",
+        "ancho": 337,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 726,
+        "y": 579.5
+      },
+      {
+        "texto": "Busca un parque, café o biblioteca",
+        "ancho": 686,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 377,
+        "y": 683
+      },
+      {
+        "texto": "Solo esta vez\nCada semana",
+        "ancho": 686,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(0, 0, 0, 0.22)",
+        "x": 377,
+        "y": 817
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Mi barrio",
+        "ancho": 128.7,
+        "alto": 44,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(8, 24, 19, 0.72)",
+        "x": 12,
+        "y": 12
+      }
+    ],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/cabecera-crear.avif",
+        "ok": true,
+        "ancho": 1000,
+        "alto": 400,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 1440,
+          "alto": 306,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "¿Qué vas a hacer?",
+        "fuente": "42px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "barrio-bogota",
+    "ruta": "/comunidad",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Estás en:\nDonde mi hermana · Bogotá",
+        "ancho": 323,
+        "alto": 52,
+        "fuente": "17px",
+        "color": "rgb(238, 244, 236)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 40,
+        "y": 21
+      },
+      {
+        "texto": "Lista",
+        "ancho": 112,
+        "alto": 48,
+        "fuente": "16px",
+        "color": "rgb(234, 255, 209)",
+        "fondo": "rgb(36, 77, 60)",
+        "x": 1143.953125,
+        "y": 23
+      },
+      {
+        "texto": "Vecinos",
+        "ancho": 127,
+        "alto": 52,
+        "fuente": "16px",
+        "color": "rgb(139, 228, 213)",
+        "fondo": "rgba(16, 43, 35, 0.96)",
+        "x": 1272.953125,
+        "y": 21
+      },
+      {
+        "texto": "Contar qué voy a hacer",
+        "ancho": 420,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 510,
+        "y": 297
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "Mi barrio",
+        "fuente": "16px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "inicio-bogota",
+    "ruta": "/inicio",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Brisa",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(206, 250, 99)",
+        "fondo": "rgba(206, 250, 99, 0.1)",
+        "x": 447,
+        "y": 823
+      },
+      {
+        "texto": "Mi barrio",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 585.5,
+        "y": 823
+      },
+      {
+        "texto": "Mi gente",
+        "ancho": 134.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 724,
+        "y": 823
+      },
+      {
+        "texto": "Más",
+        "ancho": 130.5,
+        "alto": 56,
+        "fuente": "13px",
+        "color": "rgb(184, 205, 195)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 862.5,
+        "y": 823
+      },
+      {
+        "texto": "Hablar con Brisa",
+        "ancho": 334,
+        "alto": 52,
+        "fuente": "18px",
+        "color": "rgb(18, 41, 31)",
+        "fondo": "rgb(206, 250, 99)",
+        "x": 1063,
+        "y": 717
+      }
+    ],
+    "pequenos": [],
+    "nav": {
+      "y": 816,
+      "alto": 70
+    },
+    "imagenes": [
+      {
+        "src": "/backgrounds/internas/barrio-1586.avif",
+        "ok": true,
+        "ancho": 1440,
+        "alto": 900,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "ancho": 1440,
+          "alto": 900,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      }
+    ],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Hola, Sol",
+        "fuente": "30px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "portada",
+    "ruta": "/",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Crear cuenta",
+        "ancho": 220,
+        "alto": 64,
+        "fuente": "19px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 86.390625,
+        "y": 575.859375
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 220,
+        "alto": 64,
+        "fuente": "19px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 326.390625,
+        "y": 575.859375
+      }
+    ],
+    "pequenos": [],
+    "nav": null,
+    "imagenes": [
+      {
+        "src": "/backgrounds/portada.jpg",
+        "ok": true,
+        "ancho": 836,
+        "alto": 941,
+        "rect": {
+          "x": 547.203125,
+          "y": 0,
+          "ancho": 892.796875,
+          "alto": 900,
+          "fraccionAnchoVisible": 1,
+          "fraccionAnchoFuenteVisible": 1
+        }
+      }
+    ],
+    "videos": [],
+    "h1": [
+      {
+        "texto": "MOAI",
+        "fuente": "158.4px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "registro",
+    "ruta": "/registro",
+    "overflow": false,
+    "scrollHeight": 922,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Volver",
+        "ancho": 117.8,
+        "alto": 48,
+        "fuente": "20px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 43.1875,
+        "y": 28
+      },
+      {
+        "texto": "Escribe tu nombre",
+        "ancho": 466,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 487,
+        "y": 380.890625
+      },
+      {
+        "texto": "nombre@correo.com",
+        "ancho": 466,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 487,
+        "y": 518.390625
+      },
+      {
+        "texto": "checkbox",
+        "ancho": 422,
+        "alto": 24.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 531,
+        "y": 596.390625
+      },
+      {
+        "texto": "Términos de uso",
+        "ancho": 133.5,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 621.203125,
+        "y": 598.390625
+      },
+      {
+        "texto": "checkbox",
+        "ancho": 422,
+        "alto": 73.9,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 531,
+        "y": 636.390625
+      },
+      {
+        "texto": "Política de tratamiento de datos",
+        "ancho": 253.8,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 603.640625,
+        "y": 663.03125
+      },
+      {
+        "texto": "Crear mi cuenta",
+        "ancho": 466,
+        "alto": 60,
+        "fuente": "21px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 487,
+        "y": 732.3125
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 111.7,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 746.21875,
+        "y": 814.3125
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "checkbox",
+        "ancho": 422,
+        "alto": 24.6,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.6)",
+        "x": 531,
+        "y": 596.390625
+      },
+      {
+        "texto": "Términos de uso",
+        "ancho": 133.5,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 621.203125,
+        "y": 598.390625
+      },
+      {
+        "texto": "Política de tratamiento de datos",
+        "ancho": 253.8,
+        "alto": 20,
+        "fuente": "17px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 603.640625,
+        "y": 663.03125
+      },
+      {
+        "texto": "Iniciar sesión",
+        "ancho": 111.7,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 746.21875,
+        "y": 814.3125
+      }
+    ],
+    "nav": null,
+    "imagenes": [],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Empecemos por conocernos",
+        "fuente": "46px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "pantalla": "acceso",
+    "ruta": "/acceso",
+    "overflow": false,
+    "scrollHeight": 900,
+    "viewportHeight": 900,
+    "controles": [
+      {
+        "texto": "Volver",
+        "ancho": 117.8,
+        "alto": 48,
+        "fuente": "20px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 43.1875,
+        "y": 28
+      },
+      {
+        "texto": "nombre@correo.com",
+        "ancho": 466,
+        "alto": 56,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "oklab(0.22 -0.0344683 0.00607769 / 0.7)",
+        "x": 487,
+        "y": 380.890625
+      },
+      {
+        "texto": "Enviar código",
+        "ancho": 466,
+        "alto": 60,
+        "fuente": "21px",
+        "color": "oklch(0.17 0.022 165)",
+        "fondo": "oklch(0.8246 0.17617 121.113)",
+        "x": 487,
+        "y": 458.890625
+      },
+      {
+        "texto": "Crear cuenta",
+        "ancho": 110.4,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 750.265625,
+        "y": 540.890625
+      }
+    ],
+    "pequenos": [
+      {
+        "texto": "Crear cuenta",
+        "ancho": 110.4,
+        "alto": 27,
+        "fuente": "18px",
+        "color": "oklch(0.93 0.015 150)",
+        "fondo": "rgba(0, 0, 0, 0)",
+        "x": 750.265625,
+        "y": 540.890625
+      }
+    ],
+    "nav": null,
+    "imagenes": [],
+    "videos": [
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "1"
+      },
+      {
+        "src": "/backgrounds/brisa.mp4",
+        "pausado": true,
+        "preload": "auto",
+        "listo": 4,
+        "tiempo": 5,
+        "opacidad": "0"
+      }
+    ],
+    "h1": [
+      {
+        "texto": "Qué bueno verte de nuevo",
+        "fuente": "46px"
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "comprobacion": "fin",
+    "errors": [],
+    "imprevistos": [],
+    "activaciones": 1,
+    "externas": []
+  }
+]
