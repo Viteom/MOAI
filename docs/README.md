@@ -15,6 +15,7 @@ Los documentos viven como documentos de Claude. Para que Claude Code los lea, ex
 | Especificación del prototipo cero | https://claude.ai/artifact/1nuRowYiXx2tPiVep1vjXK | `08-prototipo-cero.md` |
 | Flujos de acceso, bienvenida y comunidad (v1.2) | En el repositorio | `09-flujos-acceso-y-comunidad.md` |
 | Referente: Grandes Vecinos (Madrid) | (solo en el repositorio) | `09-referente-grandes-vecinos.md` |
+| Mi gente: red orbital, fichas, permisos y capturas | En el repositorio | [11-mi-gente-orbital.md](11-mi-gente-orbital.md) |
 
 Diseño en Figma: https://www.figma.com/design/ysY7rr3Nf7LOsPmekZwt3x
 

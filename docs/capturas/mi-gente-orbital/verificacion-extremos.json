@@ -1,0 +1,56 @@
+[
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "escenario": "vacia",
+    "personas": 0,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "escenario": "numerosa",
+    "personas": 48,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "escenario": "vacia",
+    "personas": 0,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "escenario": "numerosa",
+    "personas": 48,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "escenario": "vacia",
+    "personas": 0,
+    "errors": []
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "escenario": "numerosa",
+    "personas": 48,
+    "errors": []
+  }
+]

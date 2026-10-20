@@ -1,0 +1,227 @@
+[
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "altas": 1,
+    "guardados": 1,
+    "errors": [],
+    "external": [],
+    "geometry": {
+      "overflow": false,
+      "navY": 775,
+      "headerBottom": 282.375,
+      "graphBottom": 700,
+      "orbe": 72,
+      "nodes": [
+        {
+          "nombre": "Teresita\nContacto reciente registrado\nRaíz",
+          "x": 65,
+          "y": 362.375,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Daniela\nContacto reciente registrado\nTronco",
+          "x": 105,
+          "y": 608.375,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Luis\nContacto reciente registrado\nRamas\nMoai compartido",
+          "x": 105,
+          "y": 716.0078125,
+          "width": 220,
+          "height": 96.734375
+        },
+        {
+          "nombre": "Ana María\nContacto reciente registrado\nRamas\nMoai compartido",
+          "x": 105,
+          "y": 832.0078125,
+          "width": 220,
+          "height": 96.734375
+        },
+        {
+          "nombre": "Camilo\nContacto reciente registrado\nRamas",
+          "x": 105,
+          "y": 952.375,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Marina Prueba\nContacto reciente registrado\nTronco",
+          "x": 105,
+          "y": 1064.375,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Tinto de los jueves\nMoai que compartimos",
+          "x": 65,
+          "y": 214.375,
+          "width": 220,
+          "height": 120
+        },
+        {
+          "nombre": "Caminos del barrio\nMoai que compartimos",
+          "x": 65,
+          "y": 66.375,
+          "width": 220,
+          "height": 120
+        }
+      ]
+    }
+  },
+  {
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "altas": 1,
+    "guardados": 1,
+    "errors": [],
+    "external": [],
+    "geometry": {
+      "overflow": false,
+      "navY": 940,
+      "headerBottom": 236,
+      "graphBottom": 866,
+      "orbe": 72,
+      "nodes": [
+        {
+          "nombre": "Teresita\nContacto reciente registrado\nRaíz",
+          "x": 83.140625,
+          "y": 414.90625,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Daniela\nContacto reciente registrado\nTronco",
+          "x": 369.78125,
+          "y": 388.828125,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Luis\nContacto reciente registrado\nRamas\nMoai compartido",
+          "x": 511.46875,
+          "y": 637.4765625,
+          "width": 220,
+          "height": 96.734375
+        },
+        {
+          "nombre": "Ana María\nContacto reciente registrado\nRamas\nMoai compartido",
+          "x": 274,
+          "y": 694.6328125,
+          "width": 220,
+          "height": 96.734375
+        },
+        {
+          "nombre": "Camilo\nContacto reciente registrado\nRamas",
+          "x": 36.515625,
+          "y": 643.84375,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Marina Prueba\nContacto reciente registrado\nTronco",
+          "x": 570.453125,
+          "y": 494.21875,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Tinto de los jueves\nMoai que compartimos",
+          "x": -196,
+          "y": 523,
+          "width": 220,
+          "height": 120
+        },
+        {
+          "nombre": "Caminos del barrio\nMoai que compartimos",
+          "x": 944,
+          "y": 523,
+          "width": 220,
+          "height": 120
+        }
+      ]
+    }
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "altas": 1,
+    "guardados": 1,
+    "errors": [],
+    "external": [],
+    "geometry": {
+      "overflow": false,
+      "navY": 816,
+      "headerBottom": 218.1875,
+      "graphBottom": 742,
+      "orbe": 72,
+      "nodes": [
+        {
+          "nombre": "Teresita\nContacto reciente registrado\nRaíz",
+          "x": 419.140625,
+          "y": 344.09375,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Daniela\nContacto reciente registrado\nTronco",
+          "x": 705.78125,
+          "y": 318.015625,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Luis\nContacto reciente registrado\nRamas\nMoai compartido",
+          "x": 847.46875,
+          "y": 566.6640625,
+          "width": 220,
+          "height": 96.734375
+        },
+        {
+          "nombre": "Ana María\nContacto reciente registrado\nRamas\nMoai compartido",
+          "x": 610,
+          "y": 623.8203125,
+          "width": 220,
+          "height": 96.734375
+        },
+        {
+          "nombre": "Camilo\nContacto reciente registrado\nRamas",
+          "x": 372.515625,
+          "y": 573.03125,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Marina Prueba\nContacto reciente registrado\nTronco",
+          "x": 906.453125,
+          "y": 423.40625,
+          "width": 220,
+          "height": 84
+        },
+        {
+          "nombre": "Tinto de los jueves\nMoai que compartimos",
+          "x": 140,
+          "y": 452.1875,
+          "width": 220,
+          "height": 120
+        },
+        {
+          "nombre": "Caminos del barrio\nMoai que compartimos",
+          "x": 1280,
+          "y": 452.1875,
+          "width": 220,
+          "height": 120
+        }
+      ]
+    }
+  }
+]
