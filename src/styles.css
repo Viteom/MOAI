@@ -1104,3 +1104,17 @@ button.chip.persona { cursor: pointer; }
   .brisa-espera { left: 12px; right: 12px; width: auto; bottom: calc(var(--barra-abajo) + 14px); }
 }
 @media (prefers-reduced-motion: reduce) { .brisa-espera { animation: none; } }
+
+/* Luces como la esfera de Brisa (19 de octubre, Mateo): la misma esfera, de un color por tipo de plan.
+   Una imagen fija de 3 KB (no video). Se tiñe por luminosidad: conserva la luz y las hebras, cambia el color.
+   Los planes de la semana llevan la esfera tal cual, como Brisa. El halo late cada 4 s. */
+.luz { --c: #8be4d5; background: radial-gradient(circle, color-mix(in oklab, var(--c) 55%, transparent) 0 30%, transparent 68%); }
+.luz > span { inset: 8px; background: radial-gradient(circle at 44% 40%, rgb(255 255 255 / .85) 0 7%, rgb(255 255 255 / .25) 22%, transparent 40%), url('/backgrounds/internas/luz-orbe.webp') center / cover no-repeat, var(--c); background-blend-mode: normal, luminosity; box-shadow: none;
+  -webkit-mask-image: radial-gradient(circle, #000 56%, transparent 71%); mask-image: radial-gradient(circle, #000 56%, transparent 71%); }
+.luz.elegida > span { inset: 4px; }
+.luz.es-semana { --c: #8be4d5; }
+.luz.es-semana > span { background-blend-mode: normal; }
+.luz.es-semanal { --c: #7fa6ff; }
+.luz.es-mio { --c: #c6f25a; }
+.luz.es-convocatoria { --c: #ff9d5c; }
+.luz.elegida::before { border-color: var(--c); }

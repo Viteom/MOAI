@@ -156,6 +156,7 @@ components:
 > - **Cabecera con imagen** (`Cabecera` en `interna.tsx`): un recorte de la misma ilustración del barrio (AVIF y WebP en `public/backgrounds/internas/`), con un degradado al bosque, «volver» arriba a la izquierda y el título encima. El contenido sube 32 px sobre la imagen.
 > - **Filas** (`Fila`): ícono o punto de estado, texto con detalle pequeño y una flecha. Así se ven Mi gente, Mi cuenta y los grupos.
 > - **Mi barrio:** escenario ilustrado fijo, con luces solo para los planes (latido cada 4 s, nada con movimiento reducido), como mucho dos burbujas, una nota «Escenario ilustrado · no es el lugar exacto» y un solo botón, «Contar qué voy a hacer». Al tocar una luz, el botón cede su lugar a la tarjeta del plan (hoja inferior en el teléfono). Mapa, Lista y Vecinos siempre a mano. Ni calles, ni personas, ni contadores.
+> - **Luces de los planes:** la misma esfera de Brisa (una imagen fija de 3 KB sacada de su video, `luz-orbe.webp`), teñida por luminosidad con un color por tipo: menta (como Brisa) para los planes de la semana, azul para los semanales, lima para los tuyos y naranja para las convocatorias.
 > - **Brisa:** esfera perlada con el sello «IA», saludo grande y opciones como píldoras anchas con borde menta; la que avanza, en lima.
 > - **Formularios:** etiqueta visible siempre, chips con ícono (elegido en lima), `segmentado` para dos opciones y lo menos usado detrás de «Más opciones».
 
