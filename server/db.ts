@@ -268,6 +268,17 @@ create table if not exists brisa_descartes (
   vence_en timestamptz not null,
   primary key (cuenta_id, clave)
 );
+-- Prueba de autorización por envío y cuota de beta. Nunca guarda frase, respuesta ni clave del proveedor.
+create table if not exists brisa_interpretaciones (
+  id uuid primary key default gen_random_uuid(),
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  modelo text not null,
+  version text not null,
+  creado_en timestamptz not null,
+  terminado_en timestamptz,
+  resultado text not null default 'pendiente' check (resultado in ('pendiente', 'correcto', 'error', 'rechazado'))
+);
+create index if not exists brisa_interpretaciones_fecha on brisa_interpretaciones (creado_en);
 `;
 
 export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {

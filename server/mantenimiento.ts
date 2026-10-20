@@ -76,4 +76,5 @@ export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<v
   await db.query(`delete from saludos where creado_en < $1::timestamptz - interval '30 days'`, [ahora]); // los saludos de lejos duran 30 días
   await borrarHistorialViejo(db, ahora); // la conversación con Brisa, 90 días
   await borrarBrisaVencido(db, ahora);
+  await db.query("delete from brisa_interpretaciones where creado_en <= $1::timestamptz - interval '90 days'", [ahora]);
 }

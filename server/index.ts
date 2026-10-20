@@ -6,6 +6,7 @@ import { crearCifrador } from './cifrado';
 import { viasDesdeEntorno } from './envios';
 import { crearApp } from './app';
 import { borrarConversacionesViejas, mantener, resumenSemanal } from './mantenimiento';
+import { geminiDesdeEntorno } from './gemini';
 
 const produccion = process.env.NODE_ENV === 'production';
 if (produccion && !process.env.CODIGO_SECRETO) throw new Error('Falta CODIGO_SECRETO en producción.');
@@ -31,6 +32,7 @@ const app = await crearApp({
   secreto,
   produccion,
   equipo: (process.env.EQUIPO_CORREOS ?? '').split(','),
+  modeloBrisa: geminiDesdeEntorno(process.env),
 });
 const port = Number(process.env.PORT ?? 8787);
 await app.listen({ port, host: produccion ? '0.0.0.0' : '127.0.0.1' });

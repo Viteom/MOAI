@@ -51,6 +51,8 @@ export async function datosDe(db: Db, cifrador: Cifrador, cuenta: string, ahora:
     propuestasPendientesDeBrisa: (await db.query<{ datos: string; vence_en: string }>('select datos, vence_en from brisa_propuestas where cuenta_id = $1 and confirmada_en is null and vence_en > $2', [cuenta, ahora]))
       .map(f => ({ propuesta: JSON.parse(cifrador.descifrar(f.datos) ?? 'null'), venceEn: fechaISO(f.vence_en) })),
     descartesDeBrisa: await q('select clave, vence_en as "venceEn" from brisa_descartes where cuenta_id = $1'),
+    autorizacionesGeminiBeta: await db.query(`select 'Gemini' as proveedor, modelo, version, creado_en as "autorizadoEn", terminado_en as "terminadoEn", resultado
+      from brisa_interpretaciones where cuenta_id = $1 and creado_en > $2::timestamptz - interval '90 days' order by creado_en`, [cuenta, ahora]),
   };
 }
 

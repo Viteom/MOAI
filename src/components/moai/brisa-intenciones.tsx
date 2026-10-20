@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, Search, Sparkles } from 'lucide-react';
 import type { Api, Perfil } from '@/lib/api';
 import { diasBrisa, describirCriterios, VERSION_MEMORIA, type MemoriaBrisa, type PreferenciasBrisa, type PropuestaBrisa, type ResultadoBrisa } from '@/lib/brisa-intenciones';
 import { plantillas } from '@/lib/lugares';
 import type { Ir } from './diario';
 import './brisa-intenciones.css';
+import { AyudaLenguajeBrisa } from './lenguaje-brisa';
 
 const fecha = (s: string) => new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota' }).format(new Date(s));
 const vacia: PreferenciasBrisa = { tipos: [], dias: [], soloGratis: false, anticipar: false, duracion: 30 };
@@ -84,6 +85,8 @@ export function MemoriaEnCuenta({ api, ir }: { api: Api; ir: Ir }) {
 
 export function BuscarConBrisa({ api, perfil, ir, inicial = '', volver }: { api: Api; perfil: Perfil; ir: Ir; inicial?: string; volver: () => void }) {
   const [texto, setTexto] = useState(inicial);
+  const [modeloOcupado, setModeloOcupado] = useState(false);
+  const [interpretacion, setInterpretacion] = useState('');
   const [memoria, setMemoria] = useState<MemoriaBrisa | null | undefined>();
   const [usarMemoria, setUsarMemoria] = useState(true);
   const [resultado, setResultado] = useState<ResultadoBrisa | null>(null);
@@ -95,6 +98,7 @@ export function BuscarConBrisa({ api, perfil, ir, inicial = '', volver }: { api:
   const vivo = useRef(true);
   const bloqueo = useRef(false);
   const titulo = useRef<HTMLHeadingElement>(null);
+  const ocuparModelo = useCallback((ocupada: boolean) => { bloqueo.current = ocupada; setModeloOcupado(ocupada); }, []);
   const contador = useRef(0);
   const botonConfirmar = useRef<HTMLButtonElement>(null);
   const confirmada = useRef<HTMLDivElement>(null);
@@ -104,7 +108,7 @@ export function BuscarConBrisa({ api, perfil, ir, inicial = '', volver }: { api:
   useEffect(() => { if (hecha) confirmada.current?.focus(); }, [hecha]);
   useEffect(() => { if (resultado) { resultados.current?.focus({ preventScroll: true }); resultados.current?.scrollIntoView?.({ block: 'start' }); } }, [resultado]);
   async function buscar(anticipar = false, m = memoria) {
-    if (bloqueo.current || !perfil.lugar || m === undefined) return;
+    if (bloqueo.current || modeloOcupado || !perfil.lugar || m === undefined) return;
     bloqueo.current = true; setOcupada(true); setError(''); setResultado(null); setSeleccion(null); setHecha(null);
     const turno = ++contador.current;
     const r = await api.buscarConBrisa({ texto: anticipar ? '' : texto, lugarId: perfil.lugar.id, usarMemoria: anticipar || usarMemoria, anticipar });
@@ -124,6 +128,14 @@ export function BuscarConBrisa({ api, perfil, ir, inicial = '', volver }: { api:
     return () => { vigente = false; vivo.current = false; contador.current++; bloqueo.current = false; };
   }, [api, reintento]); // el lugar cambia desmontando la conversación desde Portada
   const alCambiar = (m: MemoriaBrisa | null) => { setMemoria(m); setResultado(null); setSeleccion(null); setHecha(null); };
+  function recibirInterpretacion(consulta: string) {
+    setTexto(consulta); setInterpretacion(consulta); setResultado(null); setSeleccion(null); setHecha(null);
+    requestAnimationFrame(() => {
+      const campo = document.getElementById('intencion-texto');
+      campo?.focus({ preventScroll: true });
+      campo?.closest('form')?.scrollIntoView?.({ block: 'start' });
+    });
+  }
   async function confirmar() {
     if (!seleccion || bloqueo.current) return;
     bloqueo.current = true; setOcupada(true); setError('');
@@ -150,9 +162,11 @@ export function BuscarConBrisa({ api, perfil, ir, inicial = '', volver }: { api:
     {!perfil.lugar && <button type="button" onClick={() => ir('/lugares')}>Elegir mi lugar</button>}
     <form onSubmit={e => { e.preventDefault(); void buscar(); }}>
       <label htmlFor="intencion-texto">Qué te gustaría hacer</label>
-      <textarea id="intencion-texto" rows={2} maxLength={300} value={texto} disabled={ocupada} onChange={e => { setTexto(e.target.value); setSeleccion(null); }} placeholder="Busca una caminata para el sábado"/>
-      {memoria && <label className="intencion-check"><input type="checkbox" checked={usarMemoria} disabled={ocupada} onChange={e => { setUsarMemoria(e.target.checked); setSeleccion(null); }}/>Usar también mis preferencias autorizadas</label>}
-      <button type="submit" className="boton-principal" disabled={ocupada || !perfil.lugar || memoria === undefined}><Search aria-hidden="true"/>{ocupada ? 'Un momento…' : 'Buscar planes'}</button>
+      <textarea id="intencion-texto" rows={2} maxLength={300} value={texto} disabled={ocupada || modeloOcupado} onChange={e => { setTexto(e.target.value); setInterpretacion(''); setSeleccion(null); }} placeholder="Busca una caminata para el sábado"/>
+      {interpretacion && <p className="intencion-motivo" role="status">Así entendí tu idea: «{interpretacion}». Puedes editarla antes de buscar.</p>}
+      {memoria && <label className="intencion-check"><input type="checkbox" checked={usarMemoria} disabled={ocupada || modeloOcupado} onChange={e => { setUsarMemoria(e.target.checked); setSeleccion(null); }}/>Usar también mis preferencias autorizadas</label>}
+      <button type="submit" className="boton-principal" disabled={ocupada || modeloOcupado || !perfil.lugar || memoria === undefined}><Search aria-hidden="true"/>{ocupada ? 'Un momento…' : 'Buscar planes'}</button>
+      <AyudaLenguajeBrisa api={api} frase={texto} deshabilitado={ocupada} alOcupar={ocuparModelo} alInterpretar={recibirInterpretacion}/>
     </form>
     {error && <p className="campo-error" role="alert">{error}</p>}
     {memoria === undefined && (error ? <button type="button" onClick={() => setReintento(i => i + 1)}>Volver a cargar preferencias</button> : <p role="status">Consultando tus preferencias…</p>)}
@@ -163,12 +177,12 @@ export function BuscarConBrisa({ api, perfil, ir, inicial = '', volver }: { api:
         {p.plan.descripcion && <p>{p.plan.descripcion}</p>}
         <p className="intencion-motivo"><strong>Por qué te lo propongo</strong>{p.motivo}</p>
         <p className="intencion-nota">Propuesta válida hasta {fecha(p.venceEn)}. Al sumarte, quien publica ve tu primer nombre.</p>
-        {seleccion?.id === p.id ? <div className="intencion-confirmacion" role="group" aria-label={`Confirmar asistencia a ${p.plan.titulo}`}><p>¿Confirmas sumarte a «{p.plan.titulo}» el {fecha(p.plan.cuando)} en {p.plan.lugarPublico}?</p><button ref={botonConfirmar} type="button" className="boton-principal" disabled={ocupada} onClick={() => void confirmar()}>Sí, confirmar asistencia</button><button type="button" disabled={ocupada} onClick={() => { setSeleccion(null); requestAnimationFrame(() => document.getElementById(`revisar-${p.id}`)?.focus()); }}>Cancelar</button></div>
-          : <div className="intencion-acciones"><button id={`revisar-${p.id}`} type="button" disabled={ocupada} onClick={() => setSeleccion(p)}>Revisar para sumarme</button><button type="button" disabled={ocupada} onClick={() => ir(`/planes/${p.plan.id}`)}>Abrir plan</button><button type="button" disabled={ocupada} onClick={() => void descartar(p)}>No me interesa</button></div>}
+        {seleccion?.id === p.id ? <div className="intencion-confirmacion" role="group" aria-label={`Confirmar asistencia a ${p.plan.titulo}`}><p>¿Confirmas sumarte a «{p.plan.titulo}» el {fecha(p.plan.cuando)} en {p.plan.lugarPublico}?</p><button ref={botonConfirmar} type="button" className="boton-principal" disabled={ocupada || modeloOcupado} onClick={() => void confirmar()}>Sí, confirmar asistencia</button><button type="button" disabled={ocupada || modeloOcupado} onClick={() => { setSeleccion(null); requestAnimationFrame(() => document.getElementById(`revisar-${p.id}`)?.focus()); }}>Cancelar</button></div>
+          : <div className="intencion-acciones"><button id={`revisar-${p.id}`} type="button" disabled={ocupada || modeloOcupado} onClick={() => setSeleccion(p)}>Revisar para sumarme</button><button type="button" disabled={ocupada || modeloOcupado} onClick={() => ir(`/planes/${p.plan.id}`)}>Abrir plan</button><button type="button" disabled={ocupada || modeloOcupado} onClick={() => void descartar(p)}>No me interesa</button></div>}
       </article>)}
       {!resultado.propuestas.length && <button type="button" onClick={() => ir('/comunidad')}>Ir a Mi barrio</button>}
     </section>}
-    {memoria !== undefined && <details className="intencion-memoria"><summary>Lo que Brisa puede recordar</summary><fieldset className="intencion-editor" disabled={ocupada}><EditorMemoriaBrisa api={api} memoria={memoria} alCambiar={alCambiar}/></fieldset></details>}
-    <details className="intencion-memoria"><summary>Cómo busco y qué puedo hacer</summary><p className="intencion-nota">Por ahora entiendo actividades, días y «gratis» mediante reglas. Esta búsqueda no se guarda como conversación. Si escribes en el chat general, ese mensaje sí forma parte de su historial.</p><p className="intencion-nota">Puedo consultar y preparar. Para sumarte siempre necesito tu confirmación. No envío mensajes ni cambio de ciudad por ti.</p><p className="intencion-nota">«No me interesa» evita repetir esa ocurrencia durante 90 días. Olvidar preferencias borra también esos descartes.</p></details>
+    {memoria !== undefined && <details className="intencion-memoria"><summary>Lo que Brisa puede recordar</summary><fieldset className="intencion-editor" disabled={ocupada || modeloOcupado}><EditorMemoriaBrisa api={api} memoria={memoria} alCambiar={alCambiar}/></fieldset></details>}
+    <details className="intencion-memoria"><summary>Cómo busco y qué puedo hacer</summary><p className="intencion-nota">La búsqueda directa usa reglas sobre actividades, días y «gratis». Gemini es una ayuda opcional para interpretar una frase ficticia; debes revisar lo que entendió antes de buscar. Esta búsqueda no se guarda como conversación. Si escribes en el chat general, ese mensaje sí forma parte de su historial.</p><p className="intencion-nota">Puedo consultar y preparar. Para sumarte siempre necesito tu confirmación. No envío mensajes ni cambio de ciudad por ti.</p><p className="intencion-nota">«No me interesa» evita repetir esa ocurrencia durante 90 días. Olvidar preferencias borra también esos descartes.</p></details>
   </section>;
 }
