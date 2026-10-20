@@ -12,7 +12,7 @@ export type Db = Consulta & {
   close(): Promise<void>;
 };
 
-const esquema = `
+export const esquema = `
 create table if not exists cuentas (
   id uuid primary key default gen_random_uuid(),
   nombre text not null,

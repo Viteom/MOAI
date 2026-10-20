@@ -1,6 +1,6 @@
 # Preparar la API de MOAI en Vercel
 
-20 de octubre de 2026. Rama `codex/vercel-api-beta`, sobre `codex/brisa-modelos-beta`. **Preparación para revisión; no se ha desplegado desde este entorno.** Mateo indicó haber guardado las variables de Gemini en Vercel; este entorno no puede leerlas ni confirmar su contenido. Tampoco se ha hecho una llamada real a Google.
+20 de octubre de 2026. Rama `codex/vercel-api-beta`, actualizada sobre `rediseno/internas` (`ea1f0c7`), conservando las mejoras recientes de Gemini y Brisa. **Preparación para revisión; no se ha desplegado desde este entorno.** Mateo indicó haber guardado las variables de Gemini, correo, secretos y APP_URL en Vercel; este entorno no puede leerlas ni confirmar su contenido. Tampoco se ha hecho una llamada real a Google.
 
 ## Qué falta comprobar en la cuenta de Vercel
 
@@ -35,6 +35,18 @@ Cada variable se añade por separado. El despliegue usa Node 24; fijar **Node.js
 
 ## Preparar el esquema antes de recibir visitas
 
+### Base nueva: desde la consola de Neon, sin instalar herramientas
+
+1. En Vercel → **Storage → moai-beta**, abrir la consola del proveedor Neon.
+2. En Neon, comprobar que está seleccionado el proyecto/base **moai-beta** y la rama que conectó a Preview. Abrir **SQL Editor**.
+3. Abrir [instalar-moai-beta.sql](instalar-moai-beta.sql), copiar todo su contenido al editor y ejecutar el bloque completo. No contiene contraseñas, URLs, cuentas ni datos ficticios.
+4. El archivo crea las tablas en una sola transacción y **se cancela si ya existe cualquier tabla en `public`**. Si muestra «public ya contiene tablas», no eliminar tablas ni intentar saltarse la comprobación: revisar la base existente y usar la actualización de abajo.
+5. Comprobar que la ejecución terminó sin errores. Haber conectado Neon a Vercel o ver un despliegue «Ready» no significa que estas tablas existan.
+
+Para regenerar este archivo después de cambiar el esquema: `npm run db:sql`. Este comando solo exporta SQL del esquema actual; no lee claves, se conecta a Neon ni modifica una base.
+
+### Base existente: actualización desde un entorno de desarrollo
+
 Desde un entorno de desarrollo de confianza que tenga acceso a **la base de Preview**, configurar de forma privada `DATABASE_URL` o `DATABASE_URL_DATABASE_URL` y ejecutar:
 
 ```sh
@@ -48,7 +60,7 @@ La tarea solo prepara el esquema de PostgreSQL; no envía correos, no consulta G
 
 ## Comprobar un despliegue de Preview, después de la revisión
 
-1. Desplegar la rama revisada con las variables de Preview. Si la protección de despliegue lo requiere, entrar primero con la cuenta autorizada de Vercel. Las variables nuevas solo se incorporan a nuevos despliegues.
+1. Desplegar la rama revisada con las variables de Preview. Si la protección de despliegue lo requiere, entrar primero con la cuenta autorizada de Vercel. Las variables nuevas solo se incorporan a nuevos despliegues. Mateo configuró APP_URL con el alias de `rediseno/internas` (`https://moai-git-rediseno-internas-vasees.vercel.app`); si la prueba se realiza en otra rama, ajustar APP_URL al dominio estable de esa Preview para que los enlaces de correo regresen a la misma versión.
 2. Visitar `https://TU-PREVIEW/api/health`: debe responder `{"ok":true}`. Solo comprueba el servidor y una consulta a la base; **no** certifica el correo ni la conexión a Gemini.
 3. Recargar directamente `/gente` y `/inicio`: deben cargar la aplicación. `/api/no-existe` debe devolver JSON con 404, nunca el HTML de la portada.
 4. Crear una cuenta ficticia con un correo de pruebas controlado. Comprobar que llega el código y permite entrar. La cookie de sesión debe ser `HttpOnly`, `Secure` y `SameSite=Lax`.
@@ -82,6 +94,7 @@ La función tiene un máximo configurado de 60 segundos. El mantenimiento actual
 - `server/vercel.test.ts`: solicitudes HTTP reales a la entrada de la función con PGlite aislado y transporte externo simulado: arranque concurrente, JSON POST, código de correo, cookie segura, sesión, interpretación con autorización sin ejecutar acciones, conservación de datos al preparar el esquema otra vez, tarea protegida, borrado de vencidos y recuperación de errores.
 - Verificación local: **283 pruebas en 38 archivos aprobadas**, `npm run build` aprobado y entrada `api/index.ts` compilada con esbuild para Node. Persiste el aviso previo de Vite por el paquete principal de más de 500 kB. No se añadieron dependencias.
 - Ajuste posterior al observar el nombre real generado por Neon: **10 pruebas del adaptador y configuración aprobadas** y nueva compilación aprobada. Incluyen prioridad de la variable explícita, rechazo de URL inválida y el recorrido HTTP usando solo `DATABASE_URL_DATABASE_URL`. Sin nueva conexión a un proveedor real.
+- Actualización sobre `rediseno/internas` y preparación del SQL para Neon: **290 pruebas en 39 archivos aprobadas** y compilación aprobada. Se ejecutó el SQL completo contra bases PGlite vacías y con tablas existentes: instala sin datos de ejemplo, rechaza reinstalar y conserva las filas anteriores. No equivale a haberlo ejecutado en la base administrada de Mateo.
 - **Sin conexión al panel de Vercel, PostgreSQL administrado, correo real ni Google real.** Las pruebas locales no demuestran el enrutamiento de la plataforma, TLS del proveedor, límites del plan, concurrencia entre procesos de PostgreSQL ni calidad real del modelo. Completar el recorrido de Preview de arriba antes de declarar operativo el despliegue.
 
 Patrón del adaptador contrastado con el ejemplo oficial `vercel/examples`, `starter/fastify/api/index.js` y `vercel.json`, revisión `de86723` (16 de octubre de 2026). Tipos y runtime de Node contrastados con `vercel/vercel`. La documentación web de Vercel no pudo consultarse desde este entorno por el proxy; estos repositorios oficiales sí fueron accesibles por Git.
