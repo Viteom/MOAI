@@ -19,7 +19,7 @@ export async function datosDe(db: Db, cifrador: Cifrador, cuenta: string, ahora:
      from cuentas where id = $1`, [cuenta]);
   const q = <T>(sql: string) => db.query<T>(sql, [cuenta]);
   const [estado] = await q<{ puerta_hasta: string | null }>('select puerta_hasta from estados where cuenta_id = $1');
-  const [perfil] = await q<{ frase: string; gustos: string[]; comparte: string; aprender: string; visible: boolean }>('select frase, gustos, comparte, aprender, visible from perfiles where cuenta_id = $1');
+  const [perfil] = await q<{ frase: string; gustos: string[]; comparte: string; aprender: string; visible: boolean }>('select frase, gustos, comparte, aprender, visible, nombre_preferido as "nombrePreferido", visible_red as "visibleEnRed" from perfiles where cuenta_id = $1');
   const cuidado = await cuidadoDe(db, cifrador, cuenta);
   return {
     descargado: ahora.toISOString(),
@@ -42,6 +42,8 @@ export async function datosDe(db: Db, cifrador: Cifrador, cuenta: string, ahora:
     estado: { invierno: await enInvierno(db, cifrador, cuenta), puertaAbiertaHasta: fechaISO(estado?.puerta_hasta ?? null) },
     testDeCuidado: cuidado.letras ? { resultado: cuidado.letras, guardado: cuidado.guardado, fecha: cuidado.fecha ?? null } : null,
     moaiInterno: (await internoDe(db, cifrador, cuenta, ahora)).map(p => ({ nombre: p.nombre, relacion: p.relacion, familia: p.familia })),
+    fichasPersonales: (await q<{ persona_clave: string; datos: string }>('select persona_clave, datos from fichas_vinculo where cuenta_id = $1'))
+      .map(f => ({ vinculo: f.persona_clave, ficha: JSON.parse(cifrador.descifrar(f.datos) ?? 'null') })),
     conversacionConBrisa: await historialDe(db, cifrador, cuenta, ahora, 100_000), // los últimos DIAS_HISTORIAL (90) días
   };
 }

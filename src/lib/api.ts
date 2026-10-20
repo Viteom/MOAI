@@ -7,6 +7,7 @@ import type { TipoOrganizacion } from './organizaciones';
 import type { Letra } from './cuidado';
 import type { EntradaPerfil, Saludo } from './perfil';
 import type { EstadoLazo } from './lazos';
+import type { CategoriaVinculo, FichaPrivada } from './vinculos';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
@@ -36,8 +37,10 @@ export type Carta =
 // Mis lazos: grupos (raíz, quien me nutre, cada Moai, rama) y personas con el estado del vínculo, nunca un número.
 export type GrupoLazo = { id: string; tipo: 'raiz' | 'interno' | 'moai' | 'rama'; nombre: string; moaiId?: string };
 export type AccionLazo = { tipo: 'interno'; id: string } | { tipo: 'moai'; moaiId: string } | { tipo: 'saludo'; ref: string };
-export type PersonaLazo = { id: string; grupo: string; nombre: string; detalle: string; estado: EstadoLazo; puerta: boolean; accion: AccionLazo };
+export type PersonaLazo = { id: string; grupo: string; nombre: string; detalle: string; estado: EstadoLazo; puerta: boolean; accion: AccionLazo;
+  categoria?: CategoriaVinculo; origen?: 'personal' | 'moai'; referencia?: string; moais?: { id: string; nombre: string }[] };
 export type Lazos = { grupos: GrupoLazo[]; personas: PersonaLazo[] };
+export type FichaVinculo = { persona: PersonaLazo; compartida: EntradaPerfil | null; privada: FichaPrivada };
 export type Estado = { invierno: boolean; puertaAbierta: boolean; contadoA: string[] };
 // Un vecino de tu zona que aprobó mostrar su perfil. La puerta abierta solo se ve si ya se vieron.
 export type Vecino = { ref: string; nombre: string; frase: string; comparte: string; gustos: Tipo[]; enComun: Tipo[]; franja: string; puertaAbierta: boolean; saludado: boolean };
@@ -149,6 +152,9 @@ export const api = {
   contarInvierno: (refs: string[]) => llamar<Estado>('estado/invierno/contar', { refs }),
   puerta: (abierta: boolean) => llamar<Estado>('estado/puerta', { abierta }),
   lazos: () => llamar<Lazos>('lazos'),
+  fichaVinculo: (id: string) => llamar<FichaVinculo>(`lazos/${encodeURIComponent(id)}/ficha`),
+  guardarFichaVinculo: (id: string, ficha: FichaPrivada) => llamar<FichaPrivada>(`lazos/${encodeURIComponent(id)}/ficha`, ficha),
+  categoriaVinculo: (id: string, categoria: CategoriaVinculo) => llamar<Lazos>(`lazos/${encodeURIComponent(id)}/categoria`, { categoria }),
   salir: () => llamar<{ ok: true }>('salir', {}),
   // Mi cuenta (Ley 1581): todos mis datos en un archivo, y borrar la cuenta para siempre.
   misDatos: () => llamar<Record<string, unknown>>('cuenta/datos'),
