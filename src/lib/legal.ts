@@ -11,7 +11,7 @@ export const RESPONSABLE = {
   correo: 'correo de contacto por definir',
 };
 
-export const FECHA_TEXTOS = '14 de octubre de 2026';
+export const FECHA_TEXTOS = '20 de octubre de 2026';
 
 export type Seccion = { titulo: string; parrafos?: string[]; lista?: string[] };
 export type Texto = { titulo: string; bajada: string; secciones: Seccion[] };
@@ -40,6 +40,8 @@ export const privacidad: Texto = {
       'Si lo autorizas, el resultado del test «¿Cómo cuidas y cómo te cuidas?» (las respuestas que elegiste), cifrado. Puede considerarse un dato sensible: responderlo y guardarlo es opcional y no cambia nada de lo que puedes hacer en MOAI. No es un diagnóstico.',
       'Tu Moai interno: los nombres de las personas que te nutren, quiénes son para ti, si son de tu familia y cuándo marcaste que hablaron, cifrados. Pueden ser personas que no usan MOAI; solo guardamos lo que tú escribes.',
       'Tu tarjeta para vecinos, si la armas con Brisa: una frase, lo que te gusta, lo que compartes y lo que quieres aprender, y si apruebas mostrarla.',
+      'Tu nombre preferido y tu presentación para Mi gente. Solo se comparten con tu red si eliges hacerlo; ese permiso viene apagado y es independiente de mostrar tu tarjeta a vecinos.',
+      'Tus fichas personales de vínculos: cómo se conocen, algo que comparten y una nota opcional. Se guardan cifradas, solo tú puedes leerlas y editarlas; no forman parte de ningún perfil compartido ni se usan para sugerencias.',
       'Tu estado, solo si tú lo declaras: si estás en invierno (cifrado), si dejaste tu puerta abierta y a quién le contaste tu invierno.',
       'Los saludos de lejos que envías y recibes.',
       'La prueba de que aceptaste estos textos: fecha y versión.',
@@ -70,6 +72,7 @@ export const privacidad: Texto = {
     ] },
     { titulo: '5. Quién ve qué', lista: [
       'Tu correo, tu fecha de nacimiento y tus lugares guardados: solo tú.',
+      'Las notas de tus fichas personales: solo tú. Puedes borrarlas vaciando sus campos y guardando; también se borran al quitar un contacto personal o eliminar tu cuenta. Las fichas están incluidas en la descarga de tus datos.',
       'Tus planes: las personas cuya zona entra en el alcance que elegiste. Ven tu primer nombre, el plan, el lugar público, la fecha y una distancia aproximada por franjas, nunca exacta.',
       'La conversación de un plan: solo quienes van a ese plan. Ni Brisa ni el equipo la leen; el equipo solo ve un mensaje si alguien lo reporta.',
       'Tus respuestas a «¿Te viste con…?»: nadie más. Solo cuando las dos personas dicen que sí, cada una ve a la otra en «Mi gente».',

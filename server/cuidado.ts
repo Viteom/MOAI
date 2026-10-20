@@ -113,7 +113,10 @@ export function registrarCuidado(app: FastifyInstance, db: Db, cuentaDeSesion: (
 
   app.delete<{ Params: { persona: string } }>('/api/interno/:persona', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    await db.query('delete from moai_interno where id = $1 and cuenta_id = $2', [request.params.persona, id]);
+    await db.transaccion(async tx => {
+      await tx.query('delete from moai_interno where id = $1 and cuenta_id = $2', [request.params.persona, id]);
+      await tx.query('delete from fichas_vinculo where cuenta_id = $1 and persona_clave = $2', [id, `interno:${request.params.persona}`]);
+    });
     return lista(id);
   });
 }

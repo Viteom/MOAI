@@ -15,6 +15,10 @@ Los documentos viven como documentos de Claude. Para que Claude Code los lea, ex
 | Especificación del prototipo cero | https://claude.ai/artifact/1nuRowYiXx2tPiVep1vjXK | `08-prototipo-cero.md` |
 | Flujos de acceso, bienvenida y comunidad (v1.2) | En el repositorio | `09-flujos-acceso-y-comunidad.md` |
 | Referente: Grandes Vecinos (Madrid) | (solo en el repositorio) | `09-referente-grandes-vecinos.md` |
+| Mi gente: red orbital, fichas, permisos y capturas | En el repositorio | [11-mi-gente-orbital.md](11-mi-gente-orbital.md) |
+| Auditoría UX/UI, capturas y cambio de ciudad | En el repositorio | [12-auditoria-ux-ciudades.md](12-auditoria-ux-ciudades.md) |
+| Propuesta de fondos por ciudad y criterios de aceptación | En el repositorio | [13-fondos-por-ciudad.md](13-fondos-por-ciudad.md) |
+| Fondos de Medellín y Bogotá: implementación y capturas | En el repositorio | [14-fondos-ciudades-implementacion.md](14-fondos-ciudades-implementacion.md) |
 
 Diseño en Figma: https://www.figma.com/design/ysY7rr3Nf7LOsPmekZwt3x
 

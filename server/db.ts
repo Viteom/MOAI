@@ -227,6 +227,16 @@ create table if not exists moai_interno (
   creado_en timestamptz not null
 );
 alter table moai_interno add column if not exists familia boolean not null default false;
+-- Fichas personales: solo la cuenta autora puede leerlas. El contenido se cifra como el Moai interno.
+create table if not exists fichas_vinculo (
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  persona_clave text not null,
+  datos text not null,
+  primary key (cuenta_id, persona_clave)
+);
+alter table perfiles add column if not exists nombre_preferido text not null default '';
+-- El permiso de Vecinos no se amplía a la red: esta visibilidad requiere una elección nueva.
+alter table perfiles add column if not exists visible_red boolean not null default false;
 alter table planes add column if not exists costo text not null default 'gratis';
 alter table planes add column if not exists moai_id uuid references moais(id) on delete cascade;
 alter table moais add column if not exists frase text not null default '';

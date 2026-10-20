@@ -6,7 +6,7 @@
 // - El saludo de lejos usa frases ya escritas: no abre un chat ni compromete a nada.
 import { tipos, type Tipo } from './lugares';
 
-export type EntradaPerfil = { frase: string; gustos: Tipo[]; comparte: string; aprender: string; visible: boolean };
+export type EntradaPerfil = { frase: string; gustos: Tipo[]; comparte: string; aprender: string; visible: boolean; nombrePreferido?: string; visibleEnRed?: boolean };
 export const DIAS_PUERTA = 7;
 export const DIAS_ENTRE_SALUDOS = 7;
 
@@ -24,11 +24,15 @@ export const textoSaludo = (id: string) => saludos.find(s => s.id === id)?.texto
 const limpio = (t: unknown, max: number) => String(t ?? '').trim().replace(/\s+/g, ' ').slice(0, max);
 
 export function validarPerfil(entrada: Partial<Record<keyof EntradaPerfil, unknown>>): { ok: true; perfil: EntradaPerfil } | { ok: false; error: string } {
+  if (entrada.nombrePreferido !== undefined && (typeof entrada.nombrePreferido !== 'string' || entrada.nombrePreferido.trim().length > 40)) return { ok: false, error: 'El nombre preferido debe ser un texto de hasta 40 caracteres.' };
+  if (entrada.visibleEnRed !== undefined && typeof entrada.visibleEnRed !== 'boolean') return { ok: false, error: 'Elige si quieres compartir tu presentación con tu red.' };
   const frase = limpio(entrada.frase, 140);
   const comparte = limpio(entrada.comparte, 80);
   const aprender = limpio(entrada.aprender, 80);
   const gustos = [...new Set((Array.isArray(entrada.gustos) ? entrada.gustos : []).filter((g): g is Tipo => tipos.includes(g as Tipo) && g !== 'otro'))];
   const visible = entrada.visible === true;
   if (visible && !frase && !comparte && !gustos.length) return { ok: false, error: 'Cuéntame algo de ti antes de mostrar tu perfil.' };
-  return { ok: true, perfil: { frase, gustos, comparte, aprender, visible } };
+  return { ok: true, perfil: { frase, gustos, comparte, aprender, visible,
+    ...(entrada.nombrePreferido !== undefined ? { nombrePreferido: limpio(entrada.nombrePreferido, 40) } : {}),
+    ...(entrada.visibleEnRed !== undefined ? { visibleEnRed: entrada.visibleEnRed as boolean } : {}) } };
 }

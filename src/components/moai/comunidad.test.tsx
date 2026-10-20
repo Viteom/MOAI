@@ -21,7 +21,8 @@ describe('Mi barrio', () => {
   it('saluda, dice dónde está la persona y muestra los planes cercanos con distancia por franjas', async () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
     expect(screen.getByRole('heading', { level: 1, name: 'Mi barrio' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Estás en/ })).toHaveTextContent('Estás en: Casa · Medellín');
+    expect(screen.getByRole('button', { name: /Estás en/ })).toHaveAccessibleName('Estás en: Casa · Medellín');
+    fireEvent.click(screen.getByRole('button', { name: 'Lista' }));
     expect(await screen.findByText('Caminata por el parque')).toBeInTheDocument();
     expect(screen.getByText('Parque de los Deseos')).toBeInTheDocument();
     expect(screen.getByText('En tu ciudad · Lo propone Luis')).toBeInTheDocument();
@@ -52,6 +53,7 @@ describe('Mi barrio', () => {
   it('sin planes invita a contar qué vas a hacer, sin inventar nada', async () => {
     const ir = vi.fn();
     render(<MiComunidad perfil={perfil} api={api({ planes: ok([]) })} ir={ir} onSalir={vi.fn()}/>);
+    fireEvent.click(screen.getByRole('button', { name: 'Lista' }));
     expect(await screen.findByText('Aún no hay planes cerca. ¿Y si cuentas qué vas a hacer?')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Contar qué voy a hacer' }));
     expect(ir).toHaveBeenCalledWith('/planes/nuevo');
@@ -126,10 +128,11 @@ describe('Mi barrio sobre el escenario ilustrado (19 de octubre)', () => {
     expect(screen.queryByRole('button', { name: 'Contar qué voy a hacer' })).toBeNull();
   });
 
-  it('sin barrio no hay escenario: quedan los planes en lista y lo explica', async () => {
+  it('sin mapa conserva el escenario y permite consultar los planes reales en Lista', async () => {
     render(<MiComunidad perfil={perfil} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
-    expect(await screen.findByText(/El mapa llega cuando tu lugar tiene barrio/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Mapa' })).toBeNull();
+    expect(await screen.findByText(/Este escenario de Medellín es ilustrativo/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mapa' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Ver planes en Lista' }));
     expect(screen.getByText('Caminata por el parque')).toBeInTheDocument();
   });
 });
