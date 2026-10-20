@@ -1,0 +1,50 @@
+// Transporte exclusivo del servidor. Credenciales fuera de URL y del frontend. Sin SDK ni reintentos automáticos.
+import { esquemaExtraccion, instruccionesLenguaje, type ProveedorBrisa } from './lenguaje-brisa';
+
+export type TransporteModelo = (url: string, opciones: RequestInit) => Promise<Response>;
+const MAX_RESPUESTA = 32_768;
+export class FalloGemini extends Error {
+  constructor() { super('Gemini no pudo interpretar la frase. Puedes reintentar o buscar directamente con las reglas de MOAI.'); }
+}
+async function leerLimitado(r: Response) {
+  if (!r.body) throw new FalloGemini();
+  const reader = r.body.getReader(); const partes: Uint8Array[] = []; let total = 0;
+  try {
+    for (;;) {
+      const p = await reader.read(); if (p.done) break;
+      total += p.value.length;
+      if (total > MAX_RESPUESTA) { await reader.cancel(); throw new FalloGemini(); }
+      partes.push(p.value);
+    }
+    return JSON.parse(Buffer.concat(partes).toString('utf8')) as Record<string, unknown>;
+  } finally { reader.releaseLock(); }
+}
+export function geminiDesdeEntorno(env: Record<string, string | undefined>, transporte: TransporteModelo = fetch): ProveedorBrisa | null {
+  if (env.BRISA_GEMINI_BETA !== 'true') return null;
+  const clave = env.GEMINI_API_KEY?.trim(), modelo = env.GEMINI_MODEL?.trim();
+  if (!clave || !modelo || !/^gemini-[a-zA-Z0-9._-]{1,70}$/.test(modelo)) throw new Error('La beta de Gemini requiere GEMINI_API_KEY y un GEMINI_MODEL válido en el servidor.');
+  return {
+    nombre: 'Gemini', modelo,
+    async interpretar(frase) {
+      try {
+        const respuesta = await transporte(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+          method: 'POST', redirect: 'error', signal: AbortSignal.timeout(12_000),
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: instruccionesLenguaje }] },
+            contents: [{ role: 'user', parts: [{ text: frase }] }],
+            generationConfig: { candidateCount: 1, maxOutputTokens: 600, temperature: 0, responseMimeType: 'application/json', responseJsonSchema: esquemaExtraccion },
+          }),
+        });
+        if (!respuesta.ok) { await respuesta.body?.cancel(); throw new FalloGemini(); }
+        const cuerpo = await leerLimitado(respuesta);
+        const candidatos = cuerpo.candidates;
+        if (!Array.isArray(candidatos) || candidatos.length !== 1 || candidatos[0]?.finishReason !== 'STOP') throw new FalloGemini();
+        const partes = candidatos[0]?.content?.parts;
+        if (!Array.isArray(partes) || !partes.length || partes.some(p => !p || typeof p.text !== 'string' || Object.hasOwn(p, 'functionCall'))) throw new FalloGemini();
+        const texto = partes.filter(p => p.thought !== true).map(p => p.text).join('');
+        return JSON.parse(texto) as unknown;
+      } catch { throw new FalloGemini(); } // Nunca devuelve contenido de errores o claves del proveedor.
+    },
+  };
+}

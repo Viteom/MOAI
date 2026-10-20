@@ -1,0 +1,46 @@
+.brisa-intencion { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 4px 3px 24px; font: 400 18px/1.5 Inter, sans-serif; color: #e5eee6; }
+.panel-brisa .brisa-intencion h1 { font-size: 26px; line-height: 1.2; margin: 16px 0 8px; }
+.brisa-intencion h3 { font-size: 21px; line-height: 1.3; margin: 0 0 10px; overflow-wrap: anywhere; }
+.brisa-intencion p, .memoria-brisa p { margin: 8px 0 16px; }
+.brisa-intencion form { display: grid; gap: 12px; scroll-margin-top: 8px; }
+.brisa-intencion textarea, .memoria-brisa select { width: 100%; min-height: 52px; padding: 12px; background: #0c211c; color: #e5eee6; border: 1px solid #609a89; border-radius: 16px; font: inherit; }
+.brisa-intencion textarea { resize: vertical; }
+.brisa-intencion button, .memoria-brisa button, .intencion-cuenta button, .intencion-cuenta summary, .intencion-memoria summary { min-height: 48px; border: 1px solid #609a89; border-radius: 16px; background: #173b30; color: #e5eee6; padding: 11px 16px; font: 600 18px/1.35 Inter, sans-serif; cursor: pointer; }
+.brisa-intencion button.boton-principal, .memoria-brisa .boton-principal { background: #CEFA63; color: #153127; display: flex; gap: 8px; align-items: center; justify-content: center; }
+.brisa-intencion button:disabled, .memoria-brisa button:disabled { opacity: .55; cursor: default; }
+.brisa-intencion :focus-visible, .memoria-brisa :focus-visible, .intencion-cuenta :focus-visible, .brisa-intenciones-abrir:focus-visible { outline: 3px solid #CEFA63; outline-offset: 3px; }
+.brisa-intencion .intencion-volver { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; background: transparent; }
+.intencion-zona { display: flex; align-items: center; gap: 8px; color: #CEFA63; }
+.intencion-nota { font-size: 16px; line-height: 1.5; color: #bfd1c7; }
+.intencion-plan { margin-top: 18px; padding: 18px; border: 1px solid #609a89; background: #102d25; border-radius: 22px; }
+.intencion-motivo { background: #1c4134; padding: 14px; border-radius: 12px; }
+.intencion-motivo strong { display: block; margin-bottom: 6px; color: #CEFA63; }
+.intencion-acciones, .intencion-confirmacion { display: grid; gap: 10px; }
+.intencion-confirmacion { border: 1px solid #CEFA63; border-radius: 16px; padding: 16px; background: #173629; }
+.intencion-memoria { margin-top: 24px; }
+.intencion-lenguaje { border: 1px solid #609a89; border-radius: 16px; padding: 12px; background: #102d25; }
+.intencion-lenguaje summary { min-height: 48px; padding: 10px 0; cursor: pointer; font-weight: 600; }
+.intencion-lenguaje button { margin: 14px 0 4px; width: 100%; }
+.intencion-memoria summary { cursor: pointer; }
+.intencion-resultados { margin-top: 18px; border-radius: 12px; scroll-margin-top: 8px; }
+.intencion-editor { min-width: 0; border: 0; padding: 0; margin: 0; }
+.intencion-cuenta { padding: 22px; font-size: 18px; }
+.intencion-cuenta details { margin: 16px 0; }
+.intencion-cuenta ul { list-style: none; padding: 0; }
+.intencion-cuenta li { border-top: 1px solid #609a89; padding: 18px 0; }
+.memoria-brisa { margin-top: 18px; }
+.memoria-brisa form { display: grid; gap: 18px; margin-bottom: 16px; }
+.memoria-brisa fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.memoria-brisa legend { font-weight: 700; margin-bottom: 10px; }
+.intencion-elecciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.intencion-elecciones label, .intencion-check { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 10px; background: #102d25; border: 1px solid #609a89; border-radius: 14px; cursor: pointer; }
+.intencion-check { align-items: flex-start; }
+.intencion-check input { flex-shrink: 0; margin-top: 6px; }
+.intencion-elecciones input, .intencion-check input { width: 22px; height: 22px; accent-color: #CEFA63; }
+.intencion-duracion { display: grid; gap: 8px; }
+.brisa-intenciones-abrir { min-height: 48px; border-radius: 16px; border: 1px solid #609a89; background: #15392c; color: #CEFA63; font: 600 18px/1.3 Inter, sans-serif; padding: 10px 18px; cursor: pointer; flex-shrink: 0; }
+.panel-brisa:has(.brisa-intencion) .brisa-quien { flex-direction: row; }
+.panel-brisa:has(.brisa-intencion) { background: rgb(9 29 24 / .97); }
+.panel-brisa:has(.brisa-intencion) .brisa-quien .orbe { --tam: 40px; }
+.panel-brisa:has(.brisa-intencion) h1 { font-size: 24px; }
+@media (prefers-reduced-motion: reduce) { .brisa-intencion *, .memoria-brisa * { scroll-behavior: auto; animation: none; transition: none; } }

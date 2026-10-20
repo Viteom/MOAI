@@ -4,7 +4,11 @@ Borrador 1 · Para validar con un abogado de protección de datos. No es asesor�
 
 Este documento fija qué dato recoge MOAI, dónde vive, quién lo ve y cuánto dura, y cómo se pide y se retira el consentimiento. Su regla de oro: lo que Brisa y la interfaz prometen sobre privacidad debe ser exactamente lo que la arquitectura cumple.
 
+**Implementación del 20 de octubre de 2026:** la memoria opcional de preferencias de Brisa, separada del historial y perfiles, se guarda cifrada en el servidor durante 30 o 90 días con autorización expresa. Propuestas pendientes hasta 15 minutos; comprobantes confirmados y descartes hasta 90 días. Sin inferencia emocional ni modelos externos. Inventario, permisos, borrado y límites actuales en [15-brisa-memoria-intenciones.md](15-brisa-memoria-intenciones.md) y textos de `src/lib/legal.ts`. El inventario conceptual de abajo contiene propuestas de fases anteriores; no describe por sí solo todo lo implementado.
+
 ## Principios
+
+**Beta posterior, 20 de octubre:** Mateo eligió Gemini para interpretar únicamente frases ficticias con autorización por envío. No recibe memoria, perfiles ni conversaciones; la búsqueda y las acciones siguen en MOAI. Detalles y límites actuales en [16-gemini-beta.md](16-gemini-beta.md). Datos reales y condiciones del proveedor requieren revisión jurídica antes de ampliar este uso.
 
 - Mínimo necesario: si no hace falta, no se recoge.
 - Lo íntimo se queda en el dispositivo por defecto: el estado del día, el Modo Invierno, la red declarada y las luces de ancestros.

@@ -7,7 +7,8 @@ import {
   type Costo, type EntradaLugar, type EntradaPlan, type Repite, type Tipo,
 } from '../src/lib/lugares';
 import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api';
-import type { Db } from './db';
+import type { Consulta, Db } from './db';
+import { reservarAsistencia } from './asistencia';
 import { enPausa, type Refs } from './personas';
 import { cartasDeGente } from './moais';
 import { MAX_DETALLE_REPORTE, mensajePausa, motivosReporte } from '../src/lib/moai';
@@ -53,7 +54,7 @@ export const cuandoLegible = (fecha: Date) => new Intl.DateTimeFormat('es-CO', {
 // Con `refs`, cada plan ajeno lleva una referencia a su autor para poder reportarlo o bloquearlo.
 // `participando` (revisión de Codex): incluye los planes que ya empezaron o pasaron (hasta 30 días) para quien los
 // propuso o se sumó, para que no pierdan el plan ni su conversación justo cuando se encuentran. No sirve para descubrir planes.
-export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?: Refs, { participando = false } = {}): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
+export async function planesVisibles(db: Consulta, cuenta: string, ahora: Date, refs?: Refs, { participando = false } = {}): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
   const [lugar] = await db.query<FilaLugar>('select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [cuenta]);
   if (!lugar) return null;
   const filas = await db.query<FilaPlan>(
@@ -248,18 +249,8 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
 
   app.post<{ Params: { plan: string } }>('/api/planes/:plan/ir', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const plan = (await listaDePlanes(id)).find(p => p.id === request.params.plan);
-    if (!plan || plan.mio) return reply.code(404).send({ error: 'Este plan ya no está disponible.' });
-    // El último cupo se reserva de forma atómica (revisión de Codex): un candado por plan mientras se cuenta y se inserta.
-    const lleno = await db.transaccion(async tx => {
-      await tx.query('select pg_advisory_xact_lock(hashtext($1))', [plan.id]);
-      const [{ cupo, van }] = await tx.query<{ cupo: number | null; van: number }>(
-        'select p.cupo, (select count(*)::int from asistencias a where a.plan_id = p.id and a.ocurrencia = $2 and a.cuenta_id <> $3) as van from planes p where p.id = $1', [plan.id, plan.cuando, id]);
-      if (cupo !== null && van >= cupo) return true;
-      await tx.query('insert into asistencias (plan_id, cuenta_id, ocurrencia) values ($1, $2, $3) on conflict do nothing', [plan.id, id, plan.cuando]);
-      return false;
-    });
-    if (lleno) return reply.code(409).send({ error: 'Este plan ya está completo.' });
+    const r = await db.transaccion(tx => reservarAsistencia(tx, id, ahora(), { planId: request.params.plan }));
+    if (!r.ok) return reply.code(r.status).send({ error: r.error });
     return listaDePlanes(id);
   });
 

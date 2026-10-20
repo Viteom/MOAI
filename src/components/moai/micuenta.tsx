@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import type { Api, Perfil } from '@/lib/api';
 import { Diario, type Ir } from './diario';
 import { Fila } from './interna';
+import { MemoriaEnCuenta } from './brisa-intenciones';
 
 export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; onBorrada: () => void }) {
   const [descarga, setDescarga] = useState('');
@@ -28,7 +29,7 @@ export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perf
     enlace.download = 'mis-datos-moai.json';
     enlace.click();
     URL.revokeObjectURL(url);
-    setDescarga('Listo. El archivo «mis-datos-moai.json» quedó en tus descargas: tu cuenta, autorizaciones, lugares, planes, mensajes, Moais, tarjeta, Moai interno, conversación con Brisa y test, si lo guardaste.');
+    setDescarga('Listo. El archivo «mis-datos-moai.json» quedó en tus descargas: tu cuenta, autorizaciones, lugares, planes, mensajes, Moais, tarjeta, Moai interno, conversación, memoria y acciones con Brisa, y test, si lo guardaste.');
   }
   async function borrar() {
     setBorrando(true);
@@ -50,6 +51,8 @@ export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perf
       </div>
       {descarga && <p className="campo-ayuda" role="status">{descarga}</p>}
     </section>
+
+    <MemoriaEnCuenta api={api} ir={ir}/>
 
     <section aria-labelledby="conversacion-titulo" className="grupo-filas">
       <h2 id="conversacion-titulo">Mi conversación con Brisa</h2>
@@ -80,7 +83,7 @@ export function MiCuenta({ perfil, api, ir, onSalir, onBorrada }: { perfil: Perf
         <p><strong>Se borra todo de inmediato y no se puede deshacer:</strong></p>
         <ul>
           <li>Tu cuenta, tus lugares, tus planes y tus mensajes en planes y Moais.</li>
-          <li>Tu tarjeta, tu Moai interno, el test de cuidado, tu invierno y tu conversación con Brisa.</li>
+          <li>Tu tarjeta, tu Moai interno, el test de cuidado, tu invierno, tu conversación y la memoria y acciones con Brisa.</li>
           <li>Tus reportes y bloqueos. Los Moais siguen para quienes quedan, sin ti.</li>
         </ul>
         <p className="dato-suave">Si quieres, descarga tus datos antes. Siempre puedes volver a crear una cuenta.</p>

@@ -15,6 +15,9 @@ import { registrarCercania } from './cercania';
 import { registrarLazos } from './lazos';
 import { registrarCuenta } from './cuenta';
 import { registrarHistorial } from './historial';
+import { registrarIntencionesBrisa } from './brisa-intenciones';
+import { registrarModeloBrisa } from './brisa-modelo';
+import type { ProveedorBrisa } from './lenguaje-brisa';
 import { crearCifrador } from './cifrado';
 import { RESPONSABLE } from '../src/lib/legal';
 import { validarLugar } from '../src/lib/lugares';
@@ -26,7 +29,7 @@ const ENVIOS_POR_HORA = 5;
 const INTENTOS_POR_CODIGO = 5;
 
 // `equipo`: correos de las personas del equipo de MOAI que revisan reportes y dan de alta entidades (EQUIPO_CORREOS).
-type Opciones = { db: Db; vias: Vias; secreto: string; produccion?: boolean; ahora?: () => Date; equipo?: string[] };
+type Opciones = { db: Db; vias: Vias; secreto: string; produccion?: boolean; ahora?: () => Date; equipo?: string[]; modeloBrisa?: ProveedorBrisa | null };
 type Cuenta = { id: string; nombre: string; verificada_en: string | null; suspendida_en: string | null };
 class Limite extends Error {}
 
@@ -40,7 +43,7 @@ const mensajes = {
   suspendida: `Tu cuenta está suspendida porque recibimos reportes sobre ella. Si crees que es un error, escríbenos a ${RESPONSABLE.correo}.`,
 };
 
-export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date(), equipo = [] }: Opciones) {
+export async function crearApp({ db, vias, secreto, produccion = false, ahora = () => new Date(), equipo = [], modeloBrisa = null }: Opciones) {
   const app = Fastify({ logger: false, bodyLimit: 16 * 1024 });
   await app.register(cookie);
   const hmac = (valor: string) => createHmac('sha256', secreto).update(valor).digest('hex');
@@ -239,6 +242,8 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   registrarCercania(app, db, cuentaAdulta, ahora, refs, cifrador);
   registrarLazos(app, db, cuentaAdulta, ahora, refs, cifrador);
   registrarHistorial(app, db, cuentaAdulta, ahora, cifrador);
+  registrarIntencionesBrisa(app, db, cuentaAdulta, ahora, cifrador);
+  registrarModeloBrisa(app, db, cuentaAdulta, ahora, modeloBrisa);
   registrarCuenta(app, db, cuentaDeSesion, ahora, cifrador, COOKIE_SESION); // también sin edad declarada: borrar y descargar son derechos de todos
   registrarMoais(app, db, cuentaAdulta, ahora, refs, puedeConversar);
   registrarEquipo(app, db, cuentaAdulta, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));

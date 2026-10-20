@@ -20,6 +20,8 @@ import type { Lugar } from '@/lib/api';
 import { nombreCiudad } from '@/lib/fondos-ciudad';
 import { Barra, type Ir } from './diario';
 import { EscenaCuidado } from './escena';
+import { BuscarConBrisa } from './brisa-intenciones';
+import { esBusquedaBrisa } from '@/lib/brisa-intenciones';
 
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
 type Previo = { de: 'brisa' | 'yo'; texto: string };
@@ -129,6 +131,8 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const vivo = useRef(true);
   useEffect(() => { vivo.current = true; return () => { vivo.current = false; }; }, []); // en desarrollo React monta dos veces
   const [texto, setTexto] = useState('');
+  const [intencion, setIntencion] = useState<{ texto: string } | null>(null);
+  const buscarBoton = useRef<HTMLButtonElement>(null);
   const paso = useRef<Paso>('libre');
   const borrador = useRef<Borrador | null>(null);
   const respuestas = useRef<Letra[]>([]);
@@ -524,6 +528,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       setOpciones([{ texto: 'Ver mi Moai interno', hacer: () => ir('/gente') }]);
       return;
     }
+    if (esBusquedaBrisa(t)) { setIntencion({ texto: t }); return; }
     const b = borrador.current;
     switch (paso.current) {
       case 'plan-que': borrador.current = { ...entenderPlan(t), semanal: false }; preguntarDia(); return;
@@ -608,10 +613,17 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     });
   }
 
+  if (intencion) return <div className="brisa-chat">
+    {onCerrar && <button type="button" className="brisa-cerrar" aria-label="Cerrar la conversación" onClick={onCerrar}><X aria-hidden="true"/></button>}
+    <div className="brisa-quien"><OrbeBrisa/><p><strong>Brisa</strong> · <span className="sello-ia">IA</span></p></div>
+    <BuscarConBrisa key={perfil.lugar?.id} api={api} perfil={perfil} ir={ir} inicial={intencion.texto} volver={() => { setIntencion(null); requestAnimationFrame(() => buscarBoton.current?.focus()); }}/>
+  </div>;
+
   return <div className="brisa-chat">
     {onCerrar && <button type="button" className="brisa-cerrar" aria-label="Cerrar la conversación" onClick={onCerrar}><X aria-hidden="true"/></button>}
     <div className="brisa-quien"><OrbeBrisa/><p><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p></div>
     {titulo}
+    <button ref={buscarBoton} type="button" className="brisa-intenciones-abrir" onClick={() => { hablo.current = true; setIntencion({ texto: '' }); }}>Buscar un plan</button>
     <div className="brisa-mensajes" aria-live="polite">
       {previos.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
       {previos.length > 0 && <p className="brisa-separador" role="separator">Hoy</p>}
