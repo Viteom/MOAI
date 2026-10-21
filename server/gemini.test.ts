@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { it, expect, vi } from 'vitest';
-import { ConfiguracionGeminiIncompleta, geminiDesdeEntorno, type TransporteModelo } from './gemini';
+import { ConfiguracionGeminiIncompleta, FalloGemini, geminiDesdeEntorno, type TransporteModelo } from './gemini';
 import { normalizarExtraccion } from './lenguaje-brisa';
 
 const env = { BRISA_GEMINI_BETA: 'true', GEMINI_API_KEY: 'clave-solo-de-prueba', GEMINI_MODEL: 'gemini-prueba' };
@@ -67,4 +67,20 @@ it('solo acepta campos del dominio sustentados en la frase; no ejecuta ni devuel
     { ...extraccion, periodo: 'hoy' },
   ]) expect(normalizarExtraccion(dato, frase).ok).toBe(false);
   expect(normalizarExtraccion({ ...extraccion, dias: [] }, 'No quiero estirar las piernas').ok).toBe(false);
+});
+
+it('distingue rechazos HTTP, tiempo agotado y salidas incompletas sin conservar errores de Google', async () => {
+  for (const estadoHttp of [400, 403, 404, 429, 503]) {
+    const modelo = geminiDesdeEntorno(env, async () => new Response('secreto-ficticio y texto privado', { status: estadoHttp }))!;
+    try { await modelo.interpretar(frase); throw new Error('Debía fallar.'); }
+    catch (error) {
+      expect(error).toBeInstanceOf(FalloGemini);
+      expect(error).toMatchObject({ motivo: 'http', estadoHttp });
+      expect(JSON.stringify(error)).not.toMatch(/secreto-ficticio|texto privado/);
+    }
+  }
+  const lento = geminiDesdeEntorno(env, async () => { throw new DOMException('texto privado', 'TimeoutError'); })!;
+  await expect(lento.interpretar(frase)).rejects.toMatchObject({ motivo: 'tiempo_agotado' });
+  const cortado = geminiDesdeEntorno(env, async () => respuesta(extraccion, { finishReason: 'MAX_TOKENS' }))!;
+  await expect(cortado.interpretar(frase)).rejects.toMatchObject({ motivo: 'limite_salida' });
 });

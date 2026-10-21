@@ -65,6 +65,19 @@ it('tiene cuota diaria por cuenta, aparte de la interpretación de frases', asyn
   expect((await rosa.conversar([{ de: 'yo', texto: 'hola' }])).statusCode).toBe(429);
 });
 
+it('registra solo la categoría del fallo y el estado HTTP, sin la clave ni contenido privado', async () => {
+  const rosa = await persona('Rosa');
+  const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+  try {
+    transporte.mockResolvedValueOnce(new Response('secreto-ficticio, rosa@ejemplo.co y contenido privado', { status: 429 }));
+    const r = await rosa.conversar([{ de: 'yo', texto: 'Un club imaginario para leer novelas' }]);
+    expect(r.statusCode).toBe(503);
+    expect(log).toHaveBeenCalledWith('Falló la conversación de pruebas con Gemini:', { motivo: 'http', estadoHttp: 429 });
+    expect(JSON.stringify(log.mock.calls)).not.toMatch(/secreto-ficticio|rosa@ejemplo|contenido privado|leer novelas/);
+    expect(r.body).not.toMatch(/secreto-ficticio|rosa@ejemplo|contenido privado/);
+  } finally { log.mockRestore(); }
+});
+
 it('apagada por defecto: sin BRISA_GEMINI_CONVERSA no hay conversación con el modelo', async () => {
   await app.close();
   await iniciar({ ...entorno, BRISA_GEMINI_CONVERSA: 'false' });

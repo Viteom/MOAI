@@ -229,7 +229,10 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     setEscribiendo(false);
     if (!vivo.current) return true;
     if (r?.ok) { decir(r.datos.respuesta); return true; }
-    return false;
+    decir(r?.status === 429
+      ? 'La conversación de pruebas alcanzó su límite por hoy. Puedes seguir usando «Buscar un plan».'
+      : 'No pude obtener una respuesta de Gemini. Puedes volver a intentarlo o usar «Buscar un plan».');
+    return true; // Se atendió el fallo: no disfrazarlo de una respuesta genérica del guion.
   } // también al aparecer las opciones, que achican el espacio
 
   // ---- Menú principal ----
@@ -595,7 +598,12 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     if (/sol[ao]\b|triste|invierno|desanimad/.test(plano)) { void comoEstoy(); return; }
     if (/cuid|cansad|agotad|nutre|limite/.test(plano)) { void cuidarme(); return; }
     if (/quiero|ganas|voy a|me gustaria/.test(plano)) { iniciarPlan(entenderPlan(t)); return; }
-    if (esDuda(t)) { decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.'); return; }
+    if (esDuda(t)) {
+      void hablarConModelo(t).then(usado => {
+        if (!usado) decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.');
+      });
+      return;
+    }
     // Lo demás es conversación: el modelo responde si está activo; si no, Brisa reacciona con el guion.
     void hablarConModelo(t).then(usado => { if (!usado) conversar(reaccionar(null, t)); });
   }

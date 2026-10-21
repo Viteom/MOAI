@@ -9,7 +9,9 @@ export class ConfiguracionGeminiIncompleta extends Error {
   }
 }
 export class FalloGemini extends Error {
-  constructor() { super('Gemini no pudo interpretar la frase. Puedes reintentar o buscar directamente con las reglas de MOAI.'); }
+  constructor(readonly motivo: 'http' | 'tiempo_agotado' | 'transporte' | 'respuesta_invalida' | 'respuesta_grande' | 'limite_salida' | 'salida_incompleta' = 'respuesta_invalida', readonly estadoHttp?: number) {
+    super('Gemini no pudo interpretar la frase. Puedes reintentar o buscar directamente con las reglas de MOAI.');
+  }
 }
 async function leerLimitado(r: Response) {
   if (!r.body) throw new FalloGemini();
@@ -18,7 +20,7 @@ async function leerLimitado(r: Response) {
     for (;;) {
       const p = await reader.read(); if (p.done) break;
       total += p.value.length;
-      if (total > MAX_RESPUESTA) { await reader.cancel(); throw new FalloGemini(); }
+      if (total > MAX_RESPUESTA) { await reader.cancel(); throw new FalloGemini('respuesta_grande'); }
       partes.push(p.value);
     }
     return JSON.parse(Buffer.concat(partes).toString('utf8')) as Record<string, unknown>;
@@ -46,14 +48,20 @@ export function geminiDesdeEntorno(env: Record<string, string | undefined>, tran
           generationConfig: { candidateCount: 1, maxOutputTokens, temperature, responseMimeType: 'application/json', responseJsonSchema: esquema, thinkingConfig: pensarPoco(modelo) },
         }),
       });
-      if (!respuesta.ok) { await respuesta.body?.cancel(); throw new FalloGemini(); }
+      if (!respuesta.ok) { await respuesta.body?.cancel(); throw new FalloGemini('http', respuesta.status); }
       const cuerpo = await leerLimitado(respuesta);
       const candidatos = cuerpo.candidates as { finishReason?: string; content?: { parts?: { text?: unknown; thought?: boolean; functionCall?: unknown }[] } }[] | undefined;
-      if (!Array.isArray(candidatos) || candidatos.length !== 1 || candidatos[0]?.finishReason !== 'STOP') throw new FalloGemini();
+      if (Array.isArray(candidatos) && candidatos[0]?.finishReason === 'MAX_TOKENS') throw new FalloGemini('limite_salida');
+      if (!Array.isArray(candidatos) || candidatos.length !== 1 || candidatos[0]?.finishReason !== 'STOP') throw new FalloGemini('salida_incompleta');
       const partes = candidatos[0]?.content?.parts;
       if (!Array.isArray(partes) || !partes.length || partes.some(p => !p || typeof p.text !== 'string' || Object.hasOwn(p, 'functionCall'))) throw new FalloGemini();
       return JSON.parse(partes.filter(p => p.thought !== true).map(p => p.text).join('')) as unknown;
-    } catch { throw new FalloGemini(); } // Nunca devuelve contenido de errores o claves del proveedor.
+    } catch (error) {
+      if (error instanceof FalloGemini) throw error;
+      if (error instanceof SyntaxError) throw new FalloGemini('respuesta_invalida');
+      if (error instanceof Error && ['TimeoutError', 'AbortError'].includes(error.name)) throw new FalloGemini('tiempo_agotado');
+      throw new FalloGemini('transporte');
+    } // Solo categorías propias y estado HTTP; nunca contenido de errores, claves ni texto enviado.
   };
   const conversar = env.BRISA_GEMINI_CONVERSA === 'true'
     ? (turnos: TurnoBrisa[], pregunta: string | null) => llamar(

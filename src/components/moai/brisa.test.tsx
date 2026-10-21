@@ -291,9 +291,9 @@ describe('Brisa conversa con el modelo de pruebas (20 de octubre)', () => {
     expect(conversarBrisa).toHaveBeenCalledWith(expect.arrayContaining([{ de: 'yo', texto: 'hoy llovió y me tomé un tinto' }]), null);
   });
 
-  it('si el modelo no responde, sigue con el guion sin mostrar error', async () => {
+  it('si el modelo no responde, lo explica y permite enviar otra pregunta sin fingir una respuesta del guion', async () => {
     const modeloBrisa = ok({ disponible: true, conversa: true, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'v' });
-    const conversarBrisa = vi.fn(async () => ({ ok: false as const, error: 'El modelo no respondió.', status: 503 }));
+    const conversarBrisa = vi.fn<Api['conversarBrisa']>(async () => ({ ok: false as const, error: 'El modelo no respondió.', status: 503 }));
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, modeloBrisa, conversarBrisa } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
     abrirBrisa();
     await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
@@ -301,6 +301,10 @@ describe('Brisa conversa con el modelo de pruebas (20 de octubre)', () => {
     await screen.findByText('Está bien. Cuando quieras me cuentas.');
     escribirABrisa('hoy llovió y me tomé un tinto');
     await vi.waitFor(() => expect(conversarBrisa).toHaveBeenCalled());
-    expect(screen.queryByText('El modelo no respondió.')).toBeNull();
+    expect(await screen.findByText('No pude obtener una respuesta de Gemini. Puedes volver a intentarlo o usar «Buscar un plan».')).toBeInTheDocument();
+    expect(screen.queryByText('Gracias por contarme. Me gusta conocerte un poco más.')).toBeNull();
+    conversarBrisa.mockResolvedValueOnce({ ok: true, datos: { respuesta: 'Podrías invitar a dos vecinos a leer una novela corta.' } });
+    escribirABrisa('¿Cómo empiezo un club de lectura imaginario?');
+    expect(await screen.findByText('Podrías invitar a dos vecinos a leer una novela corta.')).toBeInTheDocument();
   });
 });

@@ -89,6 +89,18 @@ Mateo decidió que, mientras MOAI esté en pruebas con el equipo, Brisa converse
 - Modelo recomendado: `gemini-3.5-flash-lite` (respondió en 1 a 5 segundos). `gemini-flash-latest` estaba saturado (503) y `gemini-3.8-flash` sin cuota gratuita en esta clave; `gemini-2.5-*` ya no está disponible para cuentas nuevas.
 - Al modelo llegan solo los últimos turnos de texto de hoy (hasta 12) y, si la hay, la pregunta que Brisa acababa de hacer. Nunca el nombre, el correo, la ciudad, los lugares, la memoria, las fichas, los Moais ni los planes.
 - Las acciones siguen con guion y confirmación: proponer y buscar planes, la red de apoyo y la tarjeta. Las señales de riesgo se responden sin pasar por el modelo, con la línea 123.
-- Cuota: 80 conversaciones por cuenta y 800 en total cada 24 horas (filas `conversa-v1` en `brisa_interpretaciones`, solo metadatos). Si el modelo falla o se agota la cuota, Brisa sigue con el guion sin mostrar error.
+- Cuota: 80 conversaciones por cuenta y 800 en total cada 24 horas (filas `conversa-v1` en `brisa_interpretaciones`, solo metadatos). Si la llamada al modelo falla, Brisa lo avisa y permite escribir otra vez o usar «Buscar un plan». Si se alcanza la cuota local, lo explica. Con el modelo desactivado se conserva el guion.
 - La interfaz lo avisa bajo el campo de texto: «Versión de pruebas: Brisa responde con Gemini, de Google. No escribas datos sensibles.» (regla 10).
 - Prueba sin la app: `BRISA_GEMINI_CONVERSA=true npx tsx --env-file=.env scripts/probar-conversa.ts`.
+
+### Diagnóstico de la conversación en Vercel (21 de octubre)
+
+La captura compartida por Mateo mostraba el guion genérico repetido, pese a que `/api/brisa/modelo` indicaba `conversa: true`. Esa capacidad solo comprueba configuración: no valida una llamada a Google. Los registros compartidos a continuación eran anteriores a esa conversación y no contenían `/api/brisa/conversar`; aún no permiten identificar su causa real.
+
+El fallo de una llamada deja ahora un aviso explícito en la conversación. Las preguntas abiertas que el guion no sabe responder también pueden llegar al modelo activo; las acciones y las respuestas propias sobre la plataforma conservan su flujo. No se amplía el contexto ni cambia el almacenamiento.
+
+El servidor registra `Falló la conversación de pruebas con Gemini:` con una categoría propia (`http`, `tiempo_agotado`, `transporte`, `limite_salida`, `salida_incompleta`, `respuesta_grande` o `respuesta_invalida`) y, cuando existe, el estado HTTP de Google. Nunca registra el error original, sus cabeceras/cuerpo, claves, mensajes, cuentas o modelo. Un HTTP 429 de Google se distingue de la cuota local: la API responde 503 en el primer caso y 429 en el segundo. No se añaden reintentos automáticos.
+
+Verificación: 56 pruebas seleccionadas de transporte, interpretación, conversación, Vercel, interfaz y privacidad; compilación y carga nativa de 39 módulos aprobadas. Chromium a 390 × 844, 768 × 1024 y 1440 × 900: fallo 503, aviso visible, segundo envío 200 y respuesta visible, sin errores JavaScript. API/PGlite y cuentas ficticias locales, Google simulado. Scripts temporales `/tmp/moai-conversa-diagnostico.mts` y `/tmp/playwright-test-conversa-diagnostico.cjs`; capturas `/tmp/brisa-fallo-{ancho}.png` y `/tmp/brisa-recuperacion-{ancho}.png`.
+
+Pendiente: después del despliegue en Preview, enviar una pregunta ficticia y comprobar el registro **nuevo** de `/api/brisa/conversar`. Esta prueba local no demuestra que Google acepte la clave, que exista cuota o que el modelo elegido responda en Vercel. Revisión humana antes de fusionar a `main`; nada publicado en producción.

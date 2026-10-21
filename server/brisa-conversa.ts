@@ -6,6 +6,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { Db } from './db.js';
 import type { ProveedorBrisa, TurnoBrisa } from './lenguaje-brisa.js';
+import { FalloGemini } from './gemini.js';
 
 export const VERSION_CONVERSA = 'conversa-v1';
 export const LIMITE_CUENTA_CONVERSA = 80;
@@ -43,7 +44,12 @@ export function registrarConversaBrisa(app: FastifyInstance, db: Db, cuentaDeSes
       if (!respuesta || respuesta.length > 600) throw new Error('respuesta inválida');
       await db.query("update brisa_interpretaciones set terminado_en = $2, resultado = 'correcto' where id = $1", [uso, ahora()]);
       return { respuesta };
-    } catch {
+    } catch (error) {
+      // Diagnóstico acotado: no registrar el error original ni texto, claves, cuentas o respuestas de Google.
+      console.error('Falló la conversación de pruebas con Gemini:', {
+        motivo: error instanceof FalloGemini ? error.motivo : 'respuesta_invalida',
+        ...(error instanceof FalloGemini && error.estadoHttp ? { estadoHttp: error.estadoHttp } : {}),
+      });
       await db.query("update brisa_interpretaciones set terminado_en = $2, resultado = 'error' where id = $1", [uso, ahora()]);
       return reply.code(503).send({ error: 'El modelo no respondió.' });
     }
