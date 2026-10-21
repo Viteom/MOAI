@@ -1135,3 +1135,29 @@ button.chip.persona { cursor: pointer; }
   .panel-brisa, .panel-brisa.flotante { top: 24px; bottom: calc(var(--barra-abajo) + 8px); }
   .brisa-espera { bottom: calc(var(--barra-abajo) + 14px); }
 }
+
+/* Bienvenida y cuenta sobre el video (20 de octubre, Mateo: «imágenes superpuestas»). El video trae un panel dibujado
+   que no siempre coincide con el de la interfaz: debajo de la esfera se desenfoca y oscurece, así no se lee su texto
+   en ningún tamaño. La esfera y el bosque de arriba quedan nítidos. */
+.brisa.con-video::after, .bosque.con-video::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  backdrop-filter: blur(14px) brightness(.55) saturate(.9); -webkit-backdrop-filter: blur(14px) brightness(.55) saturate(.9);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0 40%, #000 52%); mask-image: linear-gradient(to bottom, transparent 0 40%, #000 52%); }
+.brisa.con-video .brisa-panel { background: rgb(12 32 26 / .72); }
+
+/* Brisa compacta (20 de octubre, Mateo: «la interfaz es muy grande… toca subir con el scroll para leer»).
+   Encabezado en una línea, «Buscar un plan» discreto y el espacio para leer primero. */
+.panel-brisa .brisa-chat { display: flex; flex-direction: column; gap: 8px; }
+.panel-brisa .brisa-quien { flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; text-align: left; padding-right: 52px; }
+.panel-brisa .brisa-quien .orbe, .panel-brisa.flotante .brisa-quien .orbe { --tam: 40px; --k: .2; }
+.panel-brisa h1 { margin: 0; font-size: 22px; line-height: 1.2; }
+.panel-brisa .brisa-intenciones-abrir { align-self: flex-start; width: auto; min-height: 44px; padding: 0 16px; font-size: 16px; }
+.panel-brisa .brisa-mensajes { flex: 1 1 auto; min-height: 180px; padding-top: 8px; }
+.panel-brisa .burbuja.de-brisa { padding: 2px 2px; line-height: 1.45; }
+.panel-brisa .burbuja.de-brisa + .burbuja.de-brisa { margin-top: -4px; }
+.panel-brisa .brisa-opciones { flex: none; max-height: 30%; overflow-y: auto; }
+.brisa-antes { align-self: center; min-height: 40px; padding: 0 14px; border: 1px solid var(--int-borde); border-radius: 999px; background: transparent; color: var(--int-suave); font: 500 15px Inter, sans-serif; cursor: pointer; }
+.brisa-antes:hover { color: var(--int-texto); }
+@media (max-width: 760px) {
+  .panel-brisa, .panel-brisa.flotante { top: 10svh; }
+  .panel-brisa .brisa-quien .orbe { --tam: 36px; }
+}

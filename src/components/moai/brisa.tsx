@@ -12,7 +12,7 @@ import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
-import { conversacionAbierta, esDuda, esFamilia, limpiarNombre, sinRespuesta, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
+import { comoNombrar, conversacionAbierta, entenderPersona, esDuda, esFamilia, limpiarNombre, sinRespuesta, type PersonaDicha, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
 import { OrbeBrisa } from './bosque';
 import { FondoCiudad } from './fondo-ciudad';
 import { SelectorLugar } from './selector-lugar';
@@ -25,7 +25,8 @@ import { esBusquedaBrisa } from '@/lib/brisa-intenciones';
 
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
 type Previo = { de: 'brisa' | 'yo'; texto: string };
-const MAX_PREGUNTAS_DIA = 2;
+// Una pregunta por visita (Mateo, 20 de octubre: «no es tan conversacional» con dos seguidas).
+const MAX_PREGUNTAS_DIA = 1;
 // `silencioso`: opciones como «Otra cosa» que solo muestran más opciones, sin aparecer como respuesta de la persona.
 type Opcion = { texto: string; hacer: () => void; silencioso?: boolean };
 // Ritmo (pedido de Mateo, 15 de octubre): Brisa escribe un mensaje a la vez, con una pausa en la que se ve
@@ -35,7 +36,7 @@ const pausaPara = (m: { contenido: ReactNode; nota?: boolean }) =>
   m.nota ? 250 : Math.min(1500, 500 + (typeof m.contenido === 'string' ? m.contenido.length : 80) * 10);
 const esperar = (ms: number) => new Promise(r => setTimeout(r, ms));
 type Borrador = { titulo: string; tipo: Tipo; dia?: Date; hora?: string; lugar?: string; semanal: boolean };
-type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla' | 'red-nombre' | 'red-relacion' | 'red-conocen' | 'red-comparten';
+type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla' | 'red-nombre' | 'red-relacion' | 'red-nombre-propio' | 'red-conocen' | 'red-comparten';
 
 const RIESGO = /(suicid|matarme|quitarme la vida|no quiero vivir|me quiero morir|hacerme daño|no aguanto más)/i;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -143,7 +144,9 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const iniciado = useRef(false);
   // Conversación de cada día: qué preguntas ya hizo (según lo guardado), cuál espera respuesta y, al conocerte, la fila
   // de preguntas para la tarjeta.
-  const [previos, setPrevios] = useState<Previo[]>([]);
+  const [previos, setPrevios] = useState<(Previo & { hoy?: boolean })[]>([]);
+  const [verAntes, setVerAntes] = useState(false);
+  const previosAntes = previos.filter(m => !m.hoy), previosHoy = previos.filter(m => m.hoy);
   const hechas = useRef<Set<string>>(new Set());
   const preguntasHoy = useRef(0);
   const preguntaActual = useRef<Pregunta | null>(null);
@@ -151,7 +154,8 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const conociendote = useRef(false);
   const tarjetaVisible = useRef(false);
   const ultimaVez = useRef<Date | null>(null);
-  const red = useRef({ nombre: '', relacion: '', conocen: '' });
+  const red = useRef<PersonaDicha & { conocen: string }>({ nombre: '', relacion: '', familia: false, conNombre: true, conocen: '' });
+  const lineasHoy = useRef<{ de: string; texto: string }[]>([]);
 
   // Lo que se dice en texto se guarda (cifrado, 90 días) en lotes pequeños; las tarjetas y los planes no.
   const porGuardar = useRef<Previo[]>([]);
@@ -235,38 +239,35 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     if (p) { preguntasHoy.current++; preguntar(p); return; }
     paso.current = 'libre';
     if (!antes) decir(conversacionAbierta(new Date()));
-    setOpciones([verOpciones]);
+    setOpciones([]); // sin respuestas automáticas (Mateo, 20 de octubre): se escribe lo que se quiera
   }
   // ---- Red de apoyo: quién es importante para ti, aunque no use MOAI (Mateo, 20 de octubre) ----
   // Se guarda en tu Moai interno y, lo que cuentes de cómo se conocieron, en su ficha privada. Nadie más lo ve.
-  const ahoraNo: Opcion = { texto: 'Ahora no', hacer: () => conversar('Está bien. Cuando quieras me cuentas.') };
+  // La privacidad se explica en la política y en las dudas frecuentes, no en medio de la charla (Mateo, 20 de octubre).
   function preguntarRed(p?: Pregunta) {
     if (p) hechas.current.add(p.clave);
     preguntaActual.current = null;
     paso.current = 'red-nombre';
-    if (p) { decir(p.texto); nota('Lo guardo cifrado y solo tú lo ves. No le escribo ni le aviso a nadie.'); }
-    else decir('¿Quién más? Dime su nombre.');
-    setOpciones([ahoraNo]);
+    decir(p ? p.texto : '¿Quién más?');
+    setOpciones([]);
   }
-  function preguntarComparten() {
-    paso.current = 'red-comparten';
-    decir(`¿Hay algo que compartan o que les guste hacer juntos?`);
-    setOpciones([{ texto: 'Prefiero no decir', hacer: () => void guardarRed('') }]);
+  // Después de saber quién es: a la familia no se le pregunta cómo se conocieron.
+  function seguirRed() {
+    const p = red.current;
+    if (!p.relacion) { paso.current = 'red-relacion'; decir(`¿Y qué es ${p.nombre} para ti?`); return; }
+    if (!p.conNombre) { paso.current = 'red-nombre-propio'; decir('¿Cómo se llama?'); return; }
+    if (p.familia) { paso.current = 'red-comparten'; decir(`¿Qué les gusta hacer juntos con ${comoNombrar(p)}?`); return; }
+    paso.current = 'red-conocen'; decir(`¿Cómo se conocieron con ${comoNombrar(p)}?`);
   }
   async function guardarRed(comparten: string) {
     paso.current = 'libre';
-    const { nombre, relacion, conocen } = red.current;
-    const familia = esFamilia(relacion);
-    const r = await api.agregarInterno({ nombre, relacion, familia });
+    const p = red.current;
+    const r = await api.agregarInterno({ nombre: p.nombre, relacion: p.relacion, familia: p.familia });
     if (!r.ok) { decir(r.error); conversar(); return; }
-    const persona = r.datos.filter(x => x.nombre === nombre).at(-1);
-    if (persona && (conocen || comparten)) await api.guardarFichaVinculo?.(`interno:${persona.id}`, { comoNosConocemos: conocen, algoCompartimos: comparten, nota: '' });
-    decir(`Listo. Guardé a ${nombre} en tu red de apoyo, ${familia ? 'en Raíz, con tu familia' : 'en Tronco, con quienes te nutren'}. Lo ves en Mi gente, y lo puedes cambiar o borrar cuando quieras.`);
-    setOpciones([
-      { texto: 'Agregar a alguien más', hacer: () => preguntarRed() },
-      { texto: 'Ver Mi gente', hacer: () => ir('/gente') },
-      { texto: 'Seguir conversando', silencioso: true, hacer: () => conversar() },
-    ]);
+    const persona = r.datos.filter(x => x.nombre === p.nombre).at(-1);
+    if (persona && (p.conocen || comparten)) await api.guardarFichaVinculo?.(`interno:${persona.id}`, { comoNosConocemos: p.conocen, algoCompartimos: comparten, nota: '' });
+    decir(p.familia ? `Qué bonito. Ya tienes a ${comoNombrar(p)} en Mi gente, con tu familia.` : `Qué bueno tener a ${comoNombrar(p)} cerca. Ya está en Mi gente.`);
+    setOpciones([]);
   }
 
   function preguntar(p: Pregunta) {
@@ -275,7 +276,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     preguntaActual.current = p;
     paso.current = 'charla';
     decir(p.texto);
-    setOpciones([{ ...verOpciones, texto: 'Mejor otra cosa' }]);
+    setOpciones([]);
   }
   // Lo que la persona cuenta y puede ir a su tarjeta. Devuelve si hubo algo nuevo.
   function anotar(p: Pregunta, t: string): boolean {
@@ -529,6 +530,14 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       return;
     }
     if (esBusquedaBrisa(t)) { setIntencion({ texto: t }); return; }
+    // Aunque haya una pregunta pendiente, lo que la persona pide va primero (Mateo, 20 de octubre: «solo responde con
+    // preguntas autoguardadas»). Solo intenciones claras; lo demás se toma como respuesta.
+    const pide = sinTildes(t);
+    if (/que (puedes|puedo|podemos) hacer|como me ayudas|en que me ayudas|^ayuda\b|^menu\b/.test(pide)) { paso.current = 'libre'; preguntaActual.current = null; decir('Esto es lo que podemos hacer juntas:'); setOpciones(menu()); return; }
+    if (paso.current === 'charla' || paso.current.startsWith('red-')) {
+      if (/\b(triste|sol[ao]|desanimad[ao]|invierno|mal hoy|me siento mal)\b/.test(pide)) { paso.current = 'libre'; preguntaActual.current = null; void comoEstoy(); return; }
+      if (/\b(cansad[ao]|agotad[ao]|cuidarme)\b/.test(pide)) { paso.current = 'libre'; preguntaActual.current = null; void cuidarme(); return; }
+    }
     const b = borrador.current;
     switch (paso.current) {
       case 'plan-que': borrador.current = { ...entenderPlan(t), semanal: false }; preguntarDia(); return;
@@ -537,24 +546,26 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       case 'plan-donde': if (b && t.length >= 3) { b.lugar = t.slice(0, 80); mostrarBorrador(); } else preguntarLugar(); return;
       case 'charla': if (!esDuda(t) || !responderDuda(t)) { responder(t); return; } break; // si responde con una duda, primero la duda
       case 'red-nombre':
-        if (sinRespuesta(t)) { conversar('Está bien. Cuando quieras me cuentas.'); return; }
-        red.current = { nombre: limpiarNombre(t), relacion: '', conocen: '' };
-        paso.current = 'red-relacion';
-        decir(`¿Qué es ${red.current.nombre} para ti? Por ejemplo, tu hermana, una amiga o un vecino.`);
+        if (sinRespuesta(t)) { paso.current = 'libre'; decir('Está bien. Cuando quieras me cuentas.'); return; }
+        if (esDuda(t) && responderDuda(t)) break; // primero la duda; la pregunta sigue abierta
+        red.current = { ...entenderPersona(t), conocen: '' };
+        seguirRed();
         return;
-      case 'red-relacion':
-        red.current.relacion = t.slice(0, 60);
-        paso.current = 'red-conocen';
-        decir('¿Cómo se conocieron?');
-        setOpciones([{ texto: 'Prefiero no decir', hacer: () => preguntarComparten() }]);
+      case 'red-relacion': {
+        const r = entenderPersona(t);
+        red.current = { ...red.current, relacion: r.relacion || t.slice(0, 60), familia: r.relacion ? r.familia : esFamilia(t) };
+        red.current.conNombre = true;
+        seguirRed();
         return;
-      case 'red-conocen': red.current.conocen = sinRespuesta(t) ? '' : t.slice(0, 160); preguntarComparten(); return;
+      }
+      case 'red-nombre-propio': red.current = { ...red.current, nombre: limpiarNombre(t), conNombre: true }; seguirRed(); return;
+      case 'red-conocen': red.current.conocen = sinRespuesta(t) ? '' : t.slice(0, 160); void guardarRed(''); return;
       case 'red-comparten': void guardarRed(sinRespuesta(t) ? '' : t.slice(0, 160)); return;
     }
     // Dudas sobre la plataforma: respuestas escritas por el equipo.
     if (esDuda(t)) {
       const respuesta = responderDuda(t);
-      if (respuesta) { decir(...respuesta); setOpciones([verOpciones]); return; }
+      if (respuesta) { decir(...respuesta); return; }
     }
     const plano = sinTildes(t);
     if (/vecin|conocer gente|amig/.test(plano)) { conocer(); return; }
@@ -562,7 +573,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     if (/sol[ao]\b|triste|invierno|desanimad/.test(plano)) { void comoEstoy(); return; }
     if (/cuid|cansad|agotad|nutre|limite/.test(plano)) { void cuidarme(); return; }
     if (/quiero|ganas|voy a|me gustaria/.test(plano)) { iniciarPlan(entenderPlan(t)); return; }
-    if (esDuda(t)) { decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.'); setOpciones([verOpciones]); return; }
+    if (esDuda(t)) { decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.'); return; }
     // Lo demás es conversación: Brisa reacciona a lo que le cuentan y sigue.
     conversar(reaccionar(null, t));
   }
@@ -574,17 +585,27 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     // Primero, lo que ya hablaron (para retomar y no repetir preguntas) y la tarjeta (para sumarle lo que cuente).
     void Promise.all([api.historial?.() ?? Promise.resolve(null), api.perfilPublico?.() ?? Promise.resolve(null)]).then(([h, t]) => {
       const lineas = h?.ok ? h.datos : [];
-      setPrevios(lineas.map(l => ({ de: l.de, texto: l.texto })));
+      const hoyTexto = new Date().toDateString();
+      setPrevios(lineas.map(l => ({ de: l.de, texto: l.texto, hoy: new Date(l.fecha).toDateString() === hoyTexto })));
       ultimaVez.current = lineas.length ? new Date(lineas[lineas.length - 1].fecha) : null;
       hechas.current = preguntasHechas(lineas.filter(l => l.de === 'brisa').map(l => l.texto));
       const hoy = new Date().toDateString();
       preguntasHoy.current = PREGUNTAS.filter(p => lineas.some(l => l.de === 'brisa' && l.texto === p.texto && new Date(l.fecha).toDateString() === hoy)).length;
+      lineasHoy.current = lineas.filter(l => new Date(l.fecha).toDateString() === hoy);
       if (t?.ok) { borradorPerfil.current = { ...t.datos }; tarjetaVisible.current = t.datos.visible; }
       saludar();
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Si ya hablaron hoy, Brisa no vuelve a saludar ni a empezar (Mateo, 20 de octubre): retoma donde iban.
+  function retomar() {
+    const ultima = lineasHoy.current.at(-1);
+    const pendiente = ultima?.de === 'brisa' ? PREGUNTAS.find(p => p.texto === ultima.texto) : undefined;
+    if (pendiente?.red) { paso.current = 'red-nombre'; return; }
+    if (pendiente) { preguntaActual.current = pendiente; paso.current = 'charla'; }
+  }
   function saludar() {
+    if (!primeraVez && !empezar && lineasHoy.current.length) { retomar(); return; }
     // La primera vez se presenta; después, un saludo corto. Una cosa a la vez: primero lo pendiente, después la pregunta.
     if (primeraVez) {
       decir('Soy Brisa, tu compañera en MOAI.');
@@ -625,8 +646,9 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     {titulo}
     <button ref={buscarBoton} type="button" className="brisa-intenciones-abrir" onClick={() => { hablo.current = true; setIntencion({ texto: '' }); }}>Buscar un plan</button>
     <div className="brisa-mensajes" aria-live="polite">
-      {previos.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
-      {previos.length > 0 && <p className="brisa-separador" role="separator">Hoy</p>}
+      {verAntes && previosAntes.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
+      {previosAntes.length > 0 && <button type="button" className="brisa-antes" aria-expanded={verAntes} onClick={() => setVerAntes(v => !v)}>{verAntes ? 'Ocultar lo que hablamos antes' : 'Ver lo que hablamos antes'}</button>}
+      {previosHoy.map((m, i) => <div key={`h${i}`} className={`burbuja de-${m.de}`}>{m.texto}</div>)}
       {mensajes.map(m => <div key={m.id} className={`burbuja de-${m.de}${m.nota ? ' nota' : ''}`}>{m.contenido}</div>)}
       {escribiendo && <div className="burbuja de-brisa escribiendo" role="status" aria-label="Brisa está escribiendo"><span/><span/><span/></div>}
       <div ref={final}/>

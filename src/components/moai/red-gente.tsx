@@ -13,6 +13,7 @@ export function RedGente({ personas, moais, nombre, personaId, moaiId, onPersona
   const vertical = tam.ancho < 600;
   const geo = useMemo(() => disponerRed(personas, moais, tam.ancho < 600 ? tam.ancho : Math.max(1000, tam.ancho), Math.max(480, tam.alto), nombre), [personas, moais, tam, nombre]);
   const porId = useMemo(() => new Map(geo.nodos.map(n => [n.id, n])), [geo]);
+  const escala = vertical ? Math.max(.7, Math.min(1, (tam.alto - 8) / geo.alto)) : Math.max(.6, Math.min(1, (tam.ancho - 8) / geo.ancho, (tam.alto - 8) / geo.alto));
   useLayoutEffect(() => {
     const el = visor.current;
     if (!el) return;
@@ -23,9 +24,9 @@ export function RedGente({ personas, moais, nombre, personaId, moaiId, onPersona
   }, []);
   const centrar = () => {
     const el = visor.current;
-    if (el) { el.scrollLeft = (geo.ancho - el.clientWidth) / 2; el.scrollTop = Math.max(0, geo.centro.y + (vertical ? 24 : 0) - el.clientHeight / 2); }
+    if (el) { el.scrollLeft = (geo.ancho * escala - el.clientWidth) / 2; el.scrollTop = Math.max(0, (geo.centro.y + (vertical ? 24 : 0)) * escala - el.clientHeight / 2); }
   };
-  useLayoutEffect(centrar, [geo.ancho, geo.alto]);
+  useLayoutEffect(centrar, [geo.ancho, geo.alto, escala]);
   const curva = (a: { x: number; y: number }, b: { x: number; y: number }) => {
     const dx = b.x - a.x, dy = b.y - a.y;
     return `M ${a.x} ${a.y} C ${a.x + dx * .55 - dy * .12} ${a.y + dy * .18}, ${a.x + dx * .55 + dy * .12} ${b.y - dy * .18}, ${b.x} ${b.y}`;
@@ -40,7 +41,8 @@ export function RedGente({ personas, moais, nombre, personaId, moaiId, onPersona
       </div>
     </div>
     <div className="gente-red-visor" ref={visor} tabIndex={0} role="region" aria-label="Red de vínculos. Desplázate para explorar; también puedes usar Lista.">
-      <div className="gente-red-lienzo" style={{ width: geo.ancho, height: geo.alto }}>
+      <div className="gente-red-marco" style={{ width: geo.ancho * escala, height: geo.alto * escala }}>
+      <div className="gente-red-lienzo" style={{ width: geo.ancho, height: geo.alto, transform: escala < 1 ? `scale(${escala})` : undefined }}>
         <svg className="gente-orbitas" width={geo.ancho} height={geo.alto} aria-hidden="true">
           <ellipse cx={geo.centro.x} cy={geo.centro.y} rx={vertical ? 130 : 260} ry={180}/>
           <ellipse cx={geo.centro.x} cy={geo.centro.y} rx={vertical ? 155 : 410} ry={vertical ? 350 : 265}/>
@@ -75,6 +77,7 @@ export function RedGente({ personas, moais, nombre, personaId, moaiId, onPersona
             <span className="gente-simbolo-moai" aria-hidden="true"><i/><i/><i/></span><strong>{m.nombre}</strong><small>Moai que compartimos</small>
           </button>;
         })}
+      </div>
       </div>
     </div>
   </section>;

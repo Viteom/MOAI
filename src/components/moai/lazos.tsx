@@ -7,7 +7,6 @@ import type { Api, Gente, Lazos, Perfil, PersonaLazo, Respuesta } from '@/lib/ap
 import { MAX_MOAI } from '@/lib/moai';
 import { textoSaludo, type Saludo } from '@/lib/perfil';
 import { Barra, type Ir } from './diario';
-import { Imagen } from './interna';
 import { Campo } from './cuenta';
 import { AgregarInterno, Pausa, ReportarPersona } from './gente';
 import { categoriaDe, categorias, descripcionContacto, filtrarPersonas, nombreCategoria, type CategoriaVinculo, type FiltroMoai } from '@/lib/vinculos';
@@ -161,7 +160,6 @@ export function MiGente({ perfil, api, ir, onSalir }: { perfil: Perfil; api: Api
     </span><ChevronRight aria-hidden="true"/>
   </button>;
   return <div className={`lazos interna gente-pagina vista-${vista}`} style={{ ['--gente-cabecera' as string]: `${altoCabecera}px` }}>
-    <div className="gente-botanica" aria-hidden="true"><Imagen nombre="gente" prioridad/></div>
     <Barra ir={ir} onSalir={onSalir} actual="gente"/>
     <header className="gente-cabecera" ref={cabecera}>
       <p className="gente-marca"><Leaf aria-hidden="true"/>MOAI</p>

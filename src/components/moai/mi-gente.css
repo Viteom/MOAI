@@ -194,3 +194,9 @@
 
 /* Mismo bosque que las demás internas (19-20 de octubre). */
 .gente-pagina { background: linear-gradient(160deg, #12352a 0%, #0f2a22 45%, var(--int-fondo) 100%); }
+
+/* Fondo propio, sin la ilustración a medias (20 de octubre): bosque profundo con un halo detrás de la red. */
+.gente-pagina { background: radial-gradient(70% 55% at 50% 62%, #17442f 0%, #10302a 45%, transparent 75%), linear-gradient(180deg, #0f2a22 0%, var(--int-fondo) 100%); }
+.gente-pagina .gente-red-marco { position: relative; margin: 0 auto; }
+.gente-pagina .gente-red-lienzo { transform-origin: 0 0; }
+.gente-pagina .gente-red-visor { background: radial-gradient(ellipse at 50% 50%, #8be4d50d, transparent 70%); }

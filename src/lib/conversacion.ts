@@ -141,11 +141,40 @@ export const conversacionAbierta = (ahora: Date) => ABIERTAS[diaDelAnio(ahora) %
 
 // ---- Red de apoyo (20 de octubre) ----
 // Qué relación cuenta como familia (va a Raíz); el resto, a Tronco («quien me nutre»).
-export const esFamilia = (relacion: string) => /\b(mam[aá]|madre|pap[aá]|padre|herman[oa]|hij[oa]|t[ií][oa]|abuel[oa]|prim[oa]|sobrin[oa]|nieto|nieta|espos[oa]|esposo|pareja|marido|mujer|suegr[oa]|cu[ñn]ad[oa]|familia)/i.test(relacion);
+export const esFamilia = (relacion: string) => /\b(mam[aá]|mami|madre|pap[aá]|papi|padre|herman[oa]|hij[oa]|t[ií][oa]|abuel[oa]|prim[oa]|sobrin[oa]|nieto|nieta|espos[oa]|esposo|pareja|marido|mujer|suegr[oa]|cu[ñn]ad[oa]|madrina|padrino|ahijad[oa]|familia)/i.test(relacion);
 // «Se llama Ana.» → «Ana». Sin adivinar más: si no, se guarda lo que la persona escribió, corto.
 export const limpiarNombre = (texto: string) => {
-  const t = texto.trim().replace(/^(se llama|es|ella es|él es|el es)\s+/i, '').replace(/[.!¡?¿]+$/g, '').trim().slice(0, 40);
+  const t = texto.trim().replace(/^(se llama|es|ella es|él es|el es)\s+/i, '').replace(/\s+(es|son)\s+(una|la|el|mi)?\s*(persona|alguien)?.*$/i, '').replace(/[.!¡?¿]+$/g, '').trim().slice(0, 40);
   return t.charAt(0).toLocaleUpperCase('es') + t.slice(1);
 };
 // Respuestas que significan «no por ahora».
 export const sinRespuesta = (texto: string) => /^(no|nadie|ninguno|ninguna|ahora no|despues|después|luego|prefiero no( decir)?|no se|no sé|paso)\.?$/i.test(texto.trim());
+
+// «Mi madre es una persona importante para mí», «mi hermano Juan», «Laura, mi amiga»: quién es y qué es para ti,
+// sin volver a preguntar lo que ya dijo. Solo palabras del guion; si no reconoce la relación, la pregunta.
+const RELACIONES: [RegExp, string, string][] = [
+  [/mam[aá]|mami|madre/, 'mamá', 'Mamá'], [/pap[aá]|papi|padre/, 'papá', 'Papá'], [/herman[ao]/, '', 'Hermano'], [/hij[ao]/, '', 'Hijo'],
+  [/t[ií][ao]/, '', 'Tío'], [/abuel[ao]/, '', 'Abuelo'], [/prim[ao]/, '', 'Primo'], [/sobrin[ao]/, '', 'Sobrino'], [/niet[ao]/, '', 'Nieto'],
+  [/espos[ao]|marido|pareja|novi[ao]/, '', 'Pareja'], [/madrina|padrino/, '', 'Madrina'], [/suegr[ao]/, '', 'Suegro'], [/cu[ñn]ad[ao]/, '', 'Cuñado'],
+  [/amig[ao]/, '', 'Amigo'], [/vecin[ao]/, '', 'Vecino'], [/compa[ñn]er[ao]/, '', 'Compañero'], [/comadre|compadre/, '', 'Comadre'],
+];
+export type PersonaDicha = { nombre: string; relacion: string; familia: boolean; conNombre: boolean };
+export function entenderPersona(texto: string): PersonaDicha {
+  const limpio = texto.trim().replace(/[.!¡?¿]+$/g, '');
+  for (const [re, canonica] of RELACIONES) {
+    // Bordes de palabra que entienden tildes («mamá»): \b solo conoce letras sin tilde.
+    const m = new RegExp(`(?<!\\p{L})(?:mi|la|el|a mi)?\\s*(${re.source})(?!\\p{L})`, 'iu').exec(limpio);
+    if (!m) continue;
+    const palabra = m[1].toLocaleLowerCase('es');
+    const relacion = canonica || palabra;
+    // Un nombre propio pegado a la relación: «mi hermano Juan», «Laura, mi amiga».
+    const despues = /^\s*,?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)/.exec(limpio.slice(m.index + m[0].length));
+    const antes = /([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)\s*,?\s*(?:es\s+)?(?:mi|la|el)?\s*$/.exec(limpio.slice(0, m.index));
+    const propio = despues?.[1] ?? (antes && !/^(Mi|La|El|Es)$/.test(antes[1]) ? antes[1] : '');
+    const nombre = propio || relacion.charAt(0).toLocaleUpperCase('es') + relacion.slice(1);
+    return { nombre, relacion, familia: esFamilia(relacion), conNombre: !!propio || /^(mamá|papá)$/.test(relacion) };
+  }
+  return { nombre: limpiarNombre(texto), relacion: '', familia: false, conNombre: true };
+}
+// Cómo nombrarla en la respuesta: «tu mamá» o «Juan».
+export const comoNombrar = (p: PersonaDicha) => p.conNombre && !/^(Mamá|Papá)$/.test(p.nombre) ? p.nombre : `tu ${p.relacion || p.nombre.toLocaleLowerCase('es')}`;
