@@ -1163,3 +1163,9 @@ button.chip.persona { cursor: pointer; }
 }
 
 .brisa-beta { margin: 2px 0 0; font-size: 13px; line-height: 1.4; text-align: center; color: var(--int-suave); }
+
+/* Pantallas de cuenta (acceso, código, registro): el video completo desenfocado, para que ni su panel dibujado ni su
+   esfera compitan con el panel real; queda una sola esfera nítida, la de la interfaz (Mateo, 20 de octubre). */
+.bosque.con-video::after { -webkit-mask-image: none; mask-image: none; backdrop-filter: blur(14px) brightness(.68) saturate(.95); -webkit-backdrop-filter: blur(14px) brightness(.68) saturate(.95); }
+.bosque-panel h1:focus { outline: none; }
+.bosque.con-video .bosque-panel { background: rgb(12 32 26 / .78); }
