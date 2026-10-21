@@ -50,6 +50,7 @@ describe('Entrada HTTP real de la función con base aislada y proveedores simula
   const abrir = vi.fn<typeof abrirDb>();
   const iniciar = vi.fn<() => Promise<FastifyInstance>>();
   let codigo = '';
+  let cookieAutenticada = '';
   const frases: string[] = [];
   const correos: string[] = [];
 
@@ -113,6 +114,7 @@ describe('Entrada HTTP real de la función con base aislada y proveedores simula
     const galleta = sesion.headers['set-cookie']![0];
     expect(galleta).toContain('HttpOnly'); expect(galleta).toContain('Secure'); expect(galleta).toContain('SameSite=Lax');
     const cookie = galleta.split(';')[0];
+    cookieAutenticada = cookie;
     expect((await pedir('/api/perfil/nacimiento', { method: 'POST', cookie, payload: { fechaNacimiento: '1965-03-02' } })).status).toBe(200);
     expect((await pedir('/api/sesion', { cookie })).status).toBe(200);
     const capacidad = await pedir('/api/brisa/modelo', { cookie });
@@ -125,6 +127,31 @@ describe('Entrada HTTP real de la función con base aislada y proveedores simula
     expect(await db.query('select * from brisa_propuestas')).toHaveLength(0);
     expect(await db.query('select * from asistencias')).toHaveLength(0);
     expect(JSON.stringify(interpretacion.json)).not.toContain(entorno.GEMINI_API_KEY);
+  });
+
+  it('mantiene la API y las sesiones al activar Gemini con clave ausente o modelo inválido; solo registra nombres', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const llamadas = vi.mocked(fetch).mock.calls.length;
+    try {
+      for (const [cambio, variable] of [
+        [{ GEMINI_MODEL: 'modelo-invalido-ficticio' }, 'GEMINI_MODEL'],
+        [{ GEMINI_API_KEY: '' }, 'GEMINI_API_KEY'],
+      ] as const) {
+        // Compartir los datos ficticios con la prueba HTTP sin cerrar su conexión al terminar esta instancia.
+        const degradada = await iniciarVercel({ ...entorno, BRISA_GEMINI_CONVERSA: 'true', ...cambio }, async () => ({ ...db, close: async () => {} }));
+        try {
+          expect((await degradada.inject({ method: 'GET', url: '/api/health' })).json()).toEqual({ ok: true });
+          expect((await degradada.inject({ method: 'GET', url: '/api/sesion', headers: { cookie: cookieAutenticada } })).statusCode).toBe(200);
+          const capacidad = await degradada.inject({ method: 'GET', url: '/api/brisa/modelo', headers: { cookie: cookieAutenticada } });
+          expect(capacidad.statusCode).toBe(200);
+          expect(capacidad.json()).toMatchObject({ disponible: false, conversa: false });
+          expect(JSON.stringify(log.mock.calls.at(-1))).toContain(variable);
+        } finally { await degradada.close(); }
+      }
+      expect(vi.mocked(fetch).mock.calls).toHaveLength(llamadas);
+      expect(JSON.stringify(log.mock.calls)).not.toContain(entorno.GEMINI_API_KEY);
+      expect(JSON.stringify(log.mock.calls)).not.toContain('modelo-invalido-ficticio');
+    } finally { log.mockRestore(); }
   });
 
   it('conserva la base al preparar otra vez el esquema y sirve errores JSON sin devolver secretos', async () => {
@@ -176,7 +203,7 @@ describe('Gemini mal configurado (20 de octubre)', () => {
     try {
       const app = await iniciarVercel({ ...entorno, BRISA_GEMINI_BETA: 'true', GEMINI_API_KEY: '', GEMINI_MODEL: '"gemini-3.5-flash-lite"' }, vi.fn(async () => db));
       expect((await app.inject({ method: 'GET', url: '/api/health' })).statusCode).toBe(200);
-      expect(log.mock.calls.flat().join(' ')).toMatch(/Gemini quedó apagado.*GEMINI_API_KEY y GEMINI_MODEL/);
+      expect(log.mock.calls.flat().join(' ')).toMatch(/Gemini de pruebas queda desactivado.*GEMINI_API_KEY, GEMINI_MODEL/);
       await app.close();
     } finally { log.mockRestore(); }
   });

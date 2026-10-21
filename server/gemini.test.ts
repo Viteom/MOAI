@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { it, expect, vi } from 'vitest';
-import { geminiDesdeEntorno, type TransporteModelo } from './gemini';
+import { ConfiguracionGeminiIncompleta, geminiDesdeEntorno, type TransporteModelo } from './gemini';
 import { normalizarExtraccion } from './lenguaje-brisa';
 
 const env = { BRISA_GEMINI_BETA: 'true', GEMINI_API_KEY: 'clave-solo-de-prueba', GEMINI_MODEL: 'gemini-prueba' };
@@ -12,6 +12,21 @@ it('se apaga por defecto; exige configuración explícita y no instala ni expone
   expect(geminiDesdeEntorno({ ...env, BRISA_GEMINI_BETA: 'false' })).toBeNull();
   expect(() => geminiDesdeEntorno({ ...env, GEMINI_API_KEY: '' })).toThrow(/requiere/);
   expect(() => geminiDesdeEntorno({ ...env, GEMINI_MODEL: '../otro-host' })).toThrow(/válido/);
+});
+it('identifica la variable incorrecta sin incluir sus valores en el diagnóstico', () => {
+  for (const [cambio, variables] of [
+    [{ GEMINI_API_KEY: '' }, ['GEMINI_API_KEY']],
+    [{ GEMINI_MODEL: 'valor-ficticio-invalido' }, ['GEMINI_MODEL']],
+    [{ GEMINI_MODEL: '', GEMINI_API_KEY: '' }, ['GEMINI_API_KEY', 'GEMINI_MODEL']],
+  ] as const) {
+    try { geminiDesdeEntorno({ ...env, ...cambio }); throw new Error('Debía rechazar esta configuración.'); }
+    catch (e) {
+      expect(e).toBeInstanceOf(ConfiguracionGeminiIncompleta);
+      expect((e as ConfiguracionGeminiIncompleta).variables).toEqual(variables);
+      expect((e as Error).message).not.toContain('valor-ficticio-invalido');
+      expect((e as Error).message).not.toContain(env.GEMINI_API_KEY);
+    }
+  }
 });
 it('cumple el contrato REST de Gemini; manda una frase y esquema, sin herramientas ni contexto personal', async () => {
   const transporte = vi.fn<TransporteModelo>(async () => respuesta(extraccion));

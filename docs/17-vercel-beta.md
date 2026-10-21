@@ -69,6 +69,10 @@ La tarea solo prepara el esquema de PostgreSQL; no envía correos, no consulta G
 
 Un 503 puede indicar configuración incompleta, base inaccesible o esquema pendiente. Los registros muestran solo nombres de variables faltantes y mensajes genéricos: nunca pegar una URL de conexión o un error completo del proveedor en un reporte público. Las cuotas de Gemini siguen siendo 10 peticiones por cuenta y 100 en toda la beta por cada 24 horas; no constituyen un presupuesto monetario.
 
+Si al activar Gemini falta `GEMINI_API_KEY` o el identificador de `GEMINI_MODEL` no tiene un formato válido, la función conserva la API de MOAI y el guion local con el modelo desactivado. El registro indica **qué nombre de variable revisar**, sin sus valores; `/api/brisa/modelo` muestra `disponible: false` y `conversa: false`. Corregir la variable en Preview y desplegar otra vez. Un estado `true` confirma configuración, no que Google haya aceptado la clave ni que el modelo esté disponible: esa comprobación requiere una petición real con datos ficticios.
+
+Este ajuste se verificó con **17 pruebas de configuración, transporte y arranque de Vercel**, compilación y carga nativa de 39 módulos. Incluye mantener la sesión y `/api/health` al faltar la clave o tener un modelo inválido, desactivar ambas funciones de Gemini y comprobar que los logs nunca contienen los valores. El registro real compartido después de activar los interruptores solo decía «No se pudo atender una solicitud…»; no permite confirmar todavía la causa de ese fallo concreto. El nuevo diagnóstico debe comprobarse en la Preview.
+
 ## Limpieza y recordatorios: no se programan automáticamente
 
 Las funciones efímeras no mantienen el `setInterval` de `server/index.ts`. Se añadió una ruta protegida:

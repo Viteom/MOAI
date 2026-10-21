@@ -5,7 +5,8 @@ import { abrirDb } from './db.js';
 import { crearApp } from './app.js';
 import { crearCifrador } from './cifrado.js';
 import { viasDesdeEntorno } from './envios.js';
-import { geminiDesdeEntorno } from './gemini.js';
+import { ConfiguracionGeminiIncompleta, geminiDesdeEntorno } from './gemini.js';
+import type { ProveedorBrisa } from './lenguaje-brisa.js';
 import { registrarTareasVercel } from './tareas-vercel.js';
 import { urlDbDesdeEntorno } from './entorno-db.js';
 
@@ -36,10 +37,14 @@ export async function iniciarVercel(env: NodeJS.ProcessEnv = process.env, abrir:
   // También las previews usan cookies seguras y correo real: nunca códigos en registros de Vercel.
   const entorno: NodeJS.ProcessEnv = { ...validarEntornoVercel(env), NODE_ENV: 'production' };
   const envios = viasDesdeEntorno(entorno);
-  // Un error en la configuración de Gemini apaga solo Gemini; el resto de MOAI sigue (20 de octubre).
-  let modeloBrisa: ReturnType<typeof geminiDesdeEntorno> = null;
+  let modeloBrisa: ProveedorBrisa | null = null;
   try { modeloBrisa = geminiDesdeEntorno(entorno); }
-  catch { console.error('Gemini quedó apagado. Revisa en Preview las variables GEMINI_API_KEY y GEMINI_MODEL (sin espacios ni comillas; el modelo empieza por gemini-).'); }
+  catch (error) {
+    if (!(error instanceof ConfiguracionGeminiIncompleta)) throw error;
+    // El modelo es opcional: conservar cuentas, comunidad y el guion si su configuración no está completa.
+    // Solo nombres de variables en los registros, nunca claves, identificadores de modelo ni errores del proveedor.
+    console.error('Gemini de pruebas queda desactivado. Revisa estas variables en Preview:', error.variables.join(', '));
+  }
   const db = await abrir({ url: entorno.DATABASE_URL, inicializar: false, maxConexiones: 3 });
   try {
     const [{ preparada }] = await db.query<{ preparada: boolean }>("select to_regclass('public.brisa_interpretaciones') is not null as preparada");

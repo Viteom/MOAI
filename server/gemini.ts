@@ -3,6 +3,11 @@ import { esquemaConversa, esquemaExtraccion, instruccionesConversa, instruccione
 
 export type TransporteModelo = (url: string, opciones: RequestInit) => Promise<Response>;
 const MAX_RESPUESTA = 32_768;
+export class ConfiguracionGeminiIncompleta extends Error {
+  constructor(readonly variables: ('GEMINI_API_KEY' | 'GEMINI_MODEL')[]) {
+    super('La beta de Gemini requiere GEMINI_API_KEY y un GEMINI_MODEL válido en el servidor.');
+  }
+}
 export class FalloGemini extends Error {
   constructor() { super('Gemini no pudo interpretar la frase. Puedes reintentar o buscar directamente con las reglas de MOAI.'); }
 }
@@ -23,7 +28,12 @@ const pensarPoco = (modelo: string) => /^gemini-[12]\./.test(modelo) ? { thinkin
 export function geminiDesdeEntorno(env: Record<string, string | undefined>, transporte: TransporteModelo = fetch): ProveedorBrisa | null {
   if (env.BRISA_GEMINI_BETA !== 'true') return null;
   const clave = env.GEMINI_API_KEY?.trim(), modelo = env.GEMINI_MODEL?.trim();
-  if (!clave || !modelo || !/^gemini-[a-zA-Z0-9._-]{1,70}$/.test(modelo)) throw new Error('La beta de Gemini requiere GEMINI_API_KEY y un GEMINI_MODEL válido en el servidor.');
+  if (!clave || !modelo || !/^gemini-[a-zA-Z0-9._-]{1,70}$/.test(modelo)) {
+    const variables: ('GEMINI_API_KEY' | 'GEMINI_MODEL')[] = [];
+    if (!clave) variables.push('GEMINI_API_KEY');
+    if (!modelo || !/^gemini-[a-zA-Z0-9._-]{1,70}$/.test(modelo)) variables.push('GEMINI_MODEL');
+    throw new ConfiguracionGeminiIncompleta(variables);
+  }
   const llamar = async (sistema: string, contents: unknown[], esquema: unknown, maxOutputTokens: number, temperature: number) => {
     try {
       const respuesta = await transporte(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
