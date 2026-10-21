@@ -110,3 +110,7 @@ Comprobaciones después de esta corrección: arranque nativo de los 37 módulos 
 Patrón del adaptador contrastado con el ejemplo oficial `vercel/examples`, `starter/fastify/api/index.js` y `vercel.json`, revisión `de86723` (16 de octubre de 2026). Tipos y runtime de Node contrastados con `vercel/vercel`. La documentación web de Vercel no pudo consultarse desde este entorno por el proxy; estos repositorios oficiales sí fueron accesibles por Git.
 
 **Revisión humana antes de fusionar/desplegar:** credenciales, aislamiento de entornos, región/proveedor de datos, copia y recuperación de base y secreto, correo, programación y privacidad. No se ha publicado en producción.
+
+## Producción en pausa (21 de octubre de 2026)
+
+`vercel.json` tiene `git.deploymentEnabled.main = false`: fusionar en `main` no crea despliegues de Producción. `moai-gold.vercel.app` sigue mostrando el prototipo del 11 de octubre, que no guarda nada. El equipo prueba en los enlaces de Preview. Antes de abrir Producción hay que preparar una base de datos propia (no la de pruebas), las variables de Producción, la protección del enlace y la revisión jurídica; después se quita esa línea.
