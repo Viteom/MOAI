@@ -4,25 +4,26 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { cellToBoundary, cellToLatLng, gridDisk, gridDistance } from 'h3-js';
 import {
   alcances, barriosMedellin, franja, MAX_LUGARES, nombreDeZona, nombreTipo, proximaOcurrencia, tipos, ultimaOcurrencia, validarLugar, validarPlan,
-  type EntradaLugar, type EntradaPlan, type Repite, type Tipo,
-} from '../src/lib/lugares';
-import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api';
-import type { Db } from './db';
-import { enPausa, type Refs } from './personas';
-import { cartasDeGente } from './moais';
-import { mensajePausa } from '../src/lib/moai';
-import { revisarMensaje } from '../src/lib/moderacion';
-import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
-import { organizacionesDe } from './equipo';
-import { cartaInterna, cartaRepetirCuidado } from './cuidado';
-import { cartasDeCercania, enInvierno } from './cercania';
-import type { Cifrador } from './cifrado';
+  type Costo, type EntradaLugar, type EntradaPlan, type Repite, type Tipo,
+} from '../src/lib/lugares.js';
+import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api.js';
+import type { Consulta, Db } from './db.js';
+import { reservarAsistencia } from './asistencia.js';
+import { enPausa, type Refs } from './personas.js';
+import { cartasDeGente } from './moais.js';
+import { MAX_DETALLE_REPORTE, mensajePausa, motivosReporte } from '../src/lib/moai.js';
+import { revisarMensaje } from '../src/lib/moderacion.js';
+import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones.js';
+import { organizacionesDe } from './equipo.js';
+import { cartaInterna, cartaRepetirCuidado } from './cuidado.js';
+import { cartasDeCercania, enInvierno } from './cercania.js';
+import type { Cifrador } from './cifrado.js';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
 type FilaPlan = {
   id: string; autor_id: string; autor: string; titulo: string; descripcion: string; cuando: string; lugar_publico: string; ciudad: string;
   barrio: string | null; celda: string | null; alcance: string; cupo: number | null; tipo: Tipo; repite: Repite;
-  org_nombre?: string | null; org_tipo?: TipoOrganizacion | null;
+  org_nombre?: string | null; org_tipo?: TipoOrganizacion | null; costo: Costo; moai_id: string | null; moai_nombre: string | null;
 };
 const ZONA_HORARIA = 'America/Bogota';
 const MAX_MENSAJE = 500;
@@ -53,14 +54,16 @@ export const cuandoLegible = (fecha: Date) => new Intl.DateTimeFormat('es-CO', {
 // Con `refs`, cada plan ajeno lleva una referencia a su autor para poder reportarlo o bloquearlo.
 // `participando` (revisión de Codex): incluye los planes que ya empezaron o pasaron (hasta 30 días) para quien los
 // propuso o se sumó, para que no pierdan el plan ni su conversación justo cuando se encuentran. No sirve para descubrir planes.
-export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?: Refs, { participando = false } = {}): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
+export async function planesVisibles(db: Consulta, cuenta: string, ahora: Date, refs?: Refs, { participando = false } = {}): Promise<{ lugar: Lugar; planes: Plan[] } | null> {
   const [lugar] = await db.query<FilaLugar>('select id, nombre, ciudad, barrio, celda, activo from lugares where cuenta_id = $1 and activo', [cuenta]);
   if (!lugar) return null;
   const filas = await db.query<FilaPlan>(
     `select p.id, p.autor_id, split_part(c.nombre, ' ', 1) as autor, p.titulo, p.descripcion, p.cuando, p.lugar_publico, p.ciudad, p.barrio, p.celda,
-            p.alcance, p.cupo, p.tipo, p.repite, o.nombre as org_nombre, o.tipo as org_tipo
-     from planes p join cuentas c on c.id = p.autor_id left join organizaciones o on o.id = p.organizacion_id
-     where p.ciudad = $1 and p.cancelado_en is null
+            p.alcance, p.cupo, p.tipo, p.repite, p.costo, p.moai_id, mo.nombre as moai_nombre, o.nombre as org_nombre, o.tipo as org_tipo
+     from planes p join cuentas c on c.id = p.autor_id left join organizaciones o on o.id = p.organizacion_id left join moais mo on mo.id = p.moai_id
+     where (p.ciudad = $1 or p.moai_id is not null) and p.cancelado_en is null
+       -- un encuentro de un Moai solo lo ven sus miembros, estén donde estén
+       and (p.moai_id is null or exists (select 1 from moai_miembros mm where mm.moai_id = p.moai_id and mm.cuenta_id = $3))
        and (p.repite is not null or p.cuando > $2 or ($4 and p.cuando > $2::timestamptz - interval '30 days'
             and (p.autor_id = $3 or exists (select 1 from asistencias x where x.plan_id = p.id and x.cuenta_id = $3))))
        and c.suspendida_en is null and (p.organizacion_id is null or o.activa)
@@ -78,7 +81,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?:
        where a.plan_id = $1 and a.ocurrencia = $2 order by a.unido_en`, [p.id, proxima]);
     const voy = van.some(v => v.cuenta_id === cuenta);
     const { ve, distancia } = alcanzaA(p, lugar);
-    if (!ve && !mio && !voy) continue;
+    if (!ve && !mio && !voy && !p.moai_id) continue;
     if (enCurso && !mio && !voy) continue; // lo que ya empezó solo lo siguen viendo quienes participan
     planes.push({
       id: p.id, titulo: p.titulo, descripcion: p.descripcion, cuando: proxima.toISOString(), lugarPublico: p.lugar_publico,
@@ -87,6 +90,7 @@ export async function planesVisibles(db: Db, cuenta: string, ahora: Date, refs?:
       lleno: p.cupo !== null && van.length >= p.cupo,
       // Quién va: solo lo ve quien propuso el plan, y solo los primeros nombres (sin contadores, regla 5).
       asistentes: mio ? van.map(v => v.nombre) : undefined,
+      costo: p.costo, moai: p.moai_id && p.moai_nombre ? { id: p.moai_id, nombre: p.moai_nombre } : undefined,
     });
   }
   planes.sort((a, b) => a.cuando.localeCompare(b.cuando));
@@ -173,10 +177,16 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
 
   app.post<{ Params: { lugar: string } }>('/api/lugares/:lugar/activar', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const [existe] = await db.query('select id from lugares where id = $1 and cuenta_id = $2', [request.params.lugar, id]);
+    // Cambiar de ciudad es atómico; dos pestañas no dejan un intervalo sin lugar activo.
+    const existe = await db.transaccion(async tx => {
+      await tx.query('select id from cuentas where id = $1 for update', [id]);
+      const [lugar] = await tx.query('select id from lugares where id = $1 and cuenta_id = $2', [request.params.lugar, id]);
+      if (!lugar) return false;
+      await tx.query('update lugares set activo = false where cuenta_id = $1 and activo', [id]);
+      await tx.query('update lugares set activo = true where id = $1 and cuenta_id = $2', [request.params.lugar, id]);
+      return true;
+    });
     if (!existe) return reply.code(404).send({ error: 'No encontramos ese lugar.' });
-    await db.query('update lugares set activo = false where cuenta_id = $1 and activo', [id]);
-    await db.query('update lugares set activo = true where id = $1', [request.params.lugar]);
     return lugaresDe(id);
   });
 
@@ -208,29 +218,39 @@ export function registrarComunidad(app: FastifyInstance, db: Db, cuentaDeSesion:
     // Convocatoria: solo quien es responsable de una entidad activa puede publicar a su nombre.
     const organizacion = (request.body as { organizacion?: string | null } | undefined)?.organizacion ?? null;
     if (organizacion && !(await organizacionesDe(db, id)).some(o => o.id === organizacion)) return reply.code(403).send({ error: 'No puedes publicar a nombre de esa entidad.' });
+    // Un encuentro para un Moai: solo lo propone alguien del Moai, y solo lo verán sus miembros.
+    const moai = (request.body as { moai?: string | null } | undefined)?.moai ?? null;
+    if (moai && (organizacion || !(await db.query('select 1 from moai_miembros where moai_id = $1 and cuenta_id = $2', [moai, id]))[0])) return reply.code(403).send({ error: 'Solo puedes proponer encuentros en tus Moais.' });
     const resultado = validarPlan((request.body ?? {}) as Partial<EntradaPlan>, ahora(), { maxCupo: organizacion ? MAX_CUPO_CONVOCATORIA : MAX_CUPO_PLAN });
     if (!resultado.ok) return reply.code(400).send({ errores: resultado.errores });
     const p = resultado.plan;
     await db.query(
-      `insert into planes (autor_id, titulo, descripcion, cuando, lugar_publico, ciudad, barrio, celda, alcance, cupo, tipo, repite, organizacion_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-      [id, p.titulo, p.descripcion, p.cuando, p.lugarPublico, p.ciudad, p.barrio, p.celda, p.alcance, p.cupo, p.tipo, p.repite, organizacion]);
+      `insert into planes (autor_id, titulo, descripcion, cuando, lugar_publico, ciudad, barrio, celda, alcance, cupo, tipo, repite, organizacion_id, costo, moai_id) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+      [id, p.titulo, p.descripcion, p.cuando, p.lugarPublico, p.ciudad, p.barrio, p.celda, p.alcance, p.cupo, p.tipo, p.repite, organizacion, p.costo, moai]);
     return listaDePlanes(id);
+  });
+
+  // Reportar un plan entero (rediseño del 19 de octubre). Va al mismo equipo y cuenta para la pausa de quien lo propuso;
+  // el equipo ve el plan tal como lo publicó. Solo se puede reportar un plan que la persona ve y que no es suyo.
+  app.post<{ Params: { plan: string } }>('/api/planes/:plan/reportar', async (request, reply) => {
+    const id = await conSesion(request, reply); if (!id) return reply;
+    const b = (request.body ?? {}) as { motivo?: string; detalle?: string; bloquear?: boolean };
+    if (!motivosReporte.some(m => m.id === b.motivo)) return reply.code(400).send({ errores: { motivo: 'Elige qué pasó.' } });
+    const detalle = String(b.detalle ?? '').trim();
+    if (detalle.length > MAX_DETALLE_REPORTE) return reply.code(400).send({ errores: { detalle: 'Cuéntalo en menos palabras.' } });
+    const visible = (await planesParticipando(id)).find(p => p.id === request.params.plan);
+    if (!visible || visible.mio) return reply.code(404).send({ error: 'No encontramos ese plan.' });
+    const [fila] = await db.query<{ autor_id: string; titulo: string; descripcion: string; lugar_publico: string }>('select autor_id, titulo, descripcion, lugar_publico from planes where id = $1', [visible.id]);
+    const texto = `Plan: «${fila.titulo}» en ${fila.lugar_publico}.${fila.descripcion ? ` ${fila.descripcion}` : ''}`;
+    await db.query('insert into reportes (de, a, motivo, detalle, mensaje, plan_id, creado_en) values ($1, $2, $3, $4, $5, $6, $7)', [id, fila.autor_id, b.motivo, detalle, texto, visible.id, ahora()]);
+    if (b.bloquear === true) await db.query('insert into bloqueos (de, a) values ($1, $2) on conflict do nothing', [id, fila.autor_id]);
+    return { ok: true };
   });
 
   app.post<{ Params: { plan: string } }>('/api/planes/:plan/ir', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    const plan = (await listaDePlanes(id)).find(p => p.id === request.params.plan);
-    if (!plan || plan.mio) return reply.code(404).send({ error: 'Este plan ya no está disponible.' });
-    // El último cupo se reserva de forma atómica (revisión de Codex): un candado por plan mientras se cuenta y se inserta.
-    const lleno = await db.transaccion(async tx => {
-      await tx.query('select pg_advisory_xact_lock(hashtext($1))', [plan.id]);
-      const [{ cupo, van }] = await tx.query<{ cupo: number | null; van: number }>(
-        'select p.cupo, (select count(*)::int from asistencias a where a.plan_id = p.id and a.ocurrencia = $2 and a.cuenta_id <> $3) as van from planes p where p.id = $1', [plan.id, plan.cuando, id]);
-      if (cupo !== null && van >= cupo) return true;
-      await tx.query('insert into asistencias (plan_id, cuenta_id, ocurrencia) values ($1, $2, $3) on conflict do nothing', [plan.id, id, plan.cuando]);
-      return false;
-    });
-    if (lleno) return reply.code(409).send({ error: 'Este plan ya está completo.' });
+    const r = await db.transaccion(tx => reservarAsistencia(tx, id, ahora(), { planId: request.params.plan }));
+    if (!r.ok) return reply.code(r.status).send({ error: r.error });
     return listaDePlanes(id);
   });
 

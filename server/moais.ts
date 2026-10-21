@@ -7,11 +7,11 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
   DIAS_ENCUENTRO, DIAS_MENSAJES_MOAI, ENCUENTROS_PARA_SUGERIR, MAX_DETALLE_REPORTE, MAX_MOAI, mensajePausa, motivosReporte, validarNombreMoai,
-} from '../src/lib/moai';
-import { revisarMensaje } from '../src/lib/moderacion';
-import type { Carta, Conocido, Encuentro, Gente, Invitacion, Mensaje, MoaiResumen } from '../src/lib/api';
-import type { Consulta, Db } from './db';
-import { enPausa, hayBloqueo, type Refs } from './personas';
+} from '../src/lib/moai.js';
+import { revisarMensaje } from '../src/lib/moderacion.js';
+import type { Carta, Conocido, Encuentro, Gente, Invitacion, Mensaje, MoaiResumen } from '../src/lib/api.js';
+import type { Consulta, Db } from './db.js';
+import { enPausa, hayBloqueo, type Refs } from './personas.js';
 
 const MAX_MENSAJE = 500;
 const noBloqueados = (yo: string, otro: string) =>
@@ -83,12 +83,12 @@ export async function genteDe(db: Db, cuenta: string, ahora: Date, refs: Refs): 
   const conocidos: Conocido[] = (await conocidosDe(db, cuenta, ahora)).map(c => ({ ref: refs.ref(cuenta, c.id), nombre: c.nombre, moaiComun: c.moai_comun, propuesta: c.propuesta, puertaAbierta: c.puerta }));
 
   const moais: MoaiResumen[] = [];
-  for (const m of await db.query<{ id: string; nombre: string }>(
-    `select o.id, o.nombre from moais o join moai_miembros m on m.moai_id = o.id where m.cuenta_id = $1 order by m.unido_en`, [cuenta])) {
+  for (const m of await db.query<{ id: string; nombre: string; frase: string }>(
+    `select o.id, o.nombre, o.frase from moais o join moai_miembros m on m.moai_id = o.id where m.cuenta_id = $1 order by m.unido_en`, [cuenta])) {
     const miembros = await miembrosDe(db, m.id);
     const esperando = await db.query<{ nombre: string }>(
       `select split_part(c.nombre, ' ', 1) as nombre from moai_invitaciones i join cuentas c on c.id = i.a where i.moai_id = $1 and i.estado = 'abierta' order by i.creada_en`, [m.id]);
-    moais.push({ id: m.id, nombre: m.nombre, miembros: miembros.map(x => ({ ref: refs.ref(cuenta, x.id), nombre: x.id === cuenta ? 'Tú' : x.nombre, yo: x.id === cuenta })), esperando: esperando.map(e => e.nombre) });
+    moais.push({ id: m.id, nombre: m.nombre, frase: m.frase, miembros: miembros.map(x => ({ ref: refs.ref(cuenta, x.id), nombre: x.id === cuenta ? 'Tú' : x.nombre, yo: x.id === cuenta })), esperando: esperando.map(e => e.nombre) });
   }
 
   const invitaciones: Invitacion[] = [];
@@ -245,9 +245,14 @@ export function registrarMoais(app: FastifyInstance, db: Db, cuentaDeSesion: (r:
   app.post<{ Params: { moai: string } }>('/api/moais/:moai/nombre', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
     if (!(await esMiembro(request.params.moai, id))) return reply.code(404).send({ error: 'No encontramos ese Moai.' });
-    const nombre = validarNombreMoai(cuerpo<{ nombre: string }>(request).nombre);
+    const b = cuerpo<{ nombre: string; frase?: string }>(request);
+    const nombre = validarNombreMoai(b.nombre);
     if (!nombre.ok) return reply.code(400).send({ errores: { nombre: nombre.error } });
-    await db.query('update moais set nombre = $2 where id = $1', [request.params.moai, nombre.nombre]);
+    // La frase del Moai (rediseño del 19 de octubre): corta, la ven solo sus miembros y pasa por la revisión de mensajes.
+    const frase = String(b.frase ?? '').trim().replace(/\s+/g, ' ');
+    if (frase.length > 80) return reply.code(400).send({ errores: { frase: 'Usa una frase más corta.' } });
+    if (frase && revisarMensaje(frase).nivel === 'bloqueo') return reply.code(400).send({ errores: { frase: 'Esa frase no se puede usar en MOAI.' } });
+    await db.query('update moais set nombre = $2, frase = $3 where id = $1', [request.params.moai, nombre.nombre, b.frase === undefined ? (await db.query<{ frase: string }>('select frase from moais where id = $1', [request.params.moai]))[0].frase : frase]);
     return gente(id);
   });
 

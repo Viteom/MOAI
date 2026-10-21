@@ -3,6 +3,7 @@
 // Decisión de Mateo (14 de octubre de 2026): un Moai nace entre dos personas que se vieron y crece por invitación,
 // hasta 5. Nada de contadores ni calificaciones visibles (regla 5): reportar es privado y nunca dice quién fue.
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { LogOut, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Api, Gente, MoaiResumen, PersonaInterna, Respuesta } from '@/lib/api';
 import { MAX_INTERNO } from '@/lib/cuidado';
@@ -89,77 +90,81 @@ export function AgregarInterno({ api, familia = false, alListo, alCancelar }: { 
   </form>;
 }
 
+// Un Moai por dentro (rediseño del 19 de octubre): su nombre y su frase, quiénes están, proponer un encuentro solo
+// para el Moai y su conversación. Lo de ajustar (nombre, frase, invitar, salir) va abajo, aparte.
 export function MoaiDetalle({ id, api, ir, onSalir }: { id: string; api: Api; ir: Ir; onSalir: () => void }) {
   const { gente, error, usar } = useGente(api);
   const moai: MoaiResumen | undefined = gente?.moais.find(m => m.id === id);
   const [invitar, setInvitar] = useState('');
   const [errorInvitar, setErrorInvitar] = useState('');
-  const [renombrar, setRenombrar] = useState<string | null>(null);
-  const [errorNombre, setErrorNombre] = useState('');
+  const [editar, setEditar] = useState<{ nombre: string; frase: string } | null>(null);
+  const [erroresEditar, setErroresEditar] = useState<{ nombre?: string; frase?: string }>({});
   const [saliendo, setSaliendo] = useState(false);
   const [reportar, setReportar] = useState<string | null>(null);
   const invitables = gente && moai ? gente.conocidos.filter(c => !moai.miembros.some(m => m.ref === c.ref) && !moai.esperando.includes(c.nombre)) : [];
   const lleno = moai ? moai.miembros.length + moai.esperando.length >= MAX_MOAI : true;
-  return <Diario titulo={moai?.nombre ?? (gente ? 'Este Moai ya no está' : 'Abriendo…')} ir={ir} actual="gente" volver={{ texto: 'Mi gente', ruta: '/gente' }} onSalir={onSalir}>
+  const elegido = moai?.miembros.find(m => m.ref === reportar);
+  return <Diario titulo={moai?.nombre ?? (gente ? 'Este Moai ya no está' : 'Abriendo…')} bajada={moai?.frase || undefined} imagen="moai" ir={ir} actual="gente" volver={{ texto: 'Mi gente', ruta: '/gente' }} onSalir={onSalir}>
     {error && <p className="campo-error" role="alert">{error}</p>}
-    {gente && !moai && <><p>Puede que hayas salido de este Moai.</p><Button className="diario-boton" onClick={() => ir('/gente')}>Volver a Mi gente</Button></>}
+    {gente && !moai && <div className="panel"><p>Puede que hayas salido de este Moai.</p><Button className="boton-secundario" onClick={() => ir('/gente')}>Volver a Mi gente</Button></div>}
     {gente && moai && <>
       {gente.pausa && <Pausa/>}
-      <section aria-labelledby="miembros-titulo">
+      <section className="panel" aria-labelledby="miembros-titulo">
         <h2 id="miembros-titulo">Quiénes están</h2>
-        <ul className="personas">
-          {moai.miembros.map(m => <li key={m.ref}>
-            <strong>{m.nombre}</strong>
-            {!m.yo && <button type="button" className="brisa-enlace" aria-expanded={reportar === m.ref} onClick={() => setReportar(r => r === m.ref ? null : m.ref)}>Reportar o bloquear</button>}
-            {reportar === m.ref && <ReportarPersona referencia={m.ref} nombre={m.nombre} api={api} onListo={g => { if (g) usar({ ok: true, datos: g }); else setReportar(null); }}/>}
-          </li>)}
+        <ul className="chips personas-chips">
+          {moai.miembros.map(m => <li key={m.ref}>{m.yo ? <span className="chip persona"><span className="punto-persona yo" aria-hidden="true"/>Tú</span>
+            : <button type="button" className="chip persona" aria-expanded={reportar === m.ref} onClick={() => setReportar(r => r === m.ref ? null : m.ref)}><span className="punto-persona" aria-hidden="true"/>{m.nombre}</button>}</li>)}
         </ul>
-        {moai.esperando.length > 0 && <p className="campo-ayuda">Invitación en curso: {moai.esperando.join(', ')}.</p>}
-        {!lleno && !gente.pausa && <form className="cuenta-form diario-form" noValidate onSubmit={async e => {
+        {moai.esperando.length > 0 && <p className="dato-suave">Invitación en curso: {moai.esperando.join(', ')}.</p>}
+        {elegido && <ReportarPersona referencia={elegido.ref} nombre={elegido.nombre} api={api} onListo={g => { if (g) usar({ ok: true, datos: g }); else setReportar(null); }}/>}
+        {!gente.pausa && <Button className="boton-secundario ancho" onClick={() => ir(`/planes/nuevo?moai=${encodeURIComponent(id)}`)}><Plus aria-hidden="true"/>Proponer un encuentro</Button>}
+      </section>
+
+      <section className="panel" aria-labelledby="conversacion-moai">
+        <h2 id="conversacion-moai">Conversación</h2>
+        <Conversacion tipo="moai" id={id} api={api} puedeEscribir={!gente.pausa} nota="Solo la ven quienes están en el Moai. Antes de enviar, MOAI revisa que no haya frases que lastimen; nadie más la lee, salvo que alguien reporte un mensaje. Se guardan los últimos 90 días."/>
+      </section>
+
+      <section className="panel" aria-labelledby="ajustes-moai">
+        <h2 id="ajustes-moai">Su Moai</h2>
+        {!lleno && !gente.pausa && <form className="formulario" noValidate onSubmit={async e => {
           e.preventDefault();
           if (!invitar) { setErrorInvitar('Elige a quién invitar.'); return; }
           const r = await api.invitarAMoai(id, invitar);
           if (r.ok) { usar(r); setInvitar(''); setErrorInvitar(''); } else setErrorInvitar(r.error);
         }}>
-          {invitables.length === 0 ? <p className="campo-ayuda">Puedes invitar a alguien con quien ya te hayas visto en un plan. Entra solo si todos aquí están de acuerdo.</p> : <>
+          {invitables.length === 0 ? <p className="dato-suave">Puedes invitar a alguien con quien ya te hayas visto en un plan. Entra solo si todos aquí están de acuerdo.</p> : <>
             <Campo etiqueta="Invitar a alguien con quien ya te viste" error={errorInvitar} ayuda="Entra solo si todos aquí están de acuerdo. Nadie sabrá quién dijo qué.">{(cid, d) =>
               <select id={cid} aria-describedby={d} className="cuenta-campo" value={invitar} onChange={e => setInvitar(e.target.value)}>
                 <option value="">Elige a alguien</option>
                 {invitables.map(c => <option key={c.ref} value={c.ref}>{c.nombre}</option>)}
               </select>}</Campo>
-            <Button type="submit" className="diario-boton principal">Invitar</Button>
+            <Button type="submit" className="boton-secundario">Invitar</Button>
           </>}
         </form>}
-        {lleno && <p className="campo-ayuda">Este Moai ya tiene {MAX_MOAI} personas, el máximo.</p>}
-      </section>
-
-      <section className="conversacion" aria-labelledby="conversacion-moai">
-        <h2 id="conversacion-moai">Conversación</h2>
-        <Conversacion tipo="moai" id={id} api={api} puedeEscribir={!gente.pausa} nota="Solo la ven quienes están en el Moai. Antes de enviar, MOAI revisa que no haya frases que lastimen; nadie más la lee, salvo que alguien reporte un mensaje. Se guardan los últimos 90 días."/>
-      </section>
-
-      <section aria-labelledby="ajustes-moai">
-        <h2 id="ajustes-moai">Su Moai</h2>
-        {renombrar === null ? <div className="plan-acciones">
-          <Button className="diario-boton" onClick={() => { setRenombrar(moai.nombre); setErrorNombre(''); }}>Cambiar el nombre</Button>
-          {saliendo ? <>
-            <span>¿Seguro? Te puedes volver a sumar si te invitan.</span>
-            <Button className="diario-boton" onClick={() => void api.salirDeMoai(id).then(r => { if (r.ok) ir('/gente'); })}>Sí, salir</Button>
-            <Button className="diario-boton" onClick={() => setSaliendo(false)}>No</Button>
-          </> : <Button className="diario-boton" onClick={() => setSaliendo(true)}>Salir del Moai</Button>}
-        </div> : <form className="cuenta-form diario-form" noValidate onSubmit={async e => {
+        {lleno && <p className="dato-suave">Este Moai ya tiene {MAX_MOAI} personas, el máximo.</p>}
+        {editar === null ? <Button className="boton-secundario" onClick={() => { setEditar({ nombre: moai.nombre, frase: moai.frase }); setErroresEditar({}); }}>Cambiar el nombre o la frase</Button>
+        : <form className="formulario" noValidate onSubmit={async e => {
           e.preventDefault();
-          const r = await api.renombrarMoai(id, renombrar);
-          if (r.ok) { usar(r); setRenombrar(null); } else setErrorNombre(r.errores?.nombre ?? r.error);
+          const r = await api.renombrarMoai(id, editar.nombre, editar.frase);
+          if (r.ok) { usar(r); setEditar(null); } else setErroresEditar(r.errores ? r.errores as { nombre?: string; frase?: string } : { nombre: r.error });
         }}>
-          <Campo etiqueta="Nombre del Moai" error={errorNombre}>{(cid, d) => <input id={cid} aria-describedby={d} className="cuenta-campo" maxLength={40} value={renombrar} onChange={e => setRenombrar(e.target.value)}/>}</Campo>
-          <div className="plan-acciones">
-            <Button type="submit" className="diario-boton principal">Guardar</Button>
-            <Button type="button" className="diario-boton" onClick={() => setRenombrar(null)}>Cancelar</Button>
+          <Campo etiqueta="Nombre del Moai" error={erroresEditar.nombre}>{(cid, d) => <input id={cid} aria-describedby={d} className="cuenta-campo" maxLength={40} value={editar.nombre} onChange={e => setEditar(x => x && { ...x, nombre: e.target.value })}/>}</Campo>
+          <Campo etiqueta="Una frase (opcional)" error={erroresEditar.frase} ayuda="La ven solo quienes están en el Moai. Por ejemplo, «Nuestro café de siempre».">{(cid, d) => <input id={cid} aria-describedby={d} className="cuenta-campo" maxLength={80} value={editar.frase} onChange={e => setEditar(x => x && { ...x, frase: e.target.value })}/>}</Campo>
+          <div className="acciones-fila">
+            <Button type="submit" className="boton-principal">Guardar</Button>
+            <Button type="button" className="boton-secundario" onClick={() => setEditar(null)}>Cancelar</Button>
           </div>
         </form>}
       </section>
-      <Button className="diario-boton" onClick={() => ir('/gente')}>Volver a Mi gente</Button>
+
+      <section className="zona-peligro" aria-label="Salir del Moai">
+        {saliendo ? <div className="panel peligro confirmar">
+          <span>¿Seguro? Te puedes volver a sumar si te invitan.</span>
+          <Button className="boton-secundario peligro" onClick={() => void api.salirDeMoai(id).then(r => { if (r.ok) ir('/gente'); })}>Sí, salir</Button>
+          <Button className="boton-secundario" onClick={() => setSaliendo(false)}>No</Button>
+        </div> : <button type="button" className="enlace-discreto" onClick={() => setSaliendo(true)}><LogOut aria-hidden="true"/>Salir del Moai</button>}
+      </section>
     </>}
   </Diario>;
 }

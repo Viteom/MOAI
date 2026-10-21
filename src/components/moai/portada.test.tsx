@@ -38,6 +38,12 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
         : { ok: false as const, error: '', errores: r.errores, status: 400 };
     }),
     salir: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
+    memoriaBrisa: vi.fn(async () => ({ ok: true as const, datos: { memoria: null } })),
+    modeloBrisa: vi.fn(async () => ({ ok: true as const, datos: { disponible: false, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'beta' } })),
+    conversarBrisa: vi.fn(async () => ({ ok: false as const, error: 'apagado', status: 503 })),
+    interpretarConBrisa: vi.fn(),
+    guardarMemoriaBrisa: vi.fn(), borrarMemoriaBrisa: vi.fn(), buscarConBrisa: vi.fn(),
+    confirmarPropuestaBrisa: vi.fn(), descartarPropuestaBrisa: vi.fn(), accionesBrisa: vi.fn(async () => ({ ok: true as const, datos: [] })),
     misDatos: vi.fn(async () => ({ ok: true as const, datos: {} })),
     historial: vi.fn(async () => ({ ok: true as const, datos: [] })),
     guardarHistorial: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
@@ -71,6 +77,9 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     mensajesMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
     casos: vi.fn(async () => ({ ok: true as const, datos: [] })),
     lazos: vi.fn(async () => ({ ok: true as const, datos: { grupos: [], personas: [] } })),
+    fichaVinculo: vi.fn(async () => ({ ok: false as const, error: 'No está.', status: 404 })),
+    guardarFichaVinculo: vi.fn(async (_id, ficha) => ({ ok: true as const, datos: ficha })),
+    categoriaVinculo: vi.fn(async () => ({ ok: true as const, datos: { grupos: [], personas: [] } })),
     perfilPublico: vi.fn(async () => ({ ok: true as const, datos: { frase: '', gustos: [], comparte: '', aprender: '', visible: false } })),
     guardarPerfilPublico: vi.fn(async p => ({ ok: true as const, datos: p })),
     zona: vi.fn(async () => ({ ok: true as const, datos: [] })),
@@ -93,6 +102,7 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     enviarMensajeMoai: vi.fn(async () => ({ ok: true as const, datos: [] })),
     bloquear: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
     reportar: vi.fn(async () => ({ ok: true as const, datos: { encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false } })),
+    reportarPlan: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
   };
 }
 
@@ -150,6 +160,8 @@ describe('Resolución de sesión (P00)', () => {
     clic('Más');
     clic('Mi cuenta');
     await titulo('Mi cuenta');
+    // Lo destructivo va aparte: primero se abre y después se confirma.
+    clic('Eliminar mi cuenta');
     expect(screen.getByRole('button', { name: 'Borrar mi cuenta' })).toBeDisabled();
     fireEvent.click(screen.getByLabelText('Entiendo que no se puede deshacer'));
     clic('Borrar mi cuenta');

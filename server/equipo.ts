@@ -3,10 +3,10 @@
 // - Cerrar un caso «sin medidas» marca sus reportes como revisados: la pausa se levanta.
 // - Suspender impide entrar, cierra las sesiones y oculta sus planes. Reactivar lo deshace.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { CasoReporte, OrganizacionEquipo, OrganizacionPropia } from '../src/lib/api';
-import { validarOrganizacion, type TipoOrganizacion } from '../src/lib/organizaciones';
-import type { Db } from './db';
-import { enPausa } from './personas';
+import type { CasoReporte, OrganizacionEquipo, OrganizacionPropia } from '../src/lib/api.js';
+import { validarOrganizacion, type TipoOrganizacion } from '../src/lib/organizaciones.js';
+import type { Db } from './db.js';
+import { enPausa } from './personas.js';
 
 export const organizacionesDe = (db: Db, cuenta: string) => db.query<OrganizacionPropia>(
   `select o.id, o.nombre, o.tipo from organizaciones o join organizacion_responsables r on r.organizacion_id = o.id

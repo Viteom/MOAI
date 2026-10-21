@@ -5,11 +5,12 @@
 // - Borrar es inmediato y no se puede deshacer: se van la cuenta y todo lo que cuelga de ella (planes, mensajes,
 //   Moais de los que era la última persona, lugares, reportes hechos y recibidos, lo cifrado y los códigos).
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { Db } from './db';
-import type { Cifrador } from './cifrado';
-import { cuidadoDe, internoDe } from './cuidado';
-import { enInvierno, olvidarInviernoCompleto } from './cercania';
-import { historialDe } from './historial';
+import type { Db } from './db.js';
+import type { Cifrador } from './cifrado.js';
+import { cuidadoDe, internoDe } from './cuidado.js';
+import { enInvierno, olvidarInviernoCompleto } from './cercania.js';
+import { historialDe } from './historial.js';
+import { accionesBrisaDe, memoriaBrisaDe } from './brisa-intenciones.js';
 
 const fechaISO = (f: string | Date | null) => (f ? new Date(f).toISOString() : null);
 
@@ -19,7 +20,7 @@ export async function datosDe(db: Db, cifrador: Cifrador, cuenta: string, ahora:
      from cuentas where id = $1`, [cuenta]);
   const q = <T>(sql: string) => db.query<T>(sql, [cuenta]);
   const [estado] = await q<{ puerta_hasta: string | null }>('select puerta_hasta from estados where cuenta_id = $1');
-  const [perfil] = await q<{ frase: string; gustos: string[]; comparte: string; aprender: string; visible: boolean }>('select frase, gustos, comparte, aprender, visible from perfiles where cuenta_id = $1');
+  const [perfil] = await q<{ frase: string; gustos: string[]; comparte: string; aprender: string; visible: boolean }>('select frase, gustos, comparte, aprender, visible, nombre_preferido as "nombrePreferido", visible_red as "visibleEnRed" from perfiles where cuenta_id = $1');
   const cuidado = await cuidadoDe(db, cifrador, cuenta);
   return {
     descargado: ahora.toISOString(),
@@ -42,7 +43,16 @@ export async function datosDe(db: Db, cifrador: Cifrador, cuenta: string, ahora:
     estado: { invierno: await enInvierno(db, cifrador, cuenta), puertaAbiertaHasta: fechaISO(estado?.puerta_hasta ?? null) },
     testDeCuidado: cuidado.letras ? { resultado: cuidado.letras, guardado: cuidado.guardado, fecha: cuidado.fecha ?? null } : null,
     moaiInterno: (await internoDe(db, cifrador, cuenta, ahora)).map(p => ({ nombre: p.nombre, relacion: p.relacion, familia: p.familia })),
+    fichasPersonales: (await q<{ persona_clave: string; datos: string }>('select persona_clave, datos from fichas_vinculo where cuenta_id = $1'))
+      .map(f => ({ vinculo: f.persona_clave, ficha: JSON.parse(cifrador.descifrar(f.datos) ?? 'null') })),
     conversacionConBrisa: await historialDe(db, cifrador, cuenta, ahora, 100_000), // los últimos DIAS_HISTORIAL (90) días
+    memoriaDeBrisa: await memoriaBrisaDe(db, cifrador, cuenta, ahora),
+    accionesConfirmadasConBrisa: await accionesBrisaDe(db, cifrador, cuenta, ahora),
+    propuestasPendientesDeBrisa: (await db.query<{ datos: string; vence_en: string }>('select datos, vence_en from brisa_propuestas where cuenta_id = $1 and confirmada_en is null and vence_en > $2', [cuenta, ahora]))
+      .map(f => ({ propuesta: JSON.parse(cifrador.descifrar(f.datos) ?? 'null'), venceEn: fechaISO(f.vence_en) })),
+    descartesDeBrisa: await q('select clave, vence_en as "venceEn" from brisa_descartes where cuenta_id = $1'),
+    autorizacionesGeminiBeta: await db.query(`select 'Gemini' as proveedor, modelo, version, creado_en as "autorizadoEn", terminado_en as "terminadoEn", resultado
+      from brisa_interpretaciones where cuenta_id = $1 and creado_en > $2::timestamptz - interval '90 days' order by creado_en`, [cuenta, ahora]),
   };
 }
 

@@ -3,7 +3,6 @@
 // Regla 1: ninguna tabla guarda coordenadas; la ciudad es el código DIVIPOLA del municipio.
 import { mkdirSync } from 'node:fs';
 import pg from 'pg';
-import { PGlite } from '@electric-sql/pglite';
 
 export type Consulta = { query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]> };
 // `transaccion`: para lo que debe ocurrir todo o nada y sin carreras entre solicitudes simultáneas
@@ -13,7 +12,7 @@ export type Db = Consulta & {
   close(): Promise<void>;
 };
 
-const esquema = `
+export const esquema = `
 create table if not exists cuentas (
   id uuid primary key default gen_random_uuid(),
   nombre text not null,
@@ -227,6 +226,20 @@ create table if not exists moai_interno (
   creado_en timestamptz not null
 );
 alter table moai_interno add column if not exists familia boolean not null default false;
+-- Fichas personales: solo la cuenta autora puede leerlas. El contenido se cifra como el Moai interno.
+create table if not exists fichas_vinculo (
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  persona_clave text not null,
+  datos text not null,
+  primary key (cuenta_id, persona_clave)
+);
+alter table perfiles add column if not exists nombre_preferido text not null default '';
+-- El permiso de Vecinos no se amplía a la red: esta visibilidad requiere una elección nueva.
+alter table perfiles add column if not exists visible_red boolean not null default false;
+alter table planes add column if not exists costo text not null default 'gratis';
+alter table planes add column if not exists moai_id uuid references moais(id) on delete cascade;
+alter table moais add column if not exists frase text not null default '';
+alter table reportes add column if not exists plan_id uuid references planes(id) on delete set null;
 create table if not exists brisa_mensajes (
   id bigserial primary key,
   cuenta_id uuid not null references cuentas(id) on delete cascade,
@@ -235,12 +248,45 @@ create table if not exists brisa_mensajes (
   creado_en timestamptz not null
 );
 create index if not exists brisa_mensajes_cuenta on brisa_mensajes (cuenta_id, id);
+create table if not exists brisa_memoria (
+  cuenta_id uuid primary key references cuentas(id) on delete cascade,
+  datos text not null,
+  vence_en timestamptz not null
+);
+create table if not exists brisa_propuestas (
+  id uuid primary key default gen_random_uuid(),
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  datos text not null,
+  vence_en timestamptz not null,
+  confirmada_en timestamptz
+);
+create index if not exists brisa_propuestas_cuenta on brisa_propuestas (cuenta_id);
+create table if not exists brisa_descartes (
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  clave text not null,
+  vence_en timestamptz not null,
+  primary key (cuenta_id, clave)
+);
+-- Prueba de autorización por envío y cuota de beta. Nunca guarda frase, respuesta ni clave del proveedor.
+create table if not exists brisa_interpretaciones (
+  id uuid primary key default gen_random_uuid(),
+  cuenta_id uuid not null references cuentas(id) on delete cascade,
+  modelo text not null,
+  version text not null,
+  creado_en timestamptz not null,
+  terminado_en timestamptz,
+  resultado text not null default 'pendiente' check (resultado in ('pendiente', 'correcto', 'error', 'rechazado'))
+);
+create index if not exists brisa_interpretaciones_fecha on brisa_interpretaciones (creado_en);
 `;
 
-export async function abrirDb(opciones: { url?: string; carpeta?: string } = {}): Promise<Db> {
+// En Vercel el esquema se prepara explícitamente, antes de recibir visitas.
+export async function abrirDb(opciones: { url?: string; carpeta?: string; inicializar?: boolean; maxConexiones?: number } = {}): Promise<Db> {
   let db: Db;
   if (opciones.url) {
-    const pool = new pg.Pool({ connectionString: opciones.url });
+    const pool = new pg.Pool({ connectionString: opciones.url, max: opciones.maxConexiones ?? 10,
+      connectionTimeoutMillis: 10_000, idleTimeoutMillis: 20_000, allowExitOnIdle: true });
+    pool.on('error', () => console.error('falló una conexión inactiva de PostgreSQL'));
     db = {
       query: async (sql, params) => (await pool.query(sql, params)).rows,
       async transaccion(fn) {
@@ -260,6 +306,7 @@ export async function abrirDb(opciones: { url?: string; carpeta?: string } = {})
       close: () => pool.end(),
     };
   } else {
+    const { PGlite } = await import('@electric-sql/pglite');
     if (opciones.carpeta) mkdirSync(opciones.carpeta, { recursive: true });
     const lite = new PGlite(opciones.carpeta);
     db = {
@@ -268,6 +315,17 @@ export async function abrirDb(opciones: { url?: string; carpeta?: string } = {})
       close: () => lite.close(),
     };
   }
-  for (const sentencia of esquema.split(';').map(s => s.trim()).filter(Boolean)) await db.query(sentencia);
+  if (opciones.inicializar !== false) {
+    try { await prepararEsquema(db); }
+    catch (error) { await db.close(); throw error; }
+  }
   return db;
+}
+
+export async function prepararEsquema(db: Db) {
+  // Dos despliegues no pueden modificar el esquema a la vez. Un error revierte todo.
+  await db.transaccion(async tx => {
+    await tx.query("select pg_advisory_xact_lock(hashtext('moai:esquema'))");
+    for (const sentencia of esquema.split(';').map(s => s.trim()).filter(Boolean)) await tx.query(sentencia);
+  });
 }

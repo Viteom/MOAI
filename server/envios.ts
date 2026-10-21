@@ -2,7 +2,8 @@
 // - Correo: código propio enviado con Resend.
 // - WhatsApp: Twilio Verify genera, envía y comprueba el código.
 // - Sin claves (desarrollo): el código se escribe en la consola del servidor, con el destino enmascarado (regla 7).
-import { enmascarar, type Canal } from '../src/lib/registro';
+import { enmascarar, type Canal } from '../src/lib/registro.js';
+import { correoCodigo } from './plantillas-correo.js';
 
 export type Proposito = 'registro' | 'acceso';
 export type Propio = { tipo: 'propio'; enviar(destino: string, codigo: string, proposito: Proposito): Promise<void> };
@@ -24,9 +25,9 @@ export function resend(apiKey: string, remitente: string): Propio {
   return {
     tipo: 'propio',
     async enviar(destino, codigo, proposito) {
-      const accion = proposito === 'registro' ? 'confirmar tu correo' : 'entrar';
-      const texto = `Hola. Tu código para ${accion} en MOAI es ${codigo}.\n\nVence en ${MINUTOS_VIGENCIA} minutos. Si no lo pediste, ignora este correo: nadie puede entrar sin el código.`;
-      await enviarResend(apiKey, remitente, destino, `Tu código de MOAI: ${codigo}`, texto);
+      // Con diseño de MOAI; al registrarse, además, una bienvenida (server/plantillas-correo.ts).
+      const c = correoCodigo(codigo, proposito, MINUTOS_VIGENCIA);
+      await enviarResend(apiKey, remitente, destino, c.asunto, c.texto, c.html);
     },
   };
 }
@@ -53,11 +54,11 @@ export function twilioVerify(cuenta: string, token: string, servicio: string): E
   };
 }
 
-async function enviarResend(apiKey: string, remitente: string, destino: string, asunto: string, texto: string) {
+async function enviarResend(apiKey: string, remitente: string, destino: string, asunto: string, texto: string, html?: string) {
   const respuesta = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: remitente, to: [destino], subject: asunto, text: texto }),
+    body: JSON.stringify({ from: remitente, to: [destino], subject: asunto, text: texto, ...(html ? { html } : {}) }),
   });
   if (!respuesta.ok) throw new Error(`Resend respondió ${respuesta.status}`);
 }

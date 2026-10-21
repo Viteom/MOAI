@@ -11,7 +11,7 @@ export const RESPONSABLE = {
   correo: 'correo de contacto por definir',
 };
 
-export const FECHA_TEXTOS = '14 de octubre de 2026';
+export const FECHA_TEXTOS = '20 de octubre de 2026';
 
 export type Seccion = { titulo: string; parrafos?: string[]; lista?: string[] };
 export type Texto = { titulo: string; bajada: string; secciones: Seccion[] };
@@ -40,6 +40,8 @@ export const privacidad: Texto = {
       'Si lo autorizas, el resultado del test «¿Cómo cuidas y cómo te cuidas?» (las respuestas que elegiste), cifrado. Puede considerarse un dato sensible: responderlo y guardarlo es opcional y no cambia nada de lo que puedes hacer en MOAI. No es un diagnóstico.',
       'Tu Moai interno: los nombres de las personas que te nutren, quiénes son para ti, si son de tu familia y cuándo marcaste que hablaron, cifrados. Pueden ser personas que no usan MOAI; solo guardamos lo que tú escribes.',
       'Tu tarjeta para vecinos, si la armas con Brisa: una frase, lo que te gusta, lo que compartes y lo que quieres aprender, y si apruebas mostrarla.',
+      'Tu nombre preferido y tu presentación para Mi gente. Solo se comparten con tu red si eliges hacerlo; ese permiso viene apagado y es independiente de mostrar tu tarjeta a vecinos.',
+      'Tus fichas personales de vínculos: cómo se conocen, algo que comparten y una nota opcional. Se guardan cifradas, solo tú puedes leerlas y editarlas; no forman parte de ningún perfil compartido ni se usan para sugerencias.',
       'Tu estado, solo si tú lo declaras: si estás en invierno (cifrado), si dejaste tu puerta abierta y a quién le contaste tu invierno.',
       'Los saludos de lejos que envías y recibes.',
       'La prueba de que aceptaste estos textos: fecha y versión.',
@@ -70,10 +72,12 @@ export const privacidad: Texto = {
     ] },
     { titulo: '5. Quién ve qué', lista: [
       'Tu correo, tu fecha de nacimiento y tus lugares guardados: solo tú.',
+      'Las notas de tus fichas personales: solo tú. Puedes borrarlas vaciando sus campos y guardando; también se borran al quitar un contacto personal o eliminar tu cuenta. Las fichas están incluidas en la descarga de tus datos.',
       'Tus planes: las personas cuya zona entra en el alcance que elegiste. Ven tu primer nombre, el plan, el lugar público, la fecha y una distancia aproximada por franjas, nunca exacta.',
       'La conversación de un plan: solo quienes van a ese plan. Ni Brisa ni el equipo la leen; el equipo solo ve un mensaje si alguien lo reporta.',
       'Tus respuestas a «¿Te viste con…?»: nadie más. Solo cuando las dos personas dicen que sí, cada una ve a la otra en «Mi gente».',
       'Tu Moai: sus miembros ven tu primer nombre y la conversación del Moai. Ni Brisa ni el equipo la leen; el equipo solo ve un mensaje si alguien lo reporta. Cuando votas para sumar a alguien, nadie sabe qué votaste.',
+      'Si propones un encuentro para tu Moai, solo lo ven sus miembros. Si reportas un plan, el equipo ve el plan tal como se publicó.',
       'Tus bloqueos y reportes: la persona no sabe que la bloqueaste ni quién la reportó. Los reportes los lee solo el equipo que revisa los casos, que ve tu primer nombre, lo que contaste, el texto del mensaje si reportaste un mensaje y el correo de la persona reportada, para poder escribirle.',
       'Si eres responsable de una entidad: el equipo de MOAI ve tu correo. Tus convocatorias se publican con el nombre de la entidad, no con el tuyo.',
       'El resultado del test de cuidado, tu Moai interno y tu conversación con Brisa: solo tú. Se guardan cifrados.',
@@ -83,8 +87,13 @@ export const privacidad: Texto = {
       'Un saludo de lejos: la persona que lo recibe ve tu primer nombre y la frase que elegiste.',
     ] },
     { titulo: '6. Brisa', parrafos: [
-      'Brisa es una inteligencia artificial, no una persona. Hoy sus mensajes se generan dentro de MOAI con un guion escrito por el equipo, sin enviar tus datos a proveedores externos de inteligencia artificial.',
+      'Brisa es una inteligencia artificial, no una persona. La conversación general funciona con un guion de MOAI. En «Buscar un plan» puede estar disponible una ayuda opcional de Gemini (Google), únicamente para probar con texto ficticio y con tu autorización en cada envío.',
       'Guardamos tu conversación con Brisa (lo que le escribes y lo que te responde) cifrada en nuestro servidor durante 90 días, para que pueda retomarla cuando vuelvas. Solo tú la ves: nadie del equipo la lee. Puedes borrarla cuando quieras en «Más», «Mi cuenta», y sale en «Descargar mis datos». Lo que le cuentas solo llega a tu tarjeta si tú lo apruebas.',
+      'La memoria de preferencias es opcional y está separada de tu conversación y tu perfil público. Solo si autorizas, recuerda actividades, días y si buscas planes gratis, cifrados, durante 30 o 90 días. Puedes revisarla, corregirla y olvidarla en «Buscar un plan» o «Mi cuenta». No se extrae del historial, mensajes, notas de vínculos ni estados de ánimo. Las propuestas al abrir están apagadas por defecto y requieren un permiso adicional; en invierno se pausan.',
+      'Las búsquedas de planes se procesan con reglas dentro de MOAI y no se guardan como conversación. Si autorizas «Interpretar frase ficticia», se envía a Google solo esa frase con instrucciones generales de MOAI; no enviamos tu memoria, perfil, ciudad guardada, historial, notas de vínculos ni conversaciones de planes o Moais. Google aplica sus propias condiciones de tratamiento y retención: esta beta no admite datos personales o íntimos. La aplicación detecta algunos patrones sensibles, pero no puede garantizar que todo texto enviado sea ficticio.',
+      'La ayuda de Gemini no busca ni ejecuta acciones: convierte la frase en una interpretación que debes revisar antes de pulsar «Buscar planes». Puede equivocarse. MOAI no conserva la frase ni la respuesta de esta función; conserva durante 90 días la cuenta, fecha, modelo, versión del permiso y resultado técnico (pendiente, correcto, error o rechazado), para acreditar el envío autorizado y limitar el uso. Sale en tu descarga de datos y se elimina al borrar la cuenta. Si escribes esa frase en el chat general, sí forma parte de su historial de 90 días.',
+      'Las propuestas pendientes duran hasta 15 minutos; volver a buscar, editar u olvidar la memoria las anula. Antes de sumarte debes confirmar y volvemos a comprobar lugar, fecha, permisos y cupo. Los comprobantes cifrados de las asistencias confirmadas se guardan 90 días y se incluyen en la descarga de datos. No se envían mensajes ni se cambia tu ciudad automáticamente.',
+      'Si descartas una propuesta, recordamos durante 90 días un identificador opaco de esa ocurrencia para no repetirla. Olvidar tus preferencias borra también esos descartes. Borrar la conversación no borra preferencias ni asistencias; olvidar preferencias no cancela asistencias ni borra conversaciones.',
       'Si usas el micrófono, tu navegador pasa tu voz a texto con su propio servicio de dictado (en Chrome, de Google; en Safari, de Apple), bajo las condiciones de ese proveedor. MOAI nunca recibe ni guarda el audio: solo el texto que tú decides enviar.',
     ] },
     { titulo: '7. Cuánto tiempo los guardamos', lista: [

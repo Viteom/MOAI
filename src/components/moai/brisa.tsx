@@ -6,20 +6,27 @@
 // Regla 12: el sello «IA» va siempre junto a su nombre, y la primera vez dice que no es una persona.
 // Regla 11: ante señales de riesgo, deriva a una persona y a la línea de emergencias.
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Mic } from 'lucide-react';
+import { MessageCircle, Mic, SendHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Api, Carta, Perfil, Plan } from '@/lib/api';
 import { textoSaludo, type EntradaPerfil } from '@/lib/perfil';
 import { plantillas, type Tipo } from '@/lib/lugares';
 import { avisoCuidado, resultadoCuidado, textosCuidado, type Letra } from '@/lib/cuidado';
-import { esDuda, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, type Pregunta } from '@/lib/conversacion';
+import { comoNombrar, conversacionAbierta, entenderPersona, esDuda, esFamilia, limpiarNombre, sinRespuesta, type PersonaDicha, gustosEn, PREGUNTAS, preguntaDelDia, preguntasHechas, reaccionar, responderDuda, saludoDeVuelta, type Pregunta } from '@/lib/conversacion';
 import { OrbeBrisa } from './bosque';
+import { FondoCiudad } from './fondo-ciudad';
+import { SelectorLugar } from './selector-lugar';
+import type { Lugar } from '@/lib/api';
+import { nombreCiudad } from '@/lib/fondos-ciudad';
 import { Barra, type Ir } from './diario';
 import { EscenaCuidado } from './escena';
+import { BuscarConBrisa } from './brisa-intenciones';
+import { esBusquedaBrisa } from '@/lib/brisa-intenciones';
 
 type Mensaje = { id: number; de: 'brisa' | 'yo'; contenido: ReactNode; nota?: boolean };
 type Previo = { de: 'brisa' | 'yo'; texto: string };
-const MAX_PREGUNTAS_DIA = 2;
+// Una pregunta por visita (Mateo, 20 de octubre: «no es tan conversacional» con dos seguidas).
+const MAX_PREGUNTAS_DIA = 1;
 // `silencioso`: opciones como «Otra cosa» que solo muestran más opciones, sin aparecer como respuesta de la persona.
 type Opcion = { texto: string; hacer: () => void; silencioso?: boolean };
 // Ritmo (pedido de Mateo, 15 de octubre): Brisa escribe un mensaje a la vez, con una pausa en la que se ve
@@ -29,7 +36,7 @@ const pausaPara = (m: { contenido: ReactNode; nota?: boolean }) =>
   m.nota ? 250 : Math.min(1500, 500 + (typeof m.contenido === 'string' ? m.contenido.length : 80) * 10);
 const esperar = (ms: number) => new Promise(r => setTimeout(r, ms));
 type Borrador = { titulo: string; tipo: Tipo; dia?: Date; hora?: string; lugar?: string; semanal: boolean };
-type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla';
+type Paso = 'libre' | 'plan-que' | 'plan-dia' | 'plan-hora' | 'plan-donde' | 'test' | 'charla' | 'red-nombre' | 'red-relacion' | 'red-nombre-propio' | 'red-conocen' | 'red-comparten';
 
 const RIESGO = /(suicid|matarme|quitarme la vida|no quiero vivir|me quiero morir|hacerme daño|no aguanto más)/i;
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -114,7 +121,7 @@ function MiniPlan({ plan, api, ir }: { plan: Plan; api: Api; ir: Ir }) {
 }
 
 // La conversación con Brisa, sin marco: va en el panel de vidrio del inicio y en el del mapa.
-export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado' }) {
+export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }: { perfil: Perfil; api: Api; ir: Ir; empezar?: 'plan' | 'perfil' | 'estado'; titulo?: ReactNode; onCerrar?: () => void }) {
   const nombre = perfil.nombre.split(' ')[0];
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [opciones, setOpcionesVisibles] = useState<Opcion[]>([]);
@@ -125,6 +132,8 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   const vivo = useRef(true);
   useEffect(() => { vivo.current = true; return () => { vivo.current = false; }; }, []); // en desarrollo React monta dos veces
   const [texto, setTexto] = useState('');
+  const [intencion, setIntencion] = useState<{ texto: string } | null>(null);
+  const buscarBoton = useRef<HTMLButtonElement>(null);
   const paso = useRef<Paso>('libre');
   const borrador = useRef<Borrador | null>(null);
   const respuestas = useRef<Letra[]>([]);
@@ -135,13 +144,22 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   const iniciado = useRef(false);
   // Conversación de cada día: qué preguntas ya hizo (según lo guardado), cuál espera respuesta y, al conocerte, la fila
   // de preguntas para la tarjeta.
-  const [previos, setPrevios] = useState<Previo[]>([]);
+  const [previos, setPrevios] = useState<(Previo & { hoy?: boolean })[]>([]);
+  const [verAntes, setVerAntes] = useState(false);
+  const previosAntes = previos.filter(m => !m.hoy), previosHoy = previos.filter(m => m.hoy);
   const hechas = useRef<Set<string>>(new Set());
   const preguntasHoy = useRef(0);
   const preguntaActual = useRef<Pregunta | null>(null);
   const secuencia = useRef<Pregunta[]>([]);
   const conociendote = useRef(false);
   const tarjetaVisible = useRef(false);
+  const ultimaVez = useRef<Date | null>(null);
+  const red = useRef<PersonaDicha & { conocen: string }>({ nombre: '', relacion: '', familia: false, conNombre: true, conocen: '' });
+  const lineasHoy = useRef<{ de: string; texto: string }[]>([]);
+  // Conversación con modelo (pruebas, 20 de octubre): solo si el servidor la tiene activa (BRISA_GEMINI_CONVERSA).
+  const [conversa, setConversa] = useState(false);
+  const conversaRef = useRef(false);
+  const mensajesRef = useRef<Mensaje[]>([]);
 
   // Lo que se dice en texto se guarda (cifrado, 90 días) en lotes pequeños; las tarjetas y los planes no.
   const porGuardar = useRef<Previo[]>([]);
@@ -197,7 +215,25 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
   const nota = useCallback((c: ReactNode) => encolar([{ id: siguiente.current++, de: 'brisa', contenido: c, nota: true }]), [encolar]);
   const hablo = useRef(false); // si la persona ya tomó la palabra, el saludo no la interrumpe con más cartas
   const yo = useCallback((t: string) => { hablo.current = true; setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]); registrar('yo', t); }, [registrar]);
-  useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes]);
+  useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes, opciones]);
+  useEffect(() => { mensajesRef.current = mensajes; }, [mensajes]);
+  useEffect(() => { void api.modeloBrisa?.().then(r => { const si = !!(r?.ok && r.datos.conversa); conversaRef.current = si; setConversa(si); }); }, [api]);
+  // Lo que se envía: solo los últimos turnos de texto de hoy y la pregunta pendiente. Nada de nombre, lugar ni memoria.
+  async function hablarConModelo(t: string, pregunta: string | null = null): Promise<boolean> {
+    if (!conversaRef.current || !api.conversarBrisa) return false;
+    const antes = [...previos.filter(m => m.hoy).map(m => ({ de: m.de, texto: m.texto })),
+      ...mensajesRef.current.filter(m => typeof m.contenido === 'string' && !m.nota).map(m => ({ de: m.de, texto: m.contenido as string }))]
+      .filter(m => m.texto !== t).slice(-10);
+    setEscribiendo(true);
+    const r = await api.conversarBrisa([...antes, { de: 'yo', texto: t }], pregunta).catch(() => null);
+    setEscribiendo(false);
+    if (!vivo.current) return true;
+    if (r?.ok) { decir(r.datos.respuesta); return true; }
+    decir(r?.status === 429
+      ? 'La conversación de pruebas alcanzó su límite por hoy. Puedes seguir usando «Buscar un plan».'
+      : 'No pude obtener una respuesta de Gemini. Puedes volver a intentarlo o usar «Buscar un plan».');
+    return true; // Se atendió el fallo: no disfrazarlo de una respuesta genérica del guion.
+  } // también al aparecer las opciones, que achican el espacio
 
   // ---- Menú principal ----
   // La primera vez, lo primero es contar de ti; después, lo de todos los días. El resto, detrás de «Otra cosa».
@@ -224,15 +260,45 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     const p = preguntasHoy.current < MAX_PREGUNTAS_DIA ? preguntaDelDia(hechas.current, new Date(), preguntasHoy.current) : null;
     if (p) { preguntasHoy.current++; preguntar(p); return; }
     paso.current = 'libre';
-    if (!antes) decir('Aquí sigo. Cuéntame lo que quieras, o pregúntame cualquier duda sobre MOAI.');
-    setOpciones([verOpciones]);
+    if (!antes) decir(conversacionAbierta(new Date()));
+    setOpciones([]); // sin respuestas automáticas (Mateo, 20 de octubre): se escribe lo que se quiera
   }
+  // ---- Red de apoyo: quién es importante para ti, aunque no use MOAI (Mateo, 20 de octubre) ----
+  // Se guarda en tu Moai interno y, lo que cuentes de cómo se conocieron, en su ficha privada. Nadie más lo ve.
+  // La privacidad se explica en la política y en las dudas frecuentes, no en medio de la charla (Mateo, 20 de octubre).
+  function preguntarRed(p?: Pregunta) {
+    if (p) hechas.current.add(p.clave);
+    preguntaActual.current = null;
+    paso.current = 'red-nombre';
+    decir(p ? p.texto : '¿Quién más?');
+    setOpciones([]);
+  }
+  // Después de saber quién es: a la familia no se le pregunta cómo se conocieron.
+  function seguirRed() {
+    const p = red.current;
+    if (!p.relacion) { paso.current = 'red-relacion'; decir(`¿Y qué es ${p.nombre} para ti?`); return; }
+    if (!p.conNombre) { paso.current = 'red-nombre-propio'; decir('¿Cómo se llama?'); return; }
+    if (p.familia) { paso.current = 'red-comparten'; decir(`¿Qué les gusta hacer juntos con ${comoNombrar(p)}?`); return; }
+    paso.current = 'red-conocen'; decir(`¿Cómo se conocieron con ${comoNombrar(p)}?`);
+  }
+  async function guardarRed(comparten: string) {
+    paso.current = 'libre';
+    const p = red.current;
+    const r = await api.agregarInterno({ nombre: p.nombre, relacion: p.relacion, familia: p.familia });
+    if (!r.ok) { decir(r.error); conversar(); return; }
+    const persona = r.datos.filter(x => x.nombre === p.nombre).at(-1);
+    if (persona && (p.conocen || comparten)) await api.guardarFichaVinculo?.(`interno:${persona.id}`, { comoNosConocemos: p.conocen, algoCompartimos: comparten, nota: '' });
+    decir(p.familia ? `Qué bonito. Ya tienes a ${comoNombrar(p)} en Mi gente, con tu familia.` : `Qué bueno tener a ${comoNombrar(p)} cerca. Ya está en Mi gente.`);
+    setOpciones([]);
+  }
+
   function preguntar(p: Pregunta) {
+    if (p.red) { preguntarRed(p); return; }
     hechas.current.add(p.clave);
     preguntaActual.current = p;
     paso.current = 'charla';
     decir(p.texto);
-    setOpciones([{ ...verOpciones, texto: 'Mejor otra cosa' }]);
+    setOpciones([]);
   }
   // Lo que la persona cuenta y puede ir a su tarjeta. Devuelve si hubo algo nuevo.
   function anotar(p: Pregunta, t: string): boolean {
@@ -254,7 +320,10 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       if (otra) preguntar(otra); else { conociendote.current = false; mostrarPerfil(); }
       return;
     }
-    decir(reaccionar(p, t));
+    void hablarConModelo(t, p?.texto ?? null).then(usado => seguirRespuesta(p, t, usado));
+  }
+  function seguirRespuesta(p: Pregunta | null, t: string, usado: boolean) {
+    if (!usado) decir(reaccionar(p, t));
     if (p && anotar(p, t)) {
       decir('¿Lo sumo a tu tarjeta para los vecinos? Solo la ven si tú lo apruebas.');
       setOpciones([
@@ -268,7 +337,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       ]);
       return;
     }
-    conversar();
+    if (!usado) conversar();
   }
 
   function conocer() {
@@ -485,6 +554,15 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       setOpciones([{ texto: 'Ver mi Moai interno', hacer: () => ir('/gente') }]);
       return;
     }
+    if (esBusquedaBrisa(t)) { setIntencion({ texto: t }); return; }
+    // Aunque haya una pregunta pendiente, lo que la persona pide va primero (Mateo, 20 de octubre: «solo responde con
+    // preguntas autoguardadas»). Solo intenciones claras; lo demás se toma como respuesta.
+    const pide = sinTildes(t);
+    if (/que (puedes|puedo|podemos) hacer|como me ayudas|en que me ayudas|^ayuda\b|^menu\b/.test(pide)) { paso.current = 'libre'; preguntaActual.current = null; decir('Esto es lo que podemos hacer juntas:'); setOpciones(menu()); return; }
+    if (paso.current === 'charla' || paso.current.startsWith('red-')) {
+      if (/\b(triste|sol[ao]|desanimad[ao]|invierno|mal hoy|me siento mal)\b/.test(pide)) { paso.current = 'libre'; preguntaActual.current = null; void comoEstoy(); return; }
+      if (/\b(cansad[ao]|agotad[ao]|cuidarme)\b/.test(pide)) { paso.current = 'libre'; preguntaActual.current = null; void cuidarme(); return; }
+    }
     const b = borrador.current;
     switch (paso.current) {
       case 'plan-que': borrador.current = { ...entenderPlan(t), semanal: false }; preguntarDia(); return;
@@ -492,11 +570,27 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       case 'plan-hora': { const hora = entenderHora(t); if (hora && b) { b.hora = hora; preguntarLugar(); } else { decir('No te entendí la hora. Dime, por ejemplo, «7 am» o «4:30 pm».'); preguntarHora(); } return; }
       case 'plan-donde': if (b && t.length >= 3) { b.lugar = t.slice(0, 80); mostrarBorrador(); } else preguntarLugar(); return;
       case 'charla': if (!esDuda(t) || !responderDuda(t)) { responder(t); return; } break; // si responde con una duda, primero la duda
+      case 'red-nombre':
+        if (sinRespuesta(t)) { paso.current = 'libre'; decir('Está bien. Cuando quieras me cuentas.'); return; }
+        if (esDuda(t) && responderDuda(t)) break; // primero la duda; la pregunta sigue abierta
+        red.current = { ...entenderPersona(t), conocen: '' };
+        seguirRed();
+        return;
+      case 'red-relacion': {
+        const r = entenderPersona(t);
+        red.current = { ...red.current, relacion: r.relacion || t.slice(0, 60), familia: r.relacion ? r.familia : esFamilia(t) };
+        red.current.conNombre = true;
+        seguirRed();
+        return;
+      }
+      case 'red-nombre-propio': red.current = { ...red.current, nombre: limpiarNombre(t), conNombre: true }; seguirRed(); return;
+      case 'red-conocen': red.current.conocen = sinRespuesta(t) ? '' : t.slice(0, 160); void guardarRed(''); return;
+      case 'red-comparten': void guardarRed(sinRespuesta(t) ? '' : t.slice(0, 160)); return;
     }
     // Dudas sobre la plataforma: respuestas escritas por el equipo.
     if (esDuda(t)) {
       const respuesta = responderDuda(t);
-      if (respuesta) { decir(...respuesta); setOpciones([verOpciones]); return; }
+      if (respuesta) { decir(...respuesta); return; }
     }
     const plano = sinTildes(t);
     if (/vecin|conocer gente|amig/.test(plano)) { conocer(); return; }
@@ -504,9 +598,14 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     if (/sol[ao]\b|triste|invierno|desanimad/.test(plano)) { void comoEstoy(); return; }
     if (/cuid|cansad|agotad|nutre|limite/.test(plano)) { void cuidarme(); return; }
     if (/quiero|ganas|voy a|me gustaria/.test(plano)) { iniciarPlan(entenderPlan(t)); return; }
-    if (esDuda(t)) { decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.'); setOpciones([verOpciones]); return; }
-    // Lo demás es conversación: Brisa reacciona a lo que le cuentan y sigue.
-    conversar(reaccionar(null, t));
+    if (esDuda(t)) {
+      void hablarConModelo(t).then(usado => {
+        if (!usado) decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.');
+      });
+      return;
+    }
+    // Lo demás es conversación: el modelo responde si está activo; si no, Brisa reacciona con el guion.
+    void hablarConModelo(t).then(usado => { if (!usado) conversar(reaccionar(null, t)); });
   }
 
   // ---- Saludo ----
@@ -516,23 +615,34 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     // Primero, lo que ya hablaron (para retomar y no repetir preguntas) y la tarjeta (para sumarle lo que cuente).
     void Promise.all([api.historial?.() ?? Promise.resolve(null), api.perfilPublico?.() ?? Promise.resolve(null)]).then(([h, t]) => {
       const lineas = h?.ok ? h.datos : [];
-      setPrevios(lineas.map(l => ({ de: l.de, texto: l.texto })));
+      const hoyTexto = new Date().toDateString();
+      setPrevios(lineas.map(l => ({ de: l.de, texto: l.texto, hoy: new Date(l.fecha).toDateString() === hoyTexto })));
+      ultimaVez.current = lineas.length ? new Date(lineas[lineas.length - 1].fecha) : null;
       hechas.current = preguntasHechas(lineas.filter(l => l.de === 'brisa').map(l => l.texto));
       const hoy = new Date().toDateString();
       preguntasHoy.current = PREGUNTAS.filter(p => lineas.some(l => l.de === 'brisa' && l.texto === p.texto && new Date(l.fecha).toDateString() === hoy)).length;
+      lineasHoy.current = lineas.filter(l => new Date(l.fecha).toDateString() === hoy);
       if (t?.ok) { borradorPerfil.current = { ...t.datos }; tarjetaVisible.current = t.datos.visible; }
       saludar();
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Si ya hablaron hoy, Brisa no vuelve a saludar ni a empezar (Mateo, 20 de octubre): retoma donde iban.
+  function retomar() {
+    const ultima = lineasHoy.current.at(-1);
+    const pendiente = ultima?.de === 'brisa' ? PREGUNTAS.find(p => p.texto === ultima.texto) : undefined;
+    if (pendiente?.red) { paso.current = 'red-nombre'; return; }
+    if (pendiente) { preguntaActual.current = pendiente; paso.current = 'charla'; }
+  }
   function saludar() {
+    if (!primeraVez && !empezar && lineasHoy.current.length) { retomar(); return; }
     // La primera vez se presenta; después, un saludo corto. Una cosa a la vez: primero lo pendiente, después la pregunta.
     if (primeraVez) {
       decir('Soy Brisa, tu compañera en MOAI.');
       nota('No soy una persona: soy una inteligencia artificial.');
       void api.cartaVista('brisa:presentada');
       decir('Estoy aquí para ayudarte a encontrar a tu gente, cerca de casa.');
-    } else decir('Qué bueno verte otra vez.');
+    } else decir(saludoDeVuelta(new Date(), ultimaVez.current));
     if (empezar === 'plan') { iniciarPlan(); return; }
     if (empezar === 'perfil') { void iniciarPerfil(); return; }
     if (empezar === 'estado') { void comoEstoy(); return; }
@@ -554,12 +664,21 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
     });
   }
 
+  if (intencion) return <div className="brisa-chat">
+    {onCerrar && <button type="button" className="brisa-cerrar" aria-label="Cerrar la conversación" onClick={onCerrar}><X aria-hidden="true"/></button>}
+    <div className="brisa-quien"><OrbeBrisa/><p><strong>Brisa</strong> · <span className="sello-ia">IA</span></p></div>
+    <BuscarConBrisa key={perfil.lugar?.id} api={api} perfil={perfil} ir={ir} inicial={intencion.texto} volver={() => { setIntencion(null); requestAnimationFrame(() => buscarBoton.current?.focus()); }}/>
+  </div>;
+
   return <div className="brisa-chat">
-    <div className="brisa-quien"><OrbeBrisa/><strong>Brisa</strong><span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span>
-</div>
+    {onCerrar && <button type="button" className="brisa-cerrar" aria-label="Cerrar la conversación" onClick={onCerrar}><X aria-hidden="true"/></button>}
+    <div className="brisa-quien"><OrbeBrisa/><p><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p></div>
+    {titulo}
+    <button ref={buscarBoton} type="button" className="brisa-intenciones-abrir" onClick={() => { hablo.current = true; setIntencion({ texto: '' }); }}>Buscar un plan</button>
     <div className="brisa-mensajes" aria-live="polite">
-      {previos.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
-      {previos.length > 0 && <p className="brisa-separador" role="separator">Hoy</p>}
+      {verAntes && previosAntes.map((m, i) => <div key={`p${i}`} className={`burbuja de-${m.de} previo`}>{m.texto}</div>)}
+      {previosAntes.length > 0 && <button type="button" className="brisa-antes" aria-expanded={verAntes} onClick={() => setVerAntes(v => !v)}>{verAntes ? 'Ocultar lo que hablamos antes' : 'Ver lo que hablamos antes'}</button>}
+      {previosHoy.map((m, i) => <div key={`h${i}`} className={`burbuja de-${m.de}`}>{m.texto}</div>)}
       {mensajes.map(m => <div key={m.id} className={`burbuja de-${m.de}${m.nota ? ' nota' : ''}`}>{m.contenido}</div>)}
       {escribiendo && <div className="burbuja de-brisa escribiendo" role="status" aria-label="Brisa está escribiendo"><span/><span/><span/></div>}
       <div ref={final}/>
@@ -571,21 +690,42 @@ export function ConversacionBrisa({ perfil, api, ir, empezar }: { perfil: Perfil
       <label htmlFor="a-brisa" className="solo-lectores">Escríbele a Brisa</label>
       <input id="a-brisa" className="cuenta-campo" maxLength={300} placeholder="Escríbele a Brisa" value={texto} onChange={e => setTexto(e.target.value)} autoComplete="off"/>
       <Dictado alTexto={setTexto}/>
-      <Button type="submit" className="diario-boton principal">Enviar</Button>
+      <button type="submit" className="boton-enviar" aria-label="Enviar"><SendHorizontal aria-hidden="true"/></button>
     </form>
+    {conversa && <p className="brisa-beta">Versión de pruebas: Brisa responde con Gemini, de Google. No escribas datos sensibles.</p>}
     {escena && <EscenaCuidado onTerminar={alTerminarEscena}/>}
     </div>;
 }
 
-// Inicio: la ciudad ilustrada de fondo y Brisa en un panel de vidrio al lado (referente de Mateo, 15 de octubre).
-export function InicioBrisa({ perfil, api, ir, onSalir, empezar }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado' }) {
+// Inicio: la ciudad ilustrada de fondo y Brisa. Rediseño del 19 de octubre (Mateo: «el chat no debería abrirse de una»):
+// Brisa espera en una tarjeta pequeña con el saludo; la conversación se abre al tocar «Hablar con Brisa» y se cierra con
+// la X. Se abre sola solo la primera vez (Brisa se presenta como IA, regla 12) o cuando se llega a algo concreto.
+// Al cerrarla no se pierde: queda montada y oculta, así no saluda de nuevo en la misma visita.
+export function InicioBrisa({ perfil, api, ir, onSalir, empezar, onCambioLugar = () => {} }: { perfil: Perfil; api: Api; ir: Ir; onSalir: () => void; empezar?: 'plan' | 'perfil' | 'estado'; onCambioLugar?: (lugar: Lugar | null) => void }) {
+  const nombre = perfil.nombre.split(' ')[0];
+  const [abierta, setAbierta] = useState(!perfil.presentada || !!empezar);
+  const [montada, setMontada] = useState(abierta);
+  const [pendiente, setPendiente] = useState(false);
+  const titulo = useRef<HTMLHeadingElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (!abierta) void api.cartas().then(r => setPendiente(r.ok && r.datos.length > 0)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const abrir = () => { setMontada(true); setAbierta(true); requestAnimationFrame(() => titulo.current?.focus()); };
+  const cerrar = () => { setAbierta(false); requestAnimationFrame(() => boton.current?.focus()); };
   return <div className="inicio-ciudad">
-    <img className="inicio-fondo" src="/backgrounds/comunidad-ilustrada.webp" alt="" aria-hidden="true"/>
+    <FondoCiudad ciudad={perfil.lugar?.ciudad}/>
+    <div className="inicio-contexto"><SelectorLugar perfil={perfil} api={api} ir={ir} onCambio={onCambioLugar}/></div>
+    <p className="contexto-ciudad-aviso" role="status">Explorando {nombreCiudad(perfil.lugar)}</p>
     <Barra ir={ir} onSalir={onSalir} actual="brisa"/>
-    <aside className="panel-brisa vidrio" aria-labelledby="inicio-titulo">
-      <h1 id="inicio-titulo" tabIndex={-1}>Hola, {perfil.nombre.split(' ')[0]}</h1>
-      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar}/>
-    </aside>
+    {!abierta && <section className="brisa-espera" aria-labelledby="inicio-titulo-espera">
+      <OrbeBrisa/>
+      <p className="brisa-espera-quien"><strong>Brisa</strong> · <span className="sello-ia" title="Brisa es una inteligencia artificial">IA</span></p>
+      <h1 id="inicio-titulo-espera" tabIndex={-1}>Hola, {nombre}</h1>
+      <p>{pendiente ? 'Tengo algo que contarte cuando quieras.' : saludoDeVuelta(new Date()).split('. ').slice(1).join('. ')}</p>
+      <button ref={boton} type="button" className="boton-principal" onClick={abrir}><MessageCircle aria-hidden="true"/>Hablar con Brisa</button>
+    </section>}
+    {montada && <aside className="panel-brisa" aria-labelledby="inicio-titulo" hidden={!abierta}>
+      <ConversacionBrisa perfil={perfil} api={api} ir={ir} empezar={empezar} onCerrar={cerrar} titulo={<h1 id="inicio-titulo" ref={titulo} tabIndex={-1}>Hola, {nombre}</h1>}/>
+    </aside>}
   </div>;
 }
 
@@ -615,7 +755,7 @@ type Reconocedor = { lang: string; interimResults: boolean; continuous: boolean;
 const ReconocedorDeVoz = (globalThis as unknown as { SpeechRecognition?: new () => Reconocedor; webkitSpeechRecognition?: new () => Reconocedor }).SpeechRecognition
   ?? (globalThis as unknown as { webkitSpeechRecognition?: new () => Reconocedor }).webkitSpeechRecognition;
 
-function Dictado({ alTexto }: { alTexto: (t: string) => void }) {
+export function Dictado({ alTexto }: { alTexto: (t: string) => void }) {
   const [escuchando, setEscuchando] = useState(false);
   const reconocedor = useRef<Reconocedor | null>(null);
   useEffect(() => () => reconocedor.current?.stop(), []);

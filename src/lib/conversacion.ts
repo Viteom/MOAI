@@ -7,11 +7,14 @@ import type { Tipo } from './lugares';
 const plano = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 // `tarjeta`: a qué parte de la tarjeta puede ir la respuesta, si la persona quiere.
-export type Pregunta = { clave: string; texto: string; tarjeta?: 'gustos' | 'comparte' | 'aprender' | 'frase' };
+// `red`: abre la conversación para guardar a alguien de la red de apoyo (Moai interno y su ficha privada).
+export type Pregunta = { clave: string; texto: string; tarjeta?: 'gustos' | 'comparte' | 'aprender' | 'frase'; red?: true };
 
 // Primero las que ayudan a conocerse; después, temas de todos los días. Directas, sin opciones para elegir.
 export const PREGUNTAS: Pregunta[] = [
   { clave: 'domingo', texto: '¿Qué haces normalmente un domingo en la tarde?', tarjeta: 'gustos' },
+  // Al empezar (Mateo, 20 de octubre): las personas importantes de la red de apoyo, aunque no usen MOAI.
+  { clave: 'apoyo', texto: '¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?', red: true },
   { clave: 'despues', texto: 'Cuando terminas tus cosas del día, ¿qué te gusta hacer?', tarjeta: 'gustos' },
   { clave: 'sabes', texto: '¿Qué sabes hacer que le podrías enseñar a alguien?', tarjeta: 'comparte' },
   { clave: 'aprender', texto: '¿Qué te gustaría aprender, aunque sea por gusto?', tarjeta: 'aprender' },
@@ -35,13 +38,15 @@ export const PREGUNTAS: Pregunta[] = [
   { clave: 'receta', texto: '¿Hay alguna receta que te salga especialmente bien?', tarjeta: 'comparte' },
   { clave: 'leer', texto: '¿Qué estás leyendo, viendo o escuchando estos días?' },
   { clave: 'agradecer', texto: '¿A quién te gustaría agradecerle algo?' },
+  { clave: 'apoyo-mas', texto: '¿Hay alguien más de tu familia o de tus amigos que sea importante para ti?', red: true },
 ];
 
+const CONOCERSE = 6; // las de los primeros días, en orden
 // La pregunta del día: la primera que no se ha hecho; arranca en un punto distinto cada día para que no se repita el orden.
 export function preguntaDelDia(hechas: Set<string>, hoy: Date, desde = 0): Pregunta | null {
-  const conocerse = PREGUNTAS.slice(0, 5).filter(p => !hechas.has(p.clave));
+  const conocerse = PREGUNTAS.slice(0, CONOCERSE).filter(p => !hechas.has(p.clave));
   if (conocerse.length) return conocerse[0];
-  const resto = PREGUNTAS.slice(5);
+  const resto = PREGUNTAS.slice(CONOCERSE);
   const dia = Math.floor(hoy.getTime() / 864e5);
   for (let i = 0; i < resto.length; i++) {
     const p = resto[(dia + desde + i) % resto.length];
@@ -93,8 +98,9 @@ export function reaccionar(pregunta: Pregunta | null, respuesta: string): string
 
 // Dudas sobre la plataforma. Respuestas escritas por el equipo; deben coincidir con lo que hace el código (regla 10).
 const DUDAS: [RegExp, string[]][] = [
+  [/memoria|recuerdas|recordar|autonomia|anticipa/, ['En «Buscar un plan» puedes autorizar qué actividades y días recordar durante 30 o 90 días. Puedes corregirlos u olvidarlos allí o en Mi cuenta.', 'Las propuestas al abrir vienen apagadas. Si las autorizas, preparo opciones con planes reales; para sumarte siempre tienes que confirmar. No deduzco tu ánimo ni leo tus mensajes o notas de vínculos para recomendar.']],
   [/emergencia|peligro|ambulancia|policia/, ['MOAI no es un servicio de emergencias. Si estás en peligro, llama a la línea 123 o a alguien de confianza.']],
-  [/eres (una )?persona|eres real|eres (un )?robot|inteligencia artificial|\bia\b/, ['Soy una inteligencia artificial, no una persona. Converso con un guion que escribió el equipo de MOAI, así que todavía no entiendo todo.']],
+  [/eres (una )?persona|eres real|eres (un )?robot|inteligencia artificial|\bia\b/, ['Soy una inteligencia artificial, no una persona. La conversación general funciona con un guion de MOAI. En «Buscar un plan» puedes probar la ayuda de Gemini, si está disponible, solo con una frase ficticia y autorizando cada envío.']],
   [/que es (un )?moai|moais|formar un grupo/, ['Un Moai es un grupo pequeño, de 2 a 5 personas, que se cuida y se ve seguido.', 'Nace con alguien con quien ya te viste en un plan: en Mi gente lo tocas y eliges «Formar un Moai». Para sumar a alguien más, todos tienen que estar de acuerdo.']],
   [/conversacion|historial|guardas lo que|guardas mis mensajes|lo que te escribo/, ['Guardo nuestra conversación cifrada, solo para ti, durante 90 días, para recordar lo que me cuentas.', 'En Más → Mi cuenta puedes borrarla cuando quieras.']],
   [/voz|microfono|dictar|audio/, ['El micrófono pasa tu voz a texto con el dictado de tu navegador. MOAI nunca recibe ni guarda el audio, solo el texto que tú envías.']],
@@ -115,3 +121,60 @@ export function responderDuda(texto: string): string[] | null {
   const t = plano(texto);
   return DUDAS.find(([re]) => re.test(t))?.[1] ?? null;
 }
+
+// ---- Saludos (19 de octubre, Mateo: «cada vez es el mismo saludo») ----
+// Según la hora y cuánto hace que hablaron. Cambia de un día a otro, pero no al recargar: nada de azar.
+const franja = (h: number) => h < 5 ? 'Buenas noches' : h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+const diaDelAnio = (d: Date) => Math.floor((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 864e5);
+const VUELTAS = ['Qué bueno verte otra vez.', 'Me alegra que pases por aquí.', '¿Cómo va todo?', 'Aquí estoy, cuando quieras.', '¿Qué tal tu día?'];
+export function saludoDeVuelta(ahora: Date, ultima?: Date | null): string {
+  const hola = franja(ahora.getHours());
+  if (!ultima) return `${hola}. ${VUELTAS[diaDelAnio(ahora) % VUELTAS.length]}`;
+  const dias = Math.floor((new Date(ahora.toDateString()).getTime() - new Date(ultima.toDateString()).getTime()) / 864e5);
+  if (dias <= 0) return `${hola} de nuevo. Aquí sigo.`;
+  if (dias === 1) return `${hola}. Qué bueno verte otra vez, desde ayer.`;
+  if (dias >= 7) return `${hola}. Hacía días no hablábamos; me alegra verte.`;
+  return `${hola}. ${VUELTAS[diaDelAnio(ahora) % VUELTAS.length]}`;
+}
+const ABIERTAS = ['Cuéntame lo que quieras, o pregúntame cualquier duda sobre MOAI.', 'Si algo te ronda, cuéntamelo. También respondo dudas sobre MOAI.', 'Aquí estoy para lo que quieras contar o preguntar.'];
+export const conversacionAbierta = (ahora: Date) => ABIERTAS[diaDelAnio(ahora) % ABIERTAS.length];
+
+// ---- Red de apoyo (20 de octubre) ----
+// Qué relación cuenta como familia (va a Raíz); el resto, a Tronco («quien me nutre»).
+export const esFamilia = (relacion: string) => /\b(mam[aá]|mami|madre|pap[aá]|papi|padre|herman[oa]|hij[oa]|t[ií][oa]|abuel[oa]|prim[oa]|sobrin[oa]|nieto|nieta|espos[oa]|esposo|pareja|marido|mujer|suegr[oa]|cu[ñn]ad[oa]|madrina|padrino|ahijad[oa]|familia)/i.test(relacion);
+// «Se llama Ana.» → «Ana». Sin adivinar más: si no, se guarda lo que la persona escribió, corto.
+export const limpiarNombre = (texto: string) => {
+  const t = texto.trim().replace(/^(se llama|es|ella es|él es|el es)\s+/i, '').replace(/\s+(es|son)\s+(una|la|el|mi)?\s*(persona|alguien)?.*$/i, '').replace(/[.!¡?¿]+$/g, '').trim().slice(0, 40);
+  return t.charAt(0).toLocaleUpperCase('es') + t.slice(1);
+};
+// Respuestas que significan «no por ahora».
+export const sinRespuesta = (texto: string) => /^(no|nadie|ninguno|ninguna|ahora no|despues|después|luego|prefiero no( decir)?|no se|no sé|paso)\.?$/i.test(texto.trim());
+
+// «Mi madre es una persona importante para mí», «mi hermano Juan», «Laura, mi amiga»: quién es y qué es para ti,
+// sin volver a preguntar lo que ya dijo. Solo palabras del guion; si no reconoce la relación, la pregunta.
+const RELACIONES: [RegExp, string, string][] = [
+  [/mam[aá]|mami|madre/, 'mamá', 'Mamá'], [/pap[aá]|papi|padre/, 'papá', 'Papá'], [/herman[ao]/, '', 'Hermano'], [/hij[ao]/, '', 'Hijo'],
+  [/t[ií][ao]/, '', 'Tío'], [/abuel[ao]/, '', 'Abuelo'], [/prim[ao]/, '', 'Primo'], [/sobrin[ao]/, '', 'Sobrino'], [/niet[ao]/, '', 'Nieto'],
+  [/espos[ao]|marido|pareja|novi[ao]/, '', 'Pareja'], [/madrina|padrino/, '', 'Madrina'], [/suegr[ao]/, '', 'Suegro'], [/cu[ñn]ad[ao]/, '', 'Cuñado'],
+  [/amig[ao]/, '', 'Amigo'], [/vecin[ao]/, '', 'Vecino'], [/compa[ñn]er[ao]/, '', 'Compañero'], [/comadre|compadre/, '', 'Comadre'],
+];
+export type PersonaDicha = { nombre: string; relacion: string; familia: boolean; conNombre: boolean };
+export function entenderPersona(texto: string): PersonaDicha {
+  const limpio = texto.trim().replace(/[.!¡?¿]+$/g, '');
+  for (const [re, canonica] of RELACIONES) {
+    // Bordes de palabra que entienden tildes («mamá»): \b solo conoce letras sin tilde.
+    const m = new RegExp(`(?<!\\p{L})(?:mi|la|el|a mi)?\\s*(${re.source})(?!\\p{L})`, 'iu').exec(limpio);
+    if (!m) continue;
+    const palabra = m[1].toLocaleLowerCase('es');
+    const relacion = canonica || palabra;
+    // Un nombre propio pegado a la relación: «mi hermano Juan», «Laura, mi amiga».
+    const despues = /^\s*,?\s*([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)/.exec(limpio.slice(m.index + m[0].length));
+    const antes = /([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)\s*,?\s*(?:es\s+)?(?:mi|la|el)?\s*$/.exec(limpio.slice(0, m.index));
+    const propio = despues?.[1] ?? (antes && !/^(Mi|La|El|Es)$/.test(antes[1]) ? antes[1] : '');
+    const nombre = propio || relacion.charAt(0).toLocaleUpperCase('es') + relacion.slice(1);
+    return { nombre, relacion, familia: esFamilia(relacion), conNombre: !!propio || /^(mamá|papá)$/.test(relacion) };
+  }
+  return { nombre: limpiarNombre(texto), relacion: '', familia: false, conNombre: true };
+}
+// Cómo nombrarla en la respuesta: «tu mamá» o «Juan».
+export const comoNombrar = (p: PersonaDicha) => p.conNombre && !/^(Mamá|Papá)$/.test(p.nombre) ? p.nombre : `tu ${p.relacion || p.nombre.toLocaleLowerCase('es')}`;

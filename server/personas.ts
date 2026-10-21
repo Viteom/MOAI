@@ -2,8 +2,8 @@
 // distinta para la misma persona (HMAC de quien mira + a quien mira), así no se puede seguir a nadie entre cuentas.
 // También: bloqueos y la pausa por reportes (src/lib/moai.ts).
 import { createHmac } from 'node:crypto';
-import { DIAS_REPORTES, REPORTES_PARA_PAUSA } from '../src/lib/moai';
-import type { Consulta, Db } from './db';
+import { DIAS_REPORTES, REPORTES_PARA_PAUSA } from '../src/lib/moai.js';
+import type { Consulta, Db } from './db.js';
 
 export type Refs = { ref: (quien: string, aQuien: string) => string; resolver: (db: Db, quien: string, ref: string) => Promise<string | null> };
 

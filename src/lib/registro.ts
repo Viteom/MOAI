@@ -1,7 +1,7 @@
 // Reglas del registro, compartidas por el formulario (src/) y el servidor (server/).
 // REVISIÓN HUMANA: datos personales y consentimiento (Ley 1581). Los textos legales son borradores.
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js/min';
-import municipiosJson from './colombia/municipios.json';
+import municipiosJson from './colombia/municipios.json' with { type: 'json' };
 
 export type Canal = 'correo' | 'whatsapp';
 export type Municipio = { codigo: string; nombre: string; departamento: string };
@@ -10,7 +10,7 @@ export const EDAD_MINIMA = 18;
 // Apagado hasta contratar Twilio (decisión de Mateo, octubre de 2026). El servidor también lo rechaza sin proveedor.
 export const WHATSAPP_DISPONIBLE = false;
 // Cambia cuando cambie el texto de términos o de tratamiento de datos: se guarda con cada aceptación.
-export const VERSION_TEXTOS = '2026-10-19-borrador-conversacion-brisa';
+export const VERSION_TEXTOS = '2026-10-20-borrador-gemini-beta';
 
 export const municipios: Municipio[] = (municipiosJson as [string, string, string][])
   .map(([codigo, nombre, departamento]) => ({ codigo, nombre, departamento }));

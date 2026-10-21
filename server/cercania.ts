@@ -5,23 +5,25 @@
 // - El invierno se guarda cifrado. Mientras dura, Brisa baja el ritmo: sin sugerencias de planes ni correo semanal.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { gridDistance } from 'h3-js';
-import { DIAS_ENTRE_SALUDOS, DIAS_PUERTA, saludos, textoSaludo, validarPerfil, type EntradaPerfil, type Saludo } from '../src/lib/perfil';
-import type { Tipo } from '../src/lib/lugares';
-import type { Carta, Estado, Vecino } from '../src/lib/api';
-import type { Cifrador } from './cifrado';
-import type { Db } from './db';
-import { conocidosDe } from './moais';
-import { enPausa, hayBloqueo, type Refs } from './personas';
+import { DIAS_ENTRE_SALUDOS, DIAS_PUERTA, saludos, textoSaludo, validarPerfil, type EntradaPerfil, type Saludo } from '../src/lib/perfil.js';
+import type { Tipo } from '../src/lib/lugares.js';
+import type { Carta, Estado, Vecino } from '../src/lib/api.js';
+import type { Cifrador } from './cifrado.js';
+import type { Consulta, Db } from './db.js';
+import { conocidosDe } from './moais.js';
+import { enPausa, hayBloqueo, type Refs } from './personas.js';
 
 const ANILLOS_ZONA = 2;
 
 export async function perfilPublicoDe(db: Db, cuenta: string): Promise<EntradaPerfil> {
-  const [p] = await db.query<{ frase: string; gustos: Tipo[]; comparte: string; aprender: string; visible: boolean }>(
-    'select frase, gustos, comparte, aprender, visible from perfiles where cuenta_id = $1', [cuenta]);
-  return p ?? { frase: '', gustos: [], comparte: '', aprender: '', visible: false };
+  const [p] = await db.query<EntradaPerfil & { nombre_preferido: string; visible_red: boolean }>(
+    'select frase, gustos, comparte, aprender, visible, nombre_preferido, visible_red from perfiles where cuenta_id = $1', [cuenta]);
+  if (!p) return { frase: '', gustos: [], comparte: '', aprender: '', visible: false };
+  return { frase: p.frase, gustos: p.gustos, comparte: p.comparte, aprender: p.aprender, visible: p.visible,
+    ...(p.nombre_preferido ? { nombrePreferido: p.nombre_preferido } : {}), ...(p.visible_red ? { visibleEnRed: true } : {}) };
 }
 
-export async function enInvierno(db: Db, cifrador: Cifrador, cuenta: string): Promise<boolean> {
+export async function enInvierno(db: Consulta, cifrador: Cifrador, cuenta: string): Promise<boolean> {
   const [e] = await db.query<{ invierno: string }>('select invierno from estados where cuenta_id = $1', [cuenta]);
   return e ? JSON.parse(cifrador.descifrar(e.invierno) ?? '{}').activo === true : false;
 }
@@ -141,9 +143,11 @@ export function registrarCercania(app: FastifyInstance, db: Db, cuentaDeSesion: 
     if (!r.ok) return reply.code(400).send({ error: r.error });
     const p = r.perfil;
     await db.query(
-      `insert into perfiles (cuenta_id, frase, gustos, comparte, aprender, visible, actualizado_en) values ($1, $2, $3, $4, $5, $6, $7)
-       on conflict (cuenta_id) do update set frase = $2, gustos = $3, comparte = $4, aprender = $5, visible = $6, actualizado_en = $7`,
-      [id, p.frase, p.gustos, p.comparte, p.aprender, p.visible, ahora()]);
+      `insert into perfiles (cuenta_id, frase, gustos, comparte, aprender, visible, actualizado_en, nombre_preferido, visible_red)
+       values ($1, $2, $3, $4, $5, $6, $7, coalesce($8, ''), coalesce($9, false))
+       on conflict (cuenta_id) do update set frase = $2, gustos = $3, comparte = $4, aprender = $5, visible = $6, actualizado_en = $7,
+       nombre_preferido = coalesce($8, perfiles.nombre_preferido), visible_red = coalesce($9, perfiles.visible_red)`,
+      [id, p.frase, p.gustos, p.comparte, p.aprender, p.visible, ahora(), p.nombrePreferido ?? null, p.visibleEnRed ?? null]);
     return perfilPublicoDe(db, id);
   });
 

@@ -6,10 +6,13 @@ import { crearCifrador } from './cifrado';
 import { viasDesdeEntorno } from './envios';
 import { crearApp } from './app';
 import { borrarConversacionesViejas, mantener, resumenSemanal } from './mantenimiento';
+import { geminiDesdeEntorno } from './gemini';
+import { urlDbDesdeEntorno } from './entorno-db';
 
 const produccion = process.env.NODE_ENV === 'production';
+const databaseUrl = urlDbDesdeEntorno(process.env);
 if (produccion && !process.env.CODIGO_SECRETO) throw new Error('Falta CODIGO_SECRETO en producción.');
-if (produccion && !process.env.DATABASE_URL) throw new Error('Falta DATABASE_URL en producción.');
+if (produccion && !databaseUrl) throw new Error('Falta DATABASE_URL o DATABASE_URL_DATABASE_URL en producción.');
 
 // Sin CODIGO_SECRETO (solo en desarrollo), el secreto se guarda en .data/ para que sobreviva a los reinicios:
 // con él se cifran el Moai interno, el invierno y el test de cuidado, y si cambia ya no se pueden leer.
@@ -23,7 +26,7 @@ function secretoLocal() {
 }
 const secreto = process.env.CODIGO_SECRETO ?? secretoLocal();
 const cifrador = crearCifrador(secreto);
-const db = await abrirDb({ url: process.env.DATABASE_URL, carpeta: process.env.DATABASE_URL ? undefined : '.data/pglite' });
+const db = await abrirDb({ url: databaseUrl, carpeta: databaseUrl ? undefined : '.data/pglite' });
 const { vias, recordar, correo } = viasDesdeEntorno(process.env);
 const app = await crearApp({
   db,
@@ -31,10 +34,11 @@ const app = await crearApp({
   secreto,
   produccion,
   equipo: (process.env.EQUIPO_CORREOS ?? '').split(','),
+  modeloBrisa: geminiDesdeEntorno(process.env),
 });
 const port = Number(process.env.PORT ?? 8787);
 await app.listen({ port, host: produccion ? '0.0.0.0' : '127.0.0.1' });
-console.log(`API de MOAI en http://localhost:${port} (${process.env.DATABASE_URL ? 'PostgreSQL' : 'PGlite local'}; correo: ${process.env.RESEND_API_KEY ? 'Resend' : 'consola'}; WhatsApp: ${vias.whatsapp ? 'activo' : 'apagado'})`);
+console.log(`API de MOAI en http://localhost:${port} (${databaseUrl ? 'PostgreSQL' : 'PGlite local'}; correo: ${process.env.RESEND_API_KEY ? 'Resend' : 'consola'}; WhatsApp: ${vias.whatsapp ? 'activo' : 'apagado'})`);
 
 // Recordatorios, borrado de cuentas sin verificar, resumen semanal y limpieza de conversaciones: al arrancar y cada 6 horas.
 const vuelta = () => Promise.all([

@@ -1,12 +1,15 @@
 // Único punto del frontend que habla con la red, y solo con /api del mismo origen
 // (src/test/privacy.test.ts lo comprueba). Nada se guarda en el navegador: la sesión es una cookie httpOnly.
 import type { Canal, EntradaRegistro, Errores } from './registro';
-import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo } from './lugares';
+import type { Alcance, EntradaLugar, EntradaPlan, Repite, Tipo, Costo } from './lugares';
 import type { MotivoReporte } from './moai';
 import type { TipoOrganizacion } from './organizaciones';
 import type { Letra } from './cuidado';
 import type { EntradaPerfil, Saludo } from './perfil';
 import type { EstadoLazo } from './lazos';
+import type { CategoriaVinculo, FichaPrivada } from './vinculos';
+import type { MemoriaBrisa, PreferenciasBrisa, ResultadoBrisa } from './brisa-intenciones';
+import type { CapacidadLenguaje, InterpretacionLenguaje } from './lenguaje-brisa';
 
 export type Envio = { canal: Canal; destinoVisible: string };
 // Estado de los pasos después del código (docs/09). `skipped` no es `pending`: no se vuelve a preguntar.
@@ -20,6 +23,7 @@ export type Perfil = { nombre: string; nacimientoPendiente: boolean; comunidad: 
 export type Plan = {
   id: string; titulo: string; descripcion: string; cuando: string; lugarPublico: string; zona: string; franja: string; alcance: Alcance;
   tipo: Tipo; repite: Repite; diaRepite: string | null; autor: string; autorRef?: string; organizacion?: { nombre: string; tipo: TipoOrganizacion }; mio: boolean; voy: boolean; lleno: boolean; asistentes?: string[];
+  costo: Costo; moai?: { id: string; nombre: string }; // `moai`: un encuentro propuesto solo para ese Moai
 };
 // `cuando` es la próxima ocurrencia (en los planes semanales, la de esta semana o la siguiente).
 export type Mensaje = { id: string; autor: string; autorRef?: string; mio: boolean; texto: string; creado: string };
@@ -35,8 +39,10 @@ export type Carta =
 // Mis lazos: grupos (raíz, quien me nutre, cada Moai, rama) y personas con el estado del vínculo, nunca un número.
 export type GrupoLazo = { id: string; tipo: 'raiz' | 'interno' | 'moai' | 'rama'; nombre: string; moaiId?: string };
 export type AccionLazo = { tipo: 'interno'; id: string } | { tipo: 'moai'; moaiId: string } | { tipo: 'saludo'; ref: string };
-export type PersonaLazo = { id: string; grupo: string; nombre: string; detalle: string; estado: EstadoLazo; puerta: boolean; accion: AccionLazo };
+export type PersonaLazo = { id: string; grupo: string; nombre: string; detalle: string; estado: EstadoLazo; puerta: boolean; accion: AccionLazo;
+  categoria?: CategoriaVinculo; origen?: 'personal' | 'moai'; referencia?: string; moais?: { id: string; nombre: string }[] };
 export type Lazos = { grupos: GrupoLazo[]; personas: PersonaLazo[] };
+export type FichaVinculo = { persona: PersonaLazo; compartida: EntradaPerfil | null; privada: FichaPrivada };
 export type Estado = { invierno: boolean; puertaAbierta: boolean; contadoA: string[] };
 // Un vecino de tu zona que aprobó mostrar su perfil. La puerta abierta solo se ve si ya se vieron.
 export type Vecino = { ref: string; nombre: string; frase: string; comparte: string; gustos: Tipo[]; enComun: Tipo[]; franja: string; puertaAbierta: boolean; saludado: boolean };
@@ -50,7 +56,7 @@ export type Persona = { ref: string; nombre: string };
 export type Encuentro = { planId: string; titulo: string; ocurrencia: string; personas: Persona[] };
 // Personas con las que las dos confirmaron «Ya nos vimos».
 export type Conocido = Persona & { moaiComun: boolean; propuesta: boolean; puertaAbierta?: boolean };
-export type MoaiResumen = { id: string; nombre: string; miembros: (Persona & { yo: boolean })[]; esperando: string[] };
+export type MoaiResumen = { id: string; nombre: string; frase: string; miembros: (Persona & { yo: boolean })[]; esperando: string[] };
 export type Invitacion =
   | { id: string; tipo: 'nuevo'; de: string; nombre: string }
   | { id: string; tipo: 'entrar'; de: string; nombre: string; miembros: string[] }
@@ -91,6 +97,16 @@ async function llamar<T>(ruta: string, cuerpo?: object, metodo?: 'DELETE'): Prom
 }
 
 export const api = {
+  modeloBrisa: () => llamar<CapacidadLenguaje>('brisa/modelo'),
+  conversarBrisa: (turnos: { de: 'yo' | 'brisa'; texto: string }[], pregunta: string | null) => llamar<{ respuesta: string }>('brisa/conversar', { turnos, pregunta }),
+  interpretarConBrisa: (b: { frase: string; autorizo: string; datosFicticios: true }) => llamar<InterpretacionLenguaje>('brisa/interpretar', b),
+  memoriaBrisa: () => llamar<{ memoria: MemoriaBrisa | null }>('brisa/memoria'),
+  guardarMemoriaBrisa: (p: PreferenciasBrisa & { autorizo: true; version: string }) => llamar<{ memoria: MemoriaBrisa }>('brisa/memoria', p),
+  borrarMemoriaBrisa: () => llamar<{ memoria: null }>('brisa/memoria', undefined, 'DELETE'),
+  buscarConBrisa: (b: { texto: string; lugarId: string; usarMemoria: boolean; anticipar: boolean }) => llamar<ResultadoBrisa>('brisa/buscar', b),
+  confirmarPropuestaBrisa: (id: string) => llamar<{ hecha: true; planId: string }>(`brisa/propuestas/${encodeURIComponent(id)}/confirmar`, { confirmo: true }),
+  descartarPropuestaBrisa: (id: string) => llamar<{ ok: true }>(`brisa/propuestas/${encodeURIComponent(id)}/descartar`, {}),
+  accionesBrisa: () => llamar<{ accion: string; planId: string; cuando: string; motivo: string; confirmadaEn: string }[]>('brisa/acciones'),
   registrar: (entrada: EntradaRegistro) => llamar<Envio>('registro', entrada),
   pedirAcceso: (contacto: Contacto) => llamar<Envio>('acceso', contacto),
   verificar: (contacto: Contacto & { codigo: string }) => llamar<Perfil>('verificar', contacto),
@@ -102,7 +118,8 @@ export const api = {
   activarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}/activar`, {}),
   borrarLugar: (id: string) => llamar<Lugar[]>(`lugares/${encodeURIComponent(id)}`, undefined, 'DELETE'),
   planes: () => llamar<Plan[]>('planes'),
-  crearPlan: (plan: EntradaPlan & { organizacion?: string | null }) => llamar<Plan[]>('planes', plan),
+  crearPlan: (plan: EntradaPlan & { organizacion?: string | null; moai?: string | null }) => llamar<Plan[]>('planes', plan),
+  reportarPlan: (id: string, reporte: { motivo: MotivoReporte; detalle?: string; bloquear?: boolean }) => llamar<{ ok: true }>(`planes/${encodeURIComponent(id)}/reportar`, reporte),
   irAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/ir`, {}),
   noIrAPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/no-ir`, {}),
   cancelarPlan: (id: string) => llamar<Plan[]>(`planes/${encodeURIComponent(id)}/cancelar`, {}),
@@ -120,7 +137,7 @@ export const api = {
   proponerMoai: (ref: string, nombre: string) => llamar<Gente>('moais', { ref, nombre }),
   invitarAMoai: (id: string, ref: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/invitar`, { ref }),
   responderInvitacion: (id: string, acepta: boolean) => llamar<Gente>(`invitaciones/${encodeURIComponent(id)}`, { acepta }),
-  renombrarMoai: (id: string, nombre: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/nombre`, { nombre }),
+  renombrarMoai: (id: string, nombre: string, frase?: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/nombre`, { nombre, frase }),
   salirDeMoai: (id: string) => llamar<Gente>(`moais/${encodeURIComponent(id)}/salir`, {}),
   mensajesMoai: (id: string) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`),
   enviarMensajeMoai: (id: string, texto: string, confirmado = false) => llamar<Mensaje[]>(`moais/${encodeURIComponent(id)}/mensajes`, { texto, confirmado }),
@@ -147,6 +164,9 @@ export const api = {
   contarInvierno: (refs: string[]) => llamar<Estado>('estado/invierno/contar', { refs }),
   puerta: (abierta: boolean) => llamar<Estado>('estado/puerta', { abierta }),
   lazos: () => llamar<Lazos>('lazos'),
+  fichaVinculo: (id: string) => llamar<FichaVinculo>(`lazos/${encodeURIComponent(id)}/ficha`),
+  guardarFichaVinculo: (id: string, ficha: FichaPrivada) => llamar<FichaPrivada>(`lazos/${encodeURIComponent(id)}/ficha`, ficha),
+  categoriaVinculo: (id: string, categoria: CategoriaVinculo) => llamar<Lazos>(`lazos/${encodeURIComponent(id)}/categoria`, { categoria }),
   salir: () => llamar<{ ok: true }>('salir', {}),
   // Mi cuenta (Ley 1581): todos mis datos en un archivo, y borrar la cuenta para siempre.
   misDatos: () => llamar<Record<string, unknown>>('cuenta/datos'),

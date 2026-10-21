@@ -1,18 +1,19 @@
 // Cuentas sin verificar (decisión de Mateo, octubre de 2026):
 // - Se borran a los 20 días, con sus consentimientos (cascade) y sus códigos.
 // - Mientras tanto, si se registraron por correo, reciben un recordatorio cada 3,5 días (dos por semana).
-import type { Db } from './db';
-import type { Correo, Recordar } from './envios';
-import { cuandoLegible, planesVisibles } from './comunidad';
-import { DIAS_MENSAJES_MOAI } from '../src/lib/moai';
-import { enInvierno } from './cercania';
-import type { Cifrador } from './cifrado';
-import { borrarHistorialViejo } from './historial';
+import type { Consulta } from './db.js';
+import type { Correo, Recordar } from './envios.js';
+import { cuandoLegible, planesVisibles } from './comunidad.js';
+import { DIAS_MENSAJES_MOAI } from '../src/lib/moai.js';
+import { enInvierno } from './cercania.js';
+import type { Cifrador } from './cifrado.js';
+import { borrarHistorialViejo } from './historial.js';
+import { borrarBrisaVencido } from './brisa-intenciones.js';
 
 export const DIAS_PARA_VERIFICAR = 20;
 const HORAS_ENTRE_RECORDATORIOS = 84; // 3,5 días
 
-export async function mantener(db: Db, recordar: Recordar): Promise<{ borradas: number; recordadas: number }> {
+export async function mantener(db: Consulta, recordar: Recordar): Promise<{ borradas: number; recordadas: number }> {
   const borradas = await db.query<{ destino: string }>(
     `delete from cuentas where verificada_en is null and creada_en < now() - make_interval(days => $1) returning destino`, [DIAS_PARA_VERIFICAR]);
   if (borradas.length) await db.query('delete from verificaciones where destino = any($1)', [borradas.map(b => b.destino)]);
@@ -38,7 +39,7 @@ export async function mantener(db: Db, recordar: Recordar): Promise<{ borradas: 
 
 // Resumen semanal «Planes cerca esta semana»: solo para quien lo activó, máximo uno por semana (regla 13),
 // y solo si de verdad hay planes. Nunca se envía un correo vacío para «recordar que existimos».
-export async function resumenSemanal(db: Db, correo: Correo, ahora: Date, urlApp = '', cifrador?: Cifrador): Promise<number> {
+export async function resumenSemanal(db: Consulta, correo: Correo, ahora: Date, urlApp = '', cifrador?: Cifrador): Promise<number> {
   const cuentas = await db.query<{ id: string; nombre: string; destino: string }>(
     `select id, split_part(nombre, ' ', 1) as nombre, destino from cuentas
      where resumen_semanal and canal = 'correo' and verificada_en is not null
@@ -65,7 +66,7 @@ export async function resumenSemanal(db: Db, correo: Correo, ahora: Date, urlApp
 
 // Las conversaciones de los planes se borran 30 días después del plan (o de cancelarse).
 // La de cada Moai guarda solo los últimos 90 días.
-export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<void> {
+export async function borrarConversacionesViejas(db: Consulta, ahora: Date): Promise<void> {
   await db.query(
     `delete from plan_mensajes m using planes p where m.plan_id = p.id
        and ((p.repite is null and p.cuando < $1::timestamptz - interval '30 days')
@@ -74,4 +75,6 @@ export async function borrarConversacionesViejas(db: Db, ahora: Date): Promise<v
   await db.query(`delete from moai_mensajes where creado_en < $1::timestamptz - make_interval(days => $2)`, [ahora, DIAS_MENSAJES_MOAI]);
   await db.query(`delete from saludos where creado_en < $1::timestamptz - interval '30 days'`, [ahora]); // los saludos de lejos duran 30 días
   await borrarHistorialViejo(db, ahora); // la conversación con Brisa, 90 días
+  await borrarBrisaVencido(db, ahora);
+  await db.query("delete from brisa_interpretaciones where creado_en <= $1::timestamptz - interval '90 days'", [ahora]);
 }

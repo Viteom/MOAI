@@ -2,10 +2,10 @@
 // REVISIÓN HUMANA: puede ser dato sensible (Ley 1581). Se guarda solo con autorización explícita y cifrado.
 // Los nombres del Moai interno (gente que quizá no usa MOAI) también van cifrados. Nadie más los ve.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { DIAS_REPETIR_CUIDADO, DIAS_SIN_HABLAR, MAX_INTERNO, resultadoCuidado, validarPersonaInterna, type Letra } from '../src/lib/cuidado';
-import type { Carta, Cuidado, PersonaInterna } from '../src/lib/api';
-import type { Cifrador } from './cifrado';
-import type { Db } from './db';
+import { DIAS_REPETIR_CUIDADO, DIAS_SIN_HABLAR, MAX_INTERNO, resultadoCuidado, validarPersonaInterna, type Letra } from '../src/lib/cuidado.js';
+import type { Carta, Cuidado, PersonaInterna } from '../src/lib/api.js';
+import type { Cifrador } from './cifrado.js';
+import type { Db } from './db.js';
 
 type FilaInterna = { id: string; nombre: string; relacion: string; familia: boolean; ultimo_contacto: string | null; creado_en: string };
 
@@ -113,7 +113,10 @@ export function registrarCuidado(app: FastifyInstance, db: Db, cuentaDeSesion: (
 
   app.delete<{ Params: { persona: string } }>('/api/interno/:persona', async (request, reply) => {
     const id = await conSesion(request, reply); if (!id) return reply;
-    await db.query('delete from moai_interno where id = $1 and cuenta_id = $2', [request.params.persona, id]);
+    await db.transaccion(async tx => {
+      await tx.query('delete from moai_interno where id = $1 and cuenta_id = $2', [request.params.persona, id]);
+      await tx.query('delete from fichas_vinculo where cuenta_id = $1 and persona_clave = $2', [id, `interno:${request.params.persona}`]);
+    });
     return lista(id);
   });
 }

@@ -8,6 +8,8 @@ const perfil: Perfil = { nombre: 'Rosa Pérez', nacimientoPendiente: false, comu
 const ok = <T,>(datos: T) => vi.fn(async () => ({ ok: true as const, datos }));
 const api = (extra: Partial<Api> = {}) => ({ cartas: ok([]), cartaVista: ok([]), planes: ok([]), cuidado: ok({ letras: null, guardado: false }), crearPlan: ok([]), responderCuidado: ok({ letras: ['A'], guardado: true }), estado: ok({ invierno: false, puertaAbierta: false, contadoA: [] }), invierno: ok({ invierno: true, puertaAbierta: false, contadoA: [] }), interno: ok([{ id: 'p1', nombre: 'Laura', relacion: '', pendiente: false }]), gente: ok({ encuentros: [], conocidos: [], moais: [], invitaciones: [], pausa: false }), perfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: false }), guardarPerfilPublico: ok({ frase: '', gustos: [], comparte: '', aprender: '', visible: true }), ...extra }) as unknown as Api;
 const elegir = (texto: string) => fireEvent.click(screen.getByRole('button', { name: texto }));
+// Después de la primera vez, Brisa espera cerrada: se abre al tocarla.
+const abrirBrisa = () => fireEvent.click(screen.getByRole('button', { name: 'Hablar con Brisa' }));
 // Las opciones llegan cuando Brisa termina de hablar: se esperan.
 const escribirABrisa = (t: string) => { fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: t } }); fireEvent.click(screen.getByRole('button', { name: 'Enviar' })); };
 const elegirCuandoAparezca = async (texto: string) => fireEvent.click(await screen.findByRole('button', { name: texto }));
@@ -38,12 +40,14 @@ describe('Inicio con Brisa', () => {
     expect(a.cartaVista).toHaveBeenCalledWith('brisa:presentada');
     // Sin menú de entrada: una pregunta directa para conocerse, y las opciones a un toque.
     expect(await screen.findByText('¿Qué haces normalmente un domingo en la tarde?')).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /./ }).filter(b => b.closest('.brisa-opciones'))).toHaveLength(1);
+    // Sin respuestas automáticas (Mateo, 20 de octubre): se responde escribiendo.
+    expect(screen.queryAllByRole('button', { name: /./ }).filter(b => b.closest('.brisa-opciones'))).toHaveLength(0);
   });
 
   it('las cartas pendientes llegan de a una, y después la pregunta', async () => {
     const carta = { clave: 'c1', tipo: 'gente' as const, texto: 'Alguien te invitó a su Moai' };
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ cartas: ok([carta, { ...carta, clave: 'c2', texto: 'Tienes un saludo' }]) })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
     expect(await screen.findByText('Antes, algo que quería contarte:')).toBeInTheDocument();
     expect(screen.queryByText('Y otra cosa:')).toBeNull();
     expect(screen.queryByText('¿Qué te provoca hoy?')).toBeNull();
@@ -52,6 +56,7 @@ describe('Inicio con Brisa', () => {
   it('arma un plan conversando y lo publica', async () => {
     const crearPlan = ok([]);
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ crearPlan })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
     expect(screen.queryByText(/No soy una persona/)).toBeNull();
     fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'Quiero caminar temprano' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
@@ -67,8 +72,9 @@ describe('Inicio con Brisa', () => {
   it('el test de cuidado: seis preguntas, resultado en palabras y se guarda solo si la persona quiere', async () => {
     const responderCuidado = ok({ letras: ['A' as const], guardado: true });
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ responderCuidado })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    await elegirCuandoAparezca('Mejor otra cosa');
-    elegir('Cómo estoy');
+    abrirBrisa();
+    await screen.findByText('¿Qué haces normalmente un domingo en la tarde?');
+    escribirABrisa('hoy me siento un poco triste');
     await elegirCuandoAparezca('Más o menos');
     elegir(await screen.findByRole('button', { name: 'Quiero cuidarme' }).then(b => b.textContent!));
     elegir(await screen.findByRole('button', { name: '¿Cómo cuido y cómo me cuido?' }).then(b => b.textContent!));
@@ -82,6 +88,7 @@ describe('Inicio con Brisa', () => {
 
   it('ante señales de riesgo deriva a una persona y a la línea 123', () => {
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
     fireEvent.change(screen.getByLabelText('Escríbele a Brisa'), { target: { value: 'ya no aguanto más' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
     expect(screen.getByText('123')).toBeInTheDocument();
@@ -108,8 +115,9 @@ describe('Brisa acompaña', () => {
   it('en invierno baja el ritmo y ofrece escribirle a alguien del Moai interno, sin enviar nada por su cuenta', async () => {
     const invierno = vi.fn(async () => ({ ok: true as const, datos: { invierno: true, puertaAbierta: false, contadoA: [] } }));
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ invierno })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    await elegirCuandoAparezca('Mejor otra cosa');
-    elegir('Cómo estoy');
+    abrirBrisa();
+    await screen.findByText('¿Qué haces normalmente un domingo en la tarde?');
+    escribirABrisa('estoy en invierno');
     elegir(await screen.findByRole('button', { name: 'En invierno' }).then(b => b.textContent!));
     expect(invierno).toHaveBeenCalledWith(true);
     elegir(await screen.findByRole('button', { name: 'Escribirle a Laura' }).then(b => b.textContent!));
@@ -120,8 +128,9 @@ describe('Brisa acompaña', () => {
   it('si no se pudo guardar el invierno, no promete bajar el ritmo', async () => {
     const invierno = vi.fn(async () => ({ ok: false as const, error: 'Sin conexión.', status: 0 }));
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ invierno })} ir={vi.fn()} onSalir={vi.fn()}/>);
-    await elegirCuandoAparezca('Mejor otra cosa');
-    elegir('Cómo estoy');
+    abrirBrisa();
+    await screen.findByText('¿Qué haces normalmente un domingo en la tarde?');
+    escribirABrisa('estoy en invierno');
     await elegirCuandoAparezca('En invierno');
     expect(await screen.findByText(/No pude guardarlo: Sin conexión/)).toBeInTheDocument();
     expect(screen.queryByText(/Voy a bajar el ritmo/)).toBeNull();
@@ -132,8 +141,11 @@ describe('Brisa conversa y recuerda (19 de octubre)', () => {
   it('retoma lo que hablaron y no repite la pregunta de ayer', async () => {
     const historial = ok([{ de: 'brisa' as const, texto: '¿Qué haces normalmente un domingo en la tarde?', fecha: '2026-10-18T15:00:00.000Z' }, { de: 'yo' as const, texto: 'Voy a misa y almuerzo con mis nietos', fecha: '2026-10-18T15:01:00.000Z' }]);
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    // Lo de días anteriores queda recogido, para leer lo de hoy sin subir.
+    fireEvent.click(await screen.findByRole('button', { name: 'Ver lo que hablamos antes' }));
     expect(await screen.findByText('Voy a misa y almuerzo con mis nietos')).toBeInTheDocument();
-    expect(await screen.findByText('Cuando terminas tus cosas del día, ¿qué te gusta hacer?')).toBeInTheDocument();
+    expect(await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?')).toBeInTheDocument();
     expect(screen.getAllByText('¿Qué haces normalmente un domingo en la tarde?')).toHaveLength(1);
   });
 
@@ -141,6 +153,7 @@ describe('Brisa conversa y recuerda (19 de octubre)', () => {
     const guardarPerfilPublico = vi.fn(async (p: object) => ({ ok: true as const, datos: p })) as unknown as Api['guardarPerfilPublico'];
     const guardarHistorial = ok({ ok: true as const });
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ guardarPerfilPublico, guardarHistorial })} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
     await screen.findByText('¿Qué haces normalmente un domingo en la tarde?');
     escribirABrisa('Salgo a caminar con mi perro');
     expect(await screen.findByText(/Caminar es de las mejores formas/)).toBeInTheDocument();
@@ -151,10 +164,147 @@ describe('Brisa conversa y recuerda (19 de octubre)', () => {
 
   it('responde dudas sobre la plataforma', async () => {
     render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api()} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
     await screen.findByText('¿Qué haces normalmente un domingo en la tarde?');
     escribirABrisa('¿Qué es un Moai?');
     expect(await screen.findByText(/grupo pequeño, de 2 a 5 personas/)).toBeInTheDocument();
     escribirABrisa('¿Ustedes ven mi dirección?');
     expect(await screen.findByText(/Nadie ve tu dirección/)).toBeInTheDocument();
+  });
+});
+
+describe('Las cartas de Brisa (antes en Mi barrio, ahora en el inicio)', () => {
+  it('cuenta sin culpas que fuiste por tu cuenta y ofrece repetirlo cada semana', async () => {
+    const repetirPlan = ok([]);
+    const cartaVista = ok([]);
+    const cartas = ok([{ clave: 'solo:p1', tipo: 'solo', planId: 'p1', repetir: true, texto: 'Esta vez fuiste por tu cuenta a «Voy a caminar». ¿Lo repetimos cada domingo?' }]);
+    render(<InicioBrisa perfil={perfil} api={api({ cartas, repetirPlan, cartaVista } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText(/Esta vez fuiste por tu cuenta/)).toBeInTheDocument();
+    await elegirCuandoAparezca('Sí, cada semana');
+    await vi.waitFor(() => expect(repetirPlan).toHaveBeenCalledWith('p1'));
+    await vi.waitFor(() => expect(cartaVista).toHaveBeenCalledWith('solo:p1'));
+  });
+
+  it('una recomendación siempre dice por qué la ves', async () => {
+    const plan = { id: 'p1', titulo: 'Voy a caminar', descripcion: '', cuando: '2026-10-25T13:00:00.000Z', lugarPublico: 'Parque de Laureles', zona: 'Laureles', franja: 'Muy cerca', alcance: 'cerca', tipo: 'caminar', repite: 'semanal', diaRepite: 'domingos', autor: 'Luis', mio: false, voy: false, lleno: false, costo: 'gratis' };
+    const cartas = ok([{ clave: 'sug:p1', tipo: 'sugerencia', planId: 'p1', plan, texto: 'Luis invita los domingos a las 8:00 a. m. en el Parque de Laureles: «Voy a caminar». ¿Te sumas?', motivo: 'Porque me pediste que te contara de planes de caminar.' }]);
+    render(<InicioBrisa perfil={perfil} api={api({ cartas } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText(/Luis invita los domingos/)).toBeInTheDocument();
+    expect(screen.queryByText(/Porque me pediste/)).toBeNull();
+    await elegirCuandoAparezca('¿Por qué veo esto?');
+    expect(screen.getByText('Porque me pediste que te contara de planes de caminar.')).toBeInTheDocument();
+  });
+});
+
+describe('Brisa espera (19 de octubre)', () => {
+  it('después de la primera vez no se abre sola; se abre al tocarla y se cierra con la X sin volver a saludar', async () => {
+    const a = api();
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={a} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(screen.getByRole('heading', { level: 1, name: 'Hola, Rosa' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Escríbele a Brisa')).toBeNull();
+    abrirBrisa();
+    expect(await screen.findByText(/^Buen(os|as) (días|tardes|noches)/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar la conversación' }));
+    expect(screen.getByRole('button', { name: 'Hablar con Brisa' })).toBeInTheDocument();
+    abrirBrisa();
+    expect(screen.getAllByText(/^Buen(os|as) (días|tardes|noches)/)).toHaveLength(1);
+  });
+
+  it('si hay algo pendiente, lo dice sin abrir la conversación', async () => {
+    const cartas = ok([{ clave: 'c1', tipo: 'gente' as const, texto: 'Alguien te invitó a su Moai' }]);
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ cartas } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    expect(await screen.findByText('Tengo algo que contarte cuando quieras.')).toBeInTheDocument();
+    expect(screen.queryByText('Alguien te invitó a su Moai')).toBeNull();
+  });
+});
+
+describe('Brisa pregunta por la red de apoyo (20 de octubre)', () => {
+  const historial = ok([{ de: 'brisa' as const, texto: '¿Qué haces normalmente un domingo en la tarde?', fecha: '2026-10-18T15:00:00.000Z' }]);
+  const ana = vi.fn(async () => ({ ok: true as const, datos: [{ id: 'i9', nombre: 'Ana', relacion: 'mi hermana', pendiente: false }] }));
+  it('si no sabe qué es para ti, lo pregunta; a la familia no le pregunta cómo se conocieron', async () => {
+    const guardarFichaVinculo = vi.fn(async () => ({ ok: true as const, datos: {} }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, agregarInterno: ana, guardarFichaVinculo } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    expect(await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?')).toBeInTheDocument();
+    // Ni aviso de cifrado en el chat (va en la política) ni respuestas automáticas.
+    expect(screen.queryByText(/cifrado/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ahora no' })).toBeNull();
+    escribirABrisa('Se llama Ana');
+    expect(await screen.findByText('¿Y qué es Ana para ti?')).toBeInTheDocument();
+    escribirABrisa('mi hermana');
+    expect(await screen.findByText('¿Qué les gusta hacer juntos con Ana?')).toBeInTheDocument();
+    expect(screen.queryByText(/Cómo se conocieron/)).toBeNull();
+    escribirABrisa('Cocinar los domingos');
+    expect(await screen.findByText('Qué bonito. Ya tienes a Ana en Mi gente, con tu familia.')).toBeInTheDocument();
+    expect(ana).toHaveBeenCalledWith({ nombre: 'Ana', relacion: 'hermana', familia: true });
+    expect(guardarFichaVinculo).toHaveBeenCalledWith('interno:i9', { comoNosConocemos: '', algoCompartimos: 'Cocinar los domingos', nota: '' });
+  });
+
+  it('«mi madre» ya dice quién es: no vuelve a preguntar qué es para ti', async () => {
+    const agregarInterno = vi.fn(async () => ({ ok: true as const, datos: [{ id: 'i1', nombre: 'Mamá', relacion: 'mamá', pendiente: false }] }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, agregarInterno } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
+    escribirABrisa('Mi madre es una persona importante para mí');
+    expect(await screen.findByText('¿Qué les gusta hacer juntos con tu mamá?')).toBeInTheDocument();
+    expect(screen.queryByText(/qué es .* para ti/)).toBeNull();
+    escribirABrisa('Tomar café en la tarde');
+    expect(await screen.findByText('Qué bonito. Ya tienes a tu mamá en Mi gente, con tu familia.')).toBeInTheDocument();
+    expect(agregarInterno).toHaveBeenCalledWith({ nombre: 'Mamá', relacion: 'mamá', familia: true });
+  });
+
+  it('con alguien que no es familia pregunta cómo se conocieron, y «ahora no» no guarda nada', async () => {
+    const agregarInterno = vi.fn(async () => ({ ok: true as const, datos: [{ id: 'i2', nombre: 'Laura', relacion: 'amiga', pendiente: false }] }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, agregarInterno } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
+    escribirABrisa('ahora no');
+    expect(await screen.findByText('Está bien. Cuando quieras me cuentas.')).toBeInTheDocument();
+    expect(agregarInterno).not.toHaveBeenCalled();
+  });
+
+  it('si hoy ya hablaron, al volver a abrir no saluda de nuevo ni repite la pregunta', async () => {
+    const hoy = new Date().toISOString();
+    const deHoy = ok([{ de: 'brisa' as const, texto: '¿Qué haces normalmente un domingo en la tarde?', fecha: hoy }]);
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial: deHoy } as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    expect(await screen.findByText('¿Qué haces normalmente un domingo en la tarde?')).toBeInTheDocument();
+    await new Promise(r => setTimeout(r, 50));
+    expect(screen.queryByText(/^Buen(os|as) (días|tardes|noches)/)).toBeNull();
+    expect(screen.getAllByText('¿Qué haces normalmente un domingo en la tarde?')).toHaveLength(1);
+  });
+});
+
+describe('Brisa conversa con el modelo de pruebas (20 de octubre)', () => {
+  const historial = ok([{ de: 'brisa' as const, texto: '¿Qué haces normalmente un domingo en la tarde?', fecha: '2026-10-18T15:00:00.000Z' }]);
+  it('responde lo que la persona escribe y avisa que es una versión de pruebas con Gemini', async () => {
+    const modeloBrisa = ok({ disponible: true, conversa: true, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'v' });
+    const conversarBrisa = vi.fn(async () => ({ ok: true as const, datos: { respuesta: 'Qué rico un tinto con lluvia. ¿Con quién te lo tomas?' } }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, modeloBrisa, conversarBrisa } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    expect(await screen.findByText(/Versión de pruebas: Brisa responde con Gemini/)).toBeInTheDocument();
+    await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
+    escribirABrisa('ahora no');
+    await screen.findByText('Está bien. Cuando quieras me cuentas.');
+    escribirABrisa('hoy llovió y me tomé un tinto');
+    expect(await screen.findByText('Qué rico un tinto con lluvia. ¿Con quién te lo tomas?')).toBeInTheDocument();
+    expect(conversarBrisa).toHaveBeenCalledWith(expect.arrayContaining([{ de: 'yo', texto: 'hoy llovió y me tomé un tinto' }]), null);
+  });
+
+  it('si el modelo no responde, lo explica y permite enviar otra pregunta sin fingir una respuesta del guion', async () => {
+    const modeloBrisa = ok({ disponible: true, conversa: true, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'v' });
+    const conversarBrisa = vi.fn<Api['conversarBrisa']>(async () => ({ ok: false as const, error: 'El modelo no respondió.', status: 503 }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, modeloBrisa, conversarBrisa } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
+    escribirABrisa('ahora no');
+    await screen.findByText('Está bien. Cuando quieras me cuentas.');
+    escribirABrisa('hoy llovió y me tomé un tinto');
+    await vi.waitFor(() => expect(conversarBrisa).toHaveBeenCalled());
+    expect(await screen.findByText('No pude obtener una respuesta de Gemini. Puedes volver a intentarlo o usar «Buscar un plan».')).toBeInTheDocument();
+    expect(screen.queryByText('Gracias por contarme. Me gusta conocerte un poco más.')).toBeNull();
+    conversarBrisa.mockResolvedValueOnce({ ok: true, datos: { respuesta: 'Podrías invitar a dos vecinos a leer una novela corta.' } });
+    escribirABrisa('¿Cómo empiezo un club de lectura imaginario?');
+    expect(await screen.findByText('Podrías invitar a dos vecinos a leer una novela corta.')).toBeInTheDocument();
   });
 });
