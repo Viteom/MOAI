@@ -80,3 +80,15 @@ Con la clave de Mateo en su `.env` local y `GEMINI_MODEL=gemini-flash-latest`, d
 - «me provoca un café el jueves, algo que no cueste» llegó bien a Gemini, pero MOAI la rechazó: «algo que no cueste» cuenta como restricción que esta versión no representa todavía.
 
 Diagnóstico sin exponer la clave ni el texto de la respuesta: `npx tsx --env-file=.env scripts/diagnostico-gemini.ts "frase inventada"` (muestra modelo, estado HTTP, `finishReason` y tokens).
+
+## Brisa conversa con Gemini (20 de octubre de 2026, decisión de Mateo para la etapa de pruebas)
+
+Mateo decidió que, mientras MOAI esté en pruebas con el equipo, Brisa converse con Gemini en su modalidad gratuita, sin esperar costos ni revisión jurídica. **No es para personas reales fuera del equipo**: en la modalidad gratuita, Google puede usar lo enviado para mejorar sus productos.
+
+- Se activa con `BRISA_GEMINI_CONVERSA=true` además de `BRISA_GEMINI_BETA=true`, la clave y el modelo. Apagada por defecto.
+- Modelo recomendado: `gemini-3.5-flash-lite` (respondió en 1 a 5 segundos). `gemini-flash-latest` estaba saturado (503) y `gemini-3.8-flash` sin cuota gratuita en esta clave; `gemini-2.5-*` ya no está disponible para cuentas nuevas.
+- Al modelo llegan solo los últimos turnos de texto de hoy (hasta 12) y, si la hay, la pregunta que Brisa acababa de hacer. Nunca el nombre, el correo, la ciudad, los lugares, la memoria, las fichas, los Moais ni los planes.
+- Las acciones siguen con guion y confirmación: proponer y buscar planes, la red de apoyo y la tarjeta. Las señales de riesgo se responden sin pasar por el modelo, con la línea 123.
+- Cuota: 80 conversaciones por cuenta y 800 en total cada 24 horas (filas `conversa-v1` en `brisa_interpretaciones`, solo metadatos). Si el modelo falla o se agota la cuota, Brisa sigue con el guion sin mostrar error.
+- La interfaz lo avisa bajo el campo de texto: «Versión de pruebas: Brisa responde con Gemini, de Google. No escribas datos sensibles.» (regla 10).
+- Prueba sin la app: `BRISA_GEMINI_CONVERSA=true npx tsx --env-file=.env scripts/probar-conversa.ts`.

@@ -40,6 +40,7 @@ function apiFalsa(sesion: 'activa' | 'anonima' | 'sin-red' = 'anonima', nuevo = 
     salir: vi.fn(async () => ({ ok: true as const, datos: { ok: true as const } })),
     memoriaBrisa: vi.fn(async () => ({ ok: true as const, datos: { memoria: null } })),
     modeloBrisa: vi.fn(async () => ({ ok: true as const, datos: { disponible: false, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'beta' } })),
+    conversarBrisa: vi.fn(async () => ({ ok: false as const, error: 'apagado', status: 503 })),
     interpretarConBrisa: vi.fn(),
     guardarMemoriaBrisa: vi.fn(), borrarMemoriaBrisa: vi.fn(), buscarConBrisa: vi.fn(),
     confirmarPropuestaBrisa: vi.fn(), descartarPropuestaBrisa: vi.fn(), accionesBrisa: vi.fn(async () => ({ ok: true as const, datos: [] })),

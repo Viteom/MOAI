@@ -98,6 +98,7 @@ async function llamar<T>(ruta: string, cuerpo?: object, metodo?: 'DELETE'): Prom
 
 export const api = {
   modeloBrisa: () => llamar<CapacidadLenguaje>('brisa/modelo'),
+  conversarBrisa: (turnos: { de: 'yo' | 'brisa'; texto: string }[], pregunta: string | null) => llamar<{ respuesta: string }>('brisa/conversar', { turnos, pregunta }),
   interpretarConBrisa: (b: { frase: string; autorizo: string; datosFicticios: true }) => llamar<InterpretacionLenguaje>('brisa/interpretar', b),
   memoriaBrisa: () => llamar<{ memoria: MemoriaBrisa | null }>('brisa/memoria'),
   guardarMemoriaBrisa: (p: PreferenciasBrisa & { autorizo: true; version: string }) => llamar<{ memoria: MemoriaBrisa }>('brisa/memoria', p),

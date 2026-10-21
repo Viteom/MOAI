@@ -274,3 +274,33 @@ describe('Brisa pregunta por la red de apoyo (20 de octubre)', () => {
     expect(screen.getAllByText('¿Qué haces normalmente un domingo en la tarde?')).toHaveLength(1);
   });
 });
+
+describe('Brisa conversa con el modelo de pruebas (20 de octubre)', () => {
+  const historial = ok([{ de: 'brisa' as const, texto: '¿Qué haces normalmente un domingo en la tarde?', fecha: '2026-10-18T15:00:00.000Z' }]);
+  it('responde lo que la persona escribe y avisa que es una versión de pruebas con Gemini', async () => {
+    const modeloBrisa = ok({ disponible: true, conversa: true, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'v' });
+    const conversarBrisa = vi.fn(async () => ({ ok: true as const, datos: { respuesta: 'Qué rico un tinto con lluvia. ¿Con quién te lo tomas?' } }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, modeloBrisa, conversarBrisa } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    expect(await screen.findByText(/Versión de pruebas: Brisa responde con Gemini/)).toBeInTheDocument();
+    await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
+    escribirABrisa('ahora no');
+    await screen.findByText('Está bien. Cuando quieras me cuentas.');
+    escribirABrisa('hoy llovió y me tomé un tinto');
+    expect(await screen.findByText('Qué rico un tinto con lluvia. ¿Con quién te lo tomas?')).toBeInTheDocument();
+    expect(conversarBrisa).toHaveBeenCalledWith(expect.arrayContaining([{ de: 'yo', texto: 'hoy llovió y me tomé un tinto' }]), null);
+  });
+
+  it('si el modelo no responde, sigue con el guion sin mostrar error', async () => {
+    const modeloBrisa = ok({ disponible: true, conversa: true, proveedor: 'Gemini' as const, soloPruebas: true as const, version: 'v' });
+    const conversarBrisa = vi.fn(async () => ({ ok: false as const, error: 'El modelo no respondió.', status: 503 }));
+    render(<InicioBrisa perfil={{ ...perfil, presentada: true }} api={api({ historial, modeloBrisa, conversarBrisa } as unknown as Partial<Api>)} ir={vi.fn()} onSalir={vi.fn()}/>);
+    abrirBrisa();
+    await screen.findByText('¿Quién es una persona importante para ti, que te apoya, aunque no use MOAI?');
+    escribirABrisa('ahora no');
+    await screen.findByText('Está bien. Cuando quieras me cuentas.');
+    escribirABrisa('hoy llovió y me tomé un tinto');
+    await vi.waitFor(() => expect(conversarBrisa).toHaveBeenCalled());
+    expect(screen.queryByText('El modelo no respondió.')).toBeNull();
+  });
+});

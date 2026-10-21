@@ -1161,3 +1161,5 @@ button.chip.persona { cursor: pointer; }
   .panel-brisa, .panel-brisa.flotante { top: 10svh; }
   .panel-brisa .brisa-quien .orbe { --tam: 36px; }
 }
+
+.brisa-beta { margin: 2px 0 0; font-size: 13px; line-height: 1.4; text-align: center; color: var(--int-suave); }

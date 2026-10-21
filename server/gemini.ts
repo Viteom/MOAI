@@ -1,5 +1,5 @@
 // Transporte exclusivo del servidor. Credenciales fuera de URL y del frontend. Sin SDK ni reintentos automáticos.
-import { esquemaExtraccion, instruccionesLenguaje, type ProveedorBrisa } from './lenguaje-brisa.js';
+import { esquemaConversa, esquemaExtraccion, instruccionesConversa, instruccionesLenguaje, type ProveedorBrisa, type TurnoBrisa } from './lenguaje-brisa.js';
 
 export type TransporteModelo = (url: string, opciones: RequestInit) => Promise<Response>;
 const MAX_RESPUESTA = 32_768;
@@ -24,30 +24,34 @@ export function geminiDesdeEntorno(env: Record<string, string | undefined>, tran
   if (env.BRISA_GEMINI_BETA !== 'true') return null;
   const clave = env.GEMINI_API_KEY?.trim(), modelo = env.GEMINI_MODEL?.trim();
   if (!clave || !modelo || !/^gemini-[a-zA-Z0-9._-]{1,70}$/.test(modelo)) throw new Error('La beta de Gemini requiere GEMINI_API_KEY y un GEMINI_MODEL válido en el servidor.');
+  const llamar = async (sistema: string, contents: unknown[], esquema: unknown, maxOutputTokens: number, temperature: number) => {
+    try {
+      const respuesta = await transporte(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+        method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15_000),
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: sistema }] }, contents,
+          // Pensar lo menos posible: si no, el razonamiento consume los tokens de salida y corta la respuesta (MAX_TOKENS),
+          // visto en la primera prueba real (20 de octubre). La familia 2.x usa un presupuesto; las siguientes, un nivel.
+          generationConfig: { candidateCount: 1, maxOutputTokens, temperature, responseMimeType: 'application/json', responseJsonSchema: esquema, thinkingConfig: pensarPoco(modelo) },
+        }),
+      });
+      if (!respuesta.ok) { await respuesta.body?.cancel(); throw new FalloGemini(); }
+      const cuerpo = await leerLimitado(respuesta);
+      const candidatos = cuerpo.candidates as { finishReason?: string; content?: { parts?: { text?: unknown; thought?: boolean; functionCall?: unknown }[] } }[] | undefined;
+      if (!Array.isArray(candidatos) || candidatos.length !== 1 || candidatos[0]?.finishReason !== 'STOP') throw new FalloGemini();
+      const partes = candidatos[0]?.content?.parts;
+      if (!Array.isArray(partes) || !partes.length || partes.some(p => !p || typeof p.text !== 'string' || Object.hasOwn(p, 'functionCall'))) throw new FalloGemini();
+      return JSON.parse(partes.filter(p => p.thought !== true).map(p => p.text).join('')) as unknown;
+    } catch { throw new FalloGemini(); } // Nunca devuelve contenido de errores o claves del proveedor.
+  };
+  const conversar = env.BRISA_GEMINI_CONVERSA === 'true'
+    ? (turnos: TurnoBrisa[], pregunta: string | null) => llamar(
+      instruccionesConversa + (pregunta ? `\nPregunta que Brisa acababa de hacer: «${pregunta}»` : ''),
+      turnos.map(t => ({ role: t.de === 'yo' ? 'user' : 'model', parts: [{ text: t.texto }] })), esquemaConversa, 400, .7)
+    : undefined;
   return {
-    nombre: 'Gemini', modelo,
-    async interpretar(frase) {
-      try {
-        const respuesta = await transporte(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-          method: 'POST', redirect: 'error', signal: AbortSignal.timeout(12_000),
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': clave },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: instruccionesLenguaje }] },
-            contents: [{ role: 'user', parts: [{ text: frase }] }],
-            // Pensar lo menos posible: si no, el razonamiento consume los tokens de salida y corta la respuesta (MAX_TOKENS),
-            // visto en la primera prueba real (20 de octubre). La familia 2.5 usa un presupuesto; las siguientes, un nivel.
-            generationConfig: { candidateCount: 1, maxOutputTokens: 600, temperature: 0, responseMimeType: 'application/json', responseJsonSchema: esquemaExtraccion, thinkingConfig: pensarPoco(modelo) },
-          }),
-        });
-        if (!respuesta.ok) { await respuesta.body?.cancel(); throw new FalloGemini(); }
-        const cuerpo = await leerLimitado(respuesta);
-        const candidatos = cuerpo.candidates;
-        if (!Array.isArray(candidatos) || candidatos.length !== 1 || candidatos[0]?.finishReason !== 'STOP') throw new FalloGemini();
-        const partes = candidatos[0]?.content?.parts;
-        if (!Array.isArray(partes) || !partes.length || partes.some(p => !p || typeof p.text !== 'string' || Object.hasOwn(p, 'functionCall'))) throw new FalloGemini();
-        const texto = partes.filter(p => p.thought !== true).map(p => p.text).join('');
-        return JSON.parse(texto) as unknown;
-      } catch { throw new FalloGemini(); } // Nunca devuelve contenido de errores o claves del proveedor.
-    },
+    nombre: 'Gemini', modelo, conversar,
+    interpretar: frase => llamar(instruccionesLenguaje, [{ role: 'user', parts: [{ text: frase }] }], esquemaExtraccion, 600, 0),
   };
 }

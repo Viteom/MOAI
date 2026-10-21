@@ -156,6 +156,10 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const ultimaVez = useRef<Date | null>(null);
   const red = useRef<PersonaDicha & { conocen: string }>({ nombre: '', relacion: '', familia: false, conNombre: true, conocen: '' });
   const lineasHoy = useRef<{ de: string; texto: string }[]>([]);
+  // Conversación con modelo (pruebas, 20 de octubre): solo si el servidor la tiene activa (BRISA_GEMINI_CONVERSA).
+  const [conversa, setConversa] = useState(false);
+  const conversaRef = useRef(false);
+  const mensajesRef = useRef<Mensaje[]>([]);
 
   // Lo que se dice en texto se guarda (cifrado, 90 días) en lotes pequeños; las tarjetas y los planes no.
   const porGuardar = useRef<Previo[]>([]);
@@ -211,7 +215,22 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
   const nota = useCallback((c: ReactNode) => encolar([{ id: siguiente.current++, de: 'brisa', contenido: c, nota: true }]), [encolar]);
   const hablo = useRef(false); // si la persona ya tomó la palabra, el saludo no la interrumpe con más cartas
   const yo = useCallback((t: string) => { hablo.current = true; setMensajes(m => [...m, { id: siguiente.current++, de: 'yo', contenido: t }]); registrar('yo', t); }, [registrar]);
-  useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes, opciones]); // también al aparecer las opciones, que achican el espacio
+  useEffect(() => { final.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' }); }, [mensajes, opciones]);
+  useEffect(() => { mensajesRef.current = mensajes; }, [mensajes]);
+  useEffect(() => { void api.modeloBrisa?.().then(r => { const si = !!(r?.ok && r.datos.conversa); conversaRef.current = si; setConversa(si); }); }, [api]);
+  // Lo que se envía: solo los últimos turnos de texto de hoy y la pregunta pendiente. Nada de nombre, lugar ni memoria.
+  async function hablarConModelo(t: string, pregunta: string | null = null): Promise<boolean> {
+    if (!conversaRef.current || !api.conversarBrisa) return false;
+    const antes = [...previos.filter(m => m.hoy).map(m => ({ de: m.de, texto: m.texto })),
+      ...mensajesRef.current.filter(m => typeof m.contenido === 'string' && !m.nota).map(m => ({ de: m.de, texto: m.contenido as string }))]
+      .filter(m => m.texto !== t).slice(-10);
+    setEscribiendo(true);
+    const r = await api.conversarBrisa([...antes, { de: 'yo', texto: t }], pregunta).catch(() => null);
+    setEscribiendo(false);
+    if (!vivo.current) return true;
+    if (r?.ok) { decir(r.datos.respuesta); return true; }
+    return false;
+  } // también al aparecer las opciones, que achican el espacio
 
   // ---- Menú principal ----
   // La primera vez, lo primero es contar de ti; después, lo de todos los días. El resto, detrás de «Otra cosa».
@@ -298,7 +317,10 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       if (otra) preguntar(otra); else { conociendote.current = false; mostrarPerfil(); }
       return;
     }
-    decir(reaccionar(p, t));
+    void hablarConModelo(t, p?.texto ?? null).then(usado => seguirRespuesta(p, t, usado));
+  }
+  function seguirRespuesta(p: Pregunta | null, t: string, usado: boolean) {
+    if (!usado) decir(reaccionar(p, t));
     if (p && anotar(p, t)) {
       decir('¿Lo sumo a tu tarjeta para los vecinos? Solo la ven si tú lo apruebas.');
       setOpciones([
@@ -312,7 +334,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       ]);
       return;
     }
-    conversar();
+    if (!usado) conversar();
   }
 
   function conocer() {
@@ -574,8 +596,8 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
     if (/cuid|cansad|agotad|nutre|limite/.test(plano)) { void cuidarme(); return; }
     if (/quiero|ganas|voy a|me gustaria/.test(plano)) { iniciarPlan(entenderPlan(t)); return; }
     if (esDuda(t)) { decir('Esa no me la sé todavía. Puedes preguntarme por los planes, los Moais, tu privacidad o tu cuenta.'); return; }
-    // Lo demás es conversación: Brisa reacciona a lo que le cuentan y sigue.
-    conversar(reaccionar(null, t));
+    // Lo demás es conversación: el modelo responde si está activo; si no, Brisa reacciona con el guion.
+    void hablarConModelo(t).then(usado => { if (!usado) conversar(reaccionar(null, t)); });
   }
 
   // ---- Saludo ----
@@ -662,6 +684,7 @@ export function ConversacionBrisa({ perfil, api, ir, empezar, titulo, onCerrar }
       <Dictado alTexto={setTexto}/>
       <button type="submit" className="boton-enviar" aria-label="Enviar"><SendHorizontal aria-hidden="true"/></button>
     </form>
+    {conversa && <p className="brisa-beta">Versión de pruebas: Brisa responde con Gemini, de Google. No escribas datos sensibles.</p>}
     {escena && <EscenaCuidado onTerminar={alTerminarEscena}/>}
     </div>;
 }

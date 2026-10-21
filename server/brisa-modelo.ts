@@ -9,7 +9,7 @@ export const LIMITE_GLOBAL_MODELO = 100;
 export function registrarModeloBrisa(app: FastifyInstance, db: Db, cuentaDeSesion: (r: FastifyRequest) => Promise<string | null>, ahora: () => Date, proveedor: ProveedorBrisa | null) {
   app.get('/api/brisa/modelo', async (r, reply) => {
     const id = await cuentaDeSesion(r); if (!id) return reply.code(401).send({ error: 'Sin sesión.' });
-    return { disponible: !!proveedor, proveedor: 'Gemini', soloPruebas: true, version: VERSION_LENGUAJE } satisfies CapacidadLenguaje;
+    return { disponible: !!proveedor, conversa: !!proveedor?.conversar, proveedor: 'Gemini', soloPruebas: true, version: VERSION_LENGUAJE } satisfies CapacidadLenguaje;
   });
   app.post('/api/brisa/interpretar', async (r, reply) => {
     const id = await cuentaDeSesion(r); if (!id) return reply.code(401).send({ error: 'Sin sesión.' });
@@ -25,7 +25,7 @@ export function registrarModeloBrisa(app: FastifyInstance, db: Db, cuentaDeSesio
       const [c] = await tx.query<{ propios: number; globales: number; pendiente: boolean }>(
         `select count(*) filter (where cuenta_id = $1)::int as propios, count(*)::int as globales,
           coalesce(bool_or(cuenta_id = $1 and terminado_en is null and creado_en > $2::timestamptz - interval '20 seconds'), false) as pendiente
-         from brisa_interpretaciones where creado_en > $2::timestamptz - interval '24 hours'`, [id, ahora()]);
+         from brisa_interpretaciones where version = $3 and creado_en > $2::timestamptz - interval '24 hours'`, [id, ahora(), VERSION_LENGUAJE]);
       if (c.propios >= LIMITE_CUENTA_MODELO || c.globales >= LIMITE_GLOBAL_MODELO || c.pendiente) return null;
       const [fila] = await tx.query<{ id: string }>(`insert into brisa_interpretaciones (cuenta_id, modelo, version, creado_en) values ($1, $2, $3, $4) returning id`, [id, proveedor.modelo, VERSION_LENGUAJE, ahora()]);
       return fila.id;

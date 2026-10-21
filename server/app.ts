@@ -17,6 +17,7 @@ import { registrarCuenta } from './cuenta.js';
 import { registrarHistorial } from './historial.js';
 import { registrarIntencionesBrisa } from './brisa-intenciones.js';
 import { registrarModeloBrisa } from './brisa-modelo.js';
+import { registrarConversaBrisa } from './brisa-conversa.js';
 import type { ProveedorBrisa } from './lenguaje-brisa.js';
 import { crearCifrador } from './cifrado.js';
 import { RESPONSABLE } from '../src/lib/legal.js';
@@ -246,6 +247,7 @@ export async function crearApp({ db, vias, secreto, produccion = false, ahora = 
   registrarHistorial(app, db, cuentaAdulta, ahora, cifrador);
   registrarIntencionesBrisa(app, db, cuentaAdulta, ahora, cifrador);
   registrarModeloBrisa(app, db, cuentaAdulta, ahora, modeloBrisa);
+  registrarConversaBrisa(app, db, cuentaAdulta, ahora, modeloBrisa);
   registrarCuenta(app, db, cuentaDeSesion, ahora, cifrador, COOKIE_SESION); // también sin edad declarada: borrar y descargar son derechos de todos
   registrarMoais(app, db, cuentaAdulta, ahora, refs, puedeConversar);
   registrarEquipo(app, db, cuentaAdulta, ahora, async id => esEquipo((await db.query<{ destino: string }>('select destino from cuentas where id = $1', [id]))[0]?.destino ?? ''));
