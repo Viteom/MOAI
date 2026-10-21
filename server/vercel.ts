@@ -36,7 +36,10 @@ export async function iniciarVercel(env: NodeJS.ProcessEnv = process.env, abrir:
   // También las previews usan cookies seguras y correo real: nunca códigos en registros de Vercel.
   const entorno: NodeJS.ProcessEnv = { ...validarEntornoVercel(env), NODE_ENV: 'production' };
   const envios = viasDesdeEntorno(entorno);
-  const modeloBrisa = geminiDesdeEntorno(entorno);
+  // Un error en la configuración de Gemini apaga solo Gemini; el resto de MOAI sigue (20 de octubre).
+  let modeloBrisa: ReturnType<typeof geminiDesdeEntorno> = null;
+  try { modeloBrisa = geminiDesdeEntorno(entorno); }
+  catch { console.error('Gemini quedó apagado. Revisa en Preview las variables GEMINI_API_KEY y GEMINI_MODEL (sin espacios ni comillas; el modelo empieza por gemini-).'); }
   const db = await abrir({ url: entorno.DATABASE_URL, inicializar: false, maxConexiones: 3 });
   try {
     const [{ preparada }] = await db.query<{ preparada: boolean }>("select to_regclass('public.brisa_interpretaciones') is not null as preparada");
@@ -78,6 +81,8 @@ export function crearManejadorVercel(iniciar: () => Promise<FastifyInstance> = i
       });
     } catch (error) {
       if (error instanceof ConfiguracionVercelIncompleta) console.error('Revisa las variables del servidor de MOAI:', error.variables.join(', '));
+      // Solo mensajes propios y sin secretos; los de la base o del proveedor pueden traer direcciones o claves.
+      else if (error instanceof Error && /^(La base requiere preparar el esquema|La beta de Gemini requiere)/.test(error.message)) console.error('No se pudo iniciar MOAI:', error.message);
       else console.error('No se pudo atender una solicitud del servidor de MOAI.');
       if (!reply.headersSent) {
         reply.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'private, no-store' });

@@ -168,3 +168,16 @@ describe('Entrada HTTP real de la función con base aislada y proveedores simula
     } finally { puerto = anterior; await new Promise<void>(resolve => temporal.close(() => resolve())); log.mockRestore(); }
   });
 });
+
+describe('Gemini mal configurado (20 de octubre)', () => {
+  it('apaga solo Gemini y avisa qué revisar; el resto de MOAI arranca', async () => {
+    const db = await abrirDb();
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const app = await iniciarVercel({ ...entorno, BRISA_GEMINI_BETA: 'true', GEMINI_API_KEY: '', GEMINI_MODEL: '"gemini-3.5-flash-lite"' }, vi.fn(async () => db));
+      expect((await app.inject({ method: 'GET', url: '/api/health' })).statusCode).toBe(200);
+      expect(log.mock.calls.flat().join(' ')).toMatch(/Gemini quedó apagado.*GEMINI_API_KEY y GEMINI_MODEL/);
+      await app.close();
+    } finally { log.mockRestore(); }
+  });
+});
