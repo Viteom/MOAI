@@ -5,19 +5,19 @@ import { cellToBoundary, cellToLatLng, gridDisk, gridDistance } from 'h3-js';
 import {
   alcances, barriosMedellin, franja, MAX_LUGARES, nombreDeZona, nombreTipo, proximaOcurrencia, tipos, ultimaOcurrencia, validarLugar, validarPlan,
   type Costo, type EntradaLugar, type EntradaPlan, type Repite, type Tipo,
-} from '../src/lib/lugares';
-import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api';
-import type { Consulta, Db } from './db';
-import { reservarAsistencia } from './asistencia';
-import { enPausa, type Refs } from './personas';
-import { cartasDeGente } from './moais';
-import { MAX_DETALLE_REPORTE, mensajePausa, motivosReporte } from '../src/lib/moai';
-import { revisarMensaje } from '../src/lib/moderacion';
-import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones';
-import { organizacionesDe } from './equipo';
-import { cartaInterna, cartaRepetirCuidado } from './cuidado';
-import { cartasDeCercania, enInvierno } from './cercania';
-import type { Cifrador } from './cifrado';
+} from '../src/lib/lugares.js';
+import type { Carta, Lugar, Mapa, Mensaje, Plan, Preferencias } from '../src/lib/api.js';
+import type { Consulta, Db } from './db.js';
+import { reservarAsistencia } from './asistencia.js';
+import { enPausa, type Refs } from './personas.js';
+import { cartasDeGente } from './moais.js';
+import { MAX_DETALLE_REPORTE, mensajePausa, motivosReporte } from '../src/lib/moai.js';
+import { revisarMensaje } from '../src/lib/moderacion.js';
+import { MAX_CUPO_CONVOCATORIA, MAX_CUPO_PLAN, type TipoOrganizacion } from '../src/lib/organizaciones.js';
+import { organizacionesDe } from './equipo.js';
+import { cartaInterna, cartaRepetirCuidado } from './cuidado.js';
+import { cartasDeCercania, enInvierno } from './cercania.js';
+import type { Cifrador } from './cifrado.js';
 
 type FilaLugar = { id: string; nombre: string; ciudad: string; barrio: string | null; celda: string | null; activo: boolean };
 type FilaPlan = {

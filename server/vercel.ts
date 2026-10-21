@@ -1,13 +1,13 @@
 // Entrada de servidor reutilizable por instancia de Vercel. No abre puertos, archivos locales ni temporizadores.
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { FastifyInstance } from 'fastify';
-import { abrirDb } from './db';
-import { crearApp } from './app';
-import { crearCifrador } from './cifrado';
-import { viasDesdeEntorno } from './envios';
-import { geminiDesdeEntorno } from './gemini';
-import { registrarTareasVercel } from './tareas-vercel';
-import { urlDbDesdeEntorno } from './entorno-db';
+import { abrirDb } from './db.js';
+import { crearApp } from './app.js';
+import { crearCifrador } from './cifrado.js';
+import { viasDesdeEntorno } from './envios.js';
+import { geminiDesdeEntorno } from './gemini.js';
+import { registrarTareasVercel } from './tareas-vercel.js';
+import { urlDbDesdeEntorno } from './entorno-db.js';
 
 export class ConfiguracionVercelIncompleta extends Error {
   constructor(readonly variables: string[]) { super('Falta configuración del servidor de MOAI.'); }

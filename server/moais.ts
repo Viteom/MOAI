@@ -7,11 +7,11 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import {
   DIAS_ENCUENTRO, DIAS_MENSAJES_MOAI, ENCUENTROS_PARA_SUGERIR, MAX_DETALLE_REPORTE, MAX_MOAI, mensajePausa, motivosReporte, validarNombreMoai,
-} from '../src/lib/moai';
-import { revisarMensaje } from '../src/lib/moderacion';
-import type { Carta, Conocido, Encuentro, Gente, Invitacion, Mensaje, MoaiResumen } from '../src/lib/api';
-import type { Consulta, Db } from './db';
-import { enPausa, hayBloqueo, type Refs } from './personas';
+} from '../src/lib/moai.js';
+import { revisarMensaje } from '../src/lib/moderacion.js';
+import type { Carta, Conocido, Encuentro, Gente, Invitacion, Mensaje, MoaiResumen } from '../src/lib/api.js';
+import type { Consulta, Db } from './db.js';
+import { enPausa, hayBloqueo, type Refs } from './personas.js';
 
 const MAX_MENSAJE = 500;
 const noBloqueados = (yo: string, otro: string) =>

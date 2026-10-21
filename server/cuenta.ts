@@ -5,12 +5,12 @@
 // - Borrar es inmediato y no se puede deshacer: se van la cuenta y todo lo que cuelga de ella (planes, mensajes,
 //   Moais de los que era la última persona, lugares, reportes hechos y recibidos, lo cifrado y los códigos).
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { Db } from './db';
-import type { Cifrador } from './cifrado';
-import { cuidadoDe, internoDe } from './cuidado';
-import { enInvierno, olvidarInviernoCompleto } from './cercania';
-import { historialDe } from './historial';
-import { accionesBrisaDe, memoriaBrisaDe } from './brisa-intenciones';
+import type { Db } from './db.js';
+import type { Cifrador } from './cifrado.js';
+import { cuidadoDe, internoDe } from './cuidado.js';
+import { enInvierno, olvidarInviernoCompleto } from './cercania.js';
+import { historialDe } from './historial.js';
+import { accionesBrisaDe, memoriaBrisaDe } from './brisa-intenciones.js';
 
 const fechaISO = (f: string | Date | null) => (f ? new Date(f).toISOString() : null);
 

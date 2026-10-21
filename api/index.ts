@@ -1,3 +1,3 @@
-import { crearManejadorVercel } from '../server/vercel';
+import { crearManejadorVercel } from '../server/vercel.js';
 
 export default crearManejadorVercel();

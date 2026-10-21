@@ -1,9 +1,9 @@
 // Lugares guardados y planes (docs/09, apartado 9). Compartido por el frontend y el servidor.
 // Un lugar es un nombre («Casa», «Donde mis papás»…) + un municipio + (en Medellín) un barrio.
 // La celda H3 de ~1 km sale del catálogo de barrios; nunca hay dirección ni coordenadas (regla 1).
-import barriosJson from './colombia/barrios-medellin.json';
-import { municipioPorCodigo } from './registro';
-import { MAX_CUPO_PLAN } from './organizaciones';
+import barriosJson from './colombia/barrios-medellin.json' with { type: 'json' };
+import { municipioPorCodigo } from './registro.js';
+import { MAX_CUPO_PLAN } from './organizaciones.js';
 
 export const MEDELLIN = '05001';
 export const MAX_LUGARES = 5;

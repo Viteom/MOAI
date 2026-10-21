@@ -1,7 +1,7 @@
 // Reglas del registro, compartidas por el formulario (src/) y el servidor (server/).
 // REVISIÓN HUMANA: datos personales y consentimiento (Ley 1581). Los textos legales son borradores.
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js/min';
-import municipiosJson from './colombia/municipios.json';
+import municipiosJson from './colombia/municipios.json' with { type: 'json' };
 
 export type Canal = 'correo' | 'whatsapp';
 export type Municipio = { codigo: string; nombre: string; departamento: string };

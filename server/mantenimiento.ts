@@ -1,14 +1,14 @@
 // Cuentas sin verificar (decisión de Mateo, octubre de 2026):
 // - Se borran a los 20 días, con sus consentimientos (cascade) y sus códigos.
 // - Mientras tanto, si se registraron por correo, reciben un recordatorio cada 3,5 días (dos por semana).
-import type { Consulta } from './db';
-import type { Correo, Recordar } from './envios';
-import { cuandoLegible, planesVisibles } from './comunidad';
-import { DIAS_MENSAJES_MOAI } from '../src/lib/moai';
-import { enInvierno } from './cercania';
-import type { Cifrador } from './cifrado';
-import { borrarHistorialViejo } from './historial';
-import { borrarBrisaVencido } from './brisa-intenciones';
+import type { Consulta } from './db.js';
+import type { Correo, Recordar } from './envios.js';
+import { cuandoLegible, planesVisibles } from './comunidad.js';
+import { DIAS_MENSAJES_MOAI } from '../src/lib/moai.js';
+import { enInvierno } from './cercania.js';
+import type { Cifrador } from './cifrado.js';
+import { borrarHistorialViejo } from './historial.js';
+import { borrarBrisaVencido } from './brisa-intenciones.js';
 
 export const DIAS_PARA_VERIFICAR = 20;
 const HORAS_ENTRE_RECORDATORIOS = 84; // 3,5 días

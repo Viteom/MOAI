@@ -1,13 +1,13 @@
 // REVISIÓN HUMANA: nueva memoria privada autorizada, caducidad y acciones confirmadas.
 // No lee historial, fichas, mensajes, perfiles de terceros ni estados para inferir preferencias.
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import type { Consulta, Db } from './db';
-import type { Cifrador } from './cifrado';
-import { planesVisibles } from './comunidad';
-import { reservarAsistencia, huellaPlan } from './asistencia';
-import { enInvierno } from './cercania';
-import { municipios } from '../src/lib/registro';
-import { coincideConIntencion, interpretarIntencion, normalizarBrisa, validarMemoriaBrisa, VERSION_MEMORIA, type MemoriaBrisa, type ResultadoBrisa } from '../src/lib/brisa-intenciones';
+import type { Consulta, Db } from './db.js';
+import type { Cifrador } from './cifrado.js';
+import { planesVisibles } from './comunidad.js';
+import { reservarAsistencia, huellaPlan } from './asistencia.js';
+import { enInvierno } from './cercania.js';
+import { municipios } from '../src/lib/registro.js';
+import { coincideConIntencion, interpretarIntencion, normalizarBrisa, validarMemoriaBrisa, VERSION_MEMORIA, type MemoriaBrisa, type ResultadoBrisa } from '../src/lib/brisa-intenciones.js';
 
 type Preparada = { planId: string; lugarId?: string; huella?: string; cuando: string; motivo: string; motivoAccion?: string };
 const leer = <T>(c: Cifrador, texto: string): T | null => { try { return JSON.parse(c.descifrar(texto) ?? 'null') as T | null; } catch { return null; } };

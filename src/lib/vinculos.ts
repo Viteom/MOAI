@@ -1,4 +1,4 @@
-import type { PersonaLazo } from './api';
+import type { PersonaLazo } from './api.js';
 
 export const descripcionContacto = { vivo: 'Contacto reciente registrado', tibio: 'Hace un tiempo desde el último contacto registrado', dormido: 'Sin contacto reciente registrado' };
 

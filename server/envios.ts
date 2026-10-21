@@ -2,7 +2,7 @@
 // - Correo: código propio enviado con Resend.
 // - WhatsApp: Twilio Verify genera, envía y comprueba el código.
 // - Sin claves (desarrollo): el código se escribe en la consola del servidor, con el destino enmascarado (regla 7).
-import { enmascarar, type Canal } from '../src/lib/registro';
+import { enmascarar, type Canal } from '../src/lib/registro.js';
 
 export type Proposito = 'registro' | 'acceso';
 export type Propio = { tipo: 'propio'; enviar(destino: string, codigo: string, proposito: Proposito): Promise<void> };

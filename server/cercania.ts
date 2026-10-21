@@ -5,13 +5,13 @@
 // - El invierno se guarda cifrado. Mientras dura, Brisa baja el ritmo: sin sugerencias de planes ni correo semanal.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { gridDistance } from 'h3-js';
-import { DIAS_ENTRE_SALUDOS, DIAS_PUERTA, saludos, textoSaludo, validarPerfil, type EntradaPerfil, type Saludo } from '../src/lib/perfil';
-import type { Tipo } from '../src/lib/lugares';
-import type { Carta, Estado, Vecino } from '../src/lib/api';
-import type { Cifrador } from './cifrado';
-import type { Consulta, Db } from './db';
-import { conocidosDe } from './moais';
-import { enPausa, hayBloqueo, type Refs } from './personas';
+import { DIAS_ENTRE_SALUDOS, DIAS_PUERTA, saludos, textoSaludo, validarPerfil, type EntradaPerfil, type Saludo } from '../src/lib/perfil.js';
+import type { Tipo } from '../src/lib/lugares.js';
+import type { Carta, Estado, Vecino } from '../src/lib/api.js';
+import type { Cifrador } from './cifrado.js';
+import type { Consulta, Db } from './db.js';
+import { conocidosDe } from './moais.js';
+import { enPausa, hayBloqueo, type Refs } from './personas.js';
 
 const ANILLOS_ZONA = 2;
 

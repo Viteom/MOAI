@@ -1,5 +1,5 @@
 // Transporte exclusivo del servidor. Credenciales fuera de URL y del frontend. Sin SDK ni reintentos automáticos.
-import { esquemaExtraccion, instruccionesLenguaje, type ProveedorBrisa } from './lenguaje-brisa';
+import { esquemaExtraccion, instruccionesLenguaje, type ProveedorBrisa } from './lenguaje-brisa.js';
 
 export type TransporteModelo = (url: string, opciones: RequestInit) => Promise<Response>;
 const MAX_RESPUESTA = 32_768;

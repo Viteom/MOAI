@@ -4,7 +4,7 @@
 // - «Puerta abierta» (esta semana me caería bien compañía) la ven solo las personas con las que ya te viste. Dura 7 días.
 // - El invierno lo declara la persona (regla 6), se guarda cifrado y solo lo sabe quien ella elija.
 // - El saludo de lejos usa frases ya escritas: no abre un chat ni compromete a nada.
-import { tipos, type Tipo } from './lugares';
+import { tipos, type Tipo } from './lugares.js';
 
 export type EntradaPerfil = { frase: string; gustos: Tipo[]; comparte: string; aprender: string; visible: boolean; nombrePreferido?: string; visibleEnRed?: boolean };
 export const DIAS_PUERTA = 7;

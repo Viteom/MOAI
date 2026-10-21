@@ -88,6 +88,12 @@ La función tiene un máximo configurado de 60 segundos. El mantenimiento actual
 
 ## Implementación y límites de la verificación
 
+**Corrección tras el primer despliegue real:** los logs que compartió Mateo mostraron `ERR_MODULE_NOT_FOUND: /var/task/server/vercel`. El cargador de desarrollo resolvía rutas sin extensión, pero el JavaScript ESM emitido para Node no lo hacía. Las importaciones relativas de la entrada y su grafo de servidor ahora llevan `.js`; los catálogos JSON compartidos usan `with { type: 'json' }`. No se cambió el esquema ni hay que reinstalar Neon por esta corrección.
+
+`npm run check:api`, incluido en `npm run build`, transpila las dependencias de la entrada a una carpeta temporal y las carga en un proceso Node nativo sin tsx, Vitest, NODE_OPTIONS ni credenciales heredadas. Comprueba una petición HTTP local: sin configuración debe responder el JSON 503 de MOAI en vez de fallar al importar. No conecta la base ni consulta Google/correo. No sustituye la comprobación posterior de `/api/health` en la Preview real.
+
+Comprobaciones después de esta corrección: arranque nativo de los 37 módulos aprobado; **290 pruebas en 39 archivos** aprobadas; compilación aprobada. El log real permitió reproducir el fallo anterior en un proceso Node y verificar que ya carga la entrada corregida. Falta confirmar el nuevo despliegue con las variables y la base de Vercel.
+
 - `api/index.ts`, `server/vercel.ts`: una inicialización compartida por instancia; pool de hasta tres conexiones, reutilizable; reintento del arranque después de un fallo. Sin puertos propios ni tareas de fondo en la función. Sin SDK ni dependencias nuevas.
 - `vercel.json`: frontend Vite en `dist`, `/api/*` a la función y rutas de la aplicación a `index.html`. PGlite se carga dinámicamente solo en desarrollo y se excluye del paquete de la función.
 - Respuestas de API sin caché compartida, claves solo del servidor, errores de infraestructura sanitizados y correo obligatorio incluso en Preview. Se conservan límites, permisos, cifrado, sesiones y reglas de Brisa.

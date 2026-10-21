@@ -1,7 +1,7 @@
 // Un único mecanismo de cupos para la pantalla del plan y las propuestas de Brisa.
-import type { Consulta } from './db';
-import type { Plan } from '../src/lib/api';
-import { planesVisibles } from './comunidad';
+import type { Consulta } from './db.js';
+import type { Plan } from '../src/lib/api.js';
+import { planesVisibles } from './comunidad.js';
 
 // Debe llamarse dentro de una transacción. El candado de cuenta se comparte con el selector de lugar.
 export async function reservarAsistencia(tx: Consulta, cuenta: string, ahora: Date, esperado: { planId: string; lugarId?: string; huella?: string; cuando?: string }) {

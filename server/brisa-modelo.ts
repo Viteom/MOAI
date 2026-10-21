@@ -1,8 +1,8 @@
 // REVISIÓN HUMANA: consentimiento por frase ficticia y prueba de su envío. No conserva frase ni respuesta.
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import type { Db } from './db';
-import { VERSION_LENGUAJE, type CapacidadLenguaje } from '../src/lib/lenguaje-brisa';
-import { normalizarExtraccion, revisarFraseModelo, type ProveedorBrisa } from './lenguaje-brisa';
+import type { Db } from './db.js';
+import { VERSION_LENGUAJE, type CapacidadLenguaje } from '../src/lib/lenguaje-brisa.js';
+import { normalizarExtraccion, revisarFraseModelo, type ProveedorBrisa } from './lenguaje-brisa.js';
 
 export const LIMITE_CUENTA_MODELO = 10;
 export const LIMITE_GLOBAL_MODELO = 100;

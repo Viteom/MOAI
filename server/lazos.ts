@@ -1,15 +1,15 @@
 // Mi gente: categoría y pertenencia a un Moai son dimensiones independientes.
 // Las cuentas usan referencias distintas por observador; no se unen contactos por su nombre.
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { estadoLazo } from '../src/lib/lazos';
-import { fichaVacia, validarFicha, type FichaPrivada } from '../src/lib/vinculos';
-import type { FichaVinculo, Lazos } from '../src/lib/api';
-import type { Cifrador } from './cifrado';
-import type { Db } from './db';
-import { internoDe } from './cuidado';
-import { conocidosDe } from './moais';
-import { perfilPublicoDe } from './cercania';
-import type { Refs } from './personas';
+import { estadoLazo } from '../src/lib/lazos.js';
+import { fichaVacia, validarFicha, type FichaPrivada } from '../src/lib/vinculos.js';
+import type { FichaVinculo, Lazos } from '../src/lib/api.js';
+import type { Cifrador } from './cifrado.js';
+import type { Db } from './db.js';
+import { internoDe } from './cuidado.js';
+import { conocidosDe } from './moais.js';
+import { perfilPublicoDe } from './cercania.js';
+import type { Refs } from './personas.js';
 
 const masReciente = (...fechas: (string | Date | null | undefined)[]) =>
   fechas.filter(Boolean).map(f => new Date(f!)).sort((a, b) => b.getTime() - a.getTime())[0] ?? null;

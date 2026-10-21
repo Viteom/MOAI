@@ -1,6 +1,6 @@
 // Memoria declarada, nunca extraída del historial ni de los vínculos privados.
-import { nombreTipo, tipos, type Tipo } from './lugares';
-import type { Plan } from './api';
+import { nombreTipo, tipos, type Tipo } from './lugares.js';
+import type { Plan } from './api.js';
 
 export const VERSION_MEMORIA = '2026-10-20-v1';
 export const diasBrisa = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];

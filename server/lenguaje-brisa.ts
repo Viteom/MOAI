@@ -1,6 +1,6 @@
 // El modelo solo normaliza una frase. Nunca recibe acceso a funciones, cuentas, memoria o planes.
-import { tipos, type Tipo } from '../src/lib/lugares';
-import { diasBrisa, normalizarBrisa } from '../src/lib/brisa-intenciones';
+import { tipos, type Tipo } from '../src/lib/lugares.js';
+import { diasBrisa, normalizarBrisa } from '../src/lib/brisa-intenciones.js';
 
 export type ProveedorBrisa = { nombre: 'Gemini'; modelo: string; interpretar: (frase: string) => Promise<unknown> };
 export type ExtraccionBrisa = { estado: 'buscar' | 'aclarar' | 'riesgo'; tipos: Tipo[]; dias: number[]; periodo: 'libre' | 'hoy' | 'manana' | 'pasado_manana' | 'esta_semana'; recurrente: boolean; gratis: boolean | null; fragmentos: string[] };

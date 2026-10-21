@@ -1,10 +1,10 @@
 // Sin temporizadores en funciones efímeras. El programador externo debe invocar esta ruta cada seis horas.
 import { timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
-import type { Db } from './db';
-import type { Cifrador } from './cifrado';
-import type { Correo, Recordar } from './envios';
-import { borrarConversacionesViejas, mantener, resumenSemanal } from './mantenimiento';
+import type { Db } from './db.js';
+import type { Cifrador } from './cifrado.js';
+import type { Correo, Recordar } from './envios.js';
+import { borrarConversacionesViejas, mantener, resumenSemanal } from './mantenimiento.js';
 
 export const RUTA_MANTENIMIENTO = '/api/interno/mantenimiento';
 export function registrarTareasVercel(app: FastifyInstance, opciones: {

@@ -3,8 +3,8 @@
 // dice; nunca audio (el dictado ocurre en el navegador). Se puede borrar en Mi cuenta y sale en «Descargar mis datos».
 // REVISIÓN HUMANA: guarda lo que la persona le cuenta a Brisa.
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { Consulta, Db } from './db';
-import type { Cifrador } from './cifrado';
+import type { Consulta, Db } from './db.js';
+import type { Cifrador } from './cifrado.js';
 
 export const DIAS_HISTORIAL = 90;
 export const MAX_HISTORIAL = 80; // lo que se devuelve al abrir la conversación
